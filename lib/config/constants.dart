@@ -124,6 +124,9 @@ class AppConstants {
   /// 任务创建
   static const String routeTaskCreate = '/task/create';
 
+  /// 积分详情
+  static const String routePointsDetail = '/points/detail';
+
   /// 商品详情
   static const String routeProductDetail = '/shop/product';
 

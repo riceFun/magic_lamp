@@ -181,59 +181,82 @@ class HomePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 积分卡片
-                      CustomCard(
-                        child: Column(
-                          children: [
-                            const Text(
-                              '当前积分',
-                              style: TextStyle(
-                                fontSize: AppTheme.fontSizeMedium,
-                                color: AppTheme.textSecondaryColor,
+                      // 积分卡片（可点击）
+                      GestureDetector(
+                        onTap: () {
+                          context.push(AppConstants.routePointsDetail);
+                        },
+                        child: CustomCard(
+                          child: Column(
+                            children: [
+                              const Text(
+                                '当前积分',
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeMedium,
+                                  color: AppTheme.textSecondaryColor,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: AppTheme.spacingSmall),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Icon(
-                                  Icons.monetization_on,
-                                  size: 40,
-                                  color: AppTheme.accentYellow,
-                                ),
-                                const SizedBox(width: AppTheme.spacingSmall),
-                                Text(
-                                  '${user.totalPoints}',
-                                  style: const TextStyle(
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryColor,
-                                    height: 1,
+                              const SizedBox(height: AppTheme.spacingSmall),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Icon(
+                                    Icons.monetization_on,
+                                    size: 40,
+                                    color: AppTheme.accentYellow,
                                   ),
-                                ),
-                                const SizedBox(width: AppTheme.spacingSmall),
-                                const Padding(
-                                  padding: EdgeInsets.only(bottom: 8),
-                                  child: Text(
-                                    '积分',
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeLarge,
-                                      color: AppTheme.textSecondaryColor,
+                                  const SizedBox(width: AppTheme.spacingSmall),
+                                  Text(
+                                    '${user.totalPoints}',
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.primaryColor,
+                                      height: 1,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppTheme.spacingSmall),
-                            Text(
-                              '约等于 ${(user.totalPoints * 0.1).toStringAsFixed(2)} 元',
-                              style: const TextStyle(
-                                fontSize: AppTheme.fontSizeSmall,
-                                color: AppTheme.textHintColor,
+                                  const SizedBox(width: AppTheme.spacingSmall),
+                                  const Padding(
+                                    padding: EdgeInsets.only(bottom: 8),
+                                    child: Text(
+                                      '积分',
+                                      style: TextStyle(
+                                        fontSize: AppTheme.fontSizeLarge,
+                                        color: AppTheme.textSecondaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: AppTheme.spacingSmall),
+                              Text(
+                                '约等于 ${(user.totalPoints * 0.1).toStringAsFixed(2)} 元',
+                                style: const TextStyle(
+                                  fontSize: AppTheme.fontSizeSmall,
+                                  color: AppTheme.textHintColor,
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spacingSmall),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '点击查看详情',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    size: 16,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppTheme.spacingLarge),
@@ -274,36 +297,6 @@ class HomePage extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('商城功能开发中...')),
                                 );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppTheme.spacingMedium),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.history,
-                              title: '查看记录',
-                              color: AppTheme.primaryColor,
-                              onTap: () {
-                                // TODO: 跳转到历史记录
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('历史记录功能开发中...')),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: AppTheme.spacingMedium),
-                          Expanded(
-                            child: _QuickActionCard(
-                              icon: Icons.account_balance_wallet,
-                              title: '预支积分',
-                              color: AppTheme.accentOrange,
-                              onTap: () {
-                                // 跳转到预支申请页面
-                                context.push(AppConstants.routeAdvanceApply);
                               },
                             ),
                           ),

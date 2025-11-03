@@ -15,6 +15,7 @@ import '../pages/shop/edit_reward_page.dart';
 import '../pages/shop/product_detail_page.dart';
 import '../pages/shop/exchange_history_page.dart';
 import '../pages/shop/my_words_page.dart';
+import '../pages/points/points_detail_page.dart';
 import 'constants.dart';
 
 /// 应用路由配置
@@ -126,6 +127,12 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeMyWords,
         builder: (context, state) => MyWordsPage(),
+      ),
+
+      // 积分详情
+      GoRoute(
+        path: AppConstants.routePointsDetail,
+        builder: (context, state) => PointsDetailPage(),
       ),
     ],
 
