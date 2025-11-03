@@ -152,7 +152,6 @@ class CustomCard extends StatelessWidget {
         children: [
           // 商品图片区域
           Container(
-            height: 120,
             decoration: BoxDecoration(
               color: AppTheme.primaryLightColor.withValues(alpha: 0.2),
               borderRadius: const BorderRadius.vertical(

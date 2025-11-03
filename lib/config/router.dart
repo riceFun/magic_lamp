@@ -12,6 +12,7 @@ import '../pages/advance/advance_apply_page.dart';
 import '../pages/advance/advance_list_page.dart';
 import '../pages/shop/reward_management_page.dart';
 import '../pages/shop/edit_reward_page.dart';
+import '../pages/shop/product_detail_page.dart';
 import 'constants.dart';
 
 /// 应用路由配置
@@ -95,6 +96,21 @@ class AppRouter {
           final idParam = state.uri.queryParameters['id'];
           final rewardId = idParam != null ? int.tryParse(idParam) : null;
           return EditRewardPage(rewardId: rewardId);
+        },
+      ),
+
+      // 商品详情
+      GoRoute(
+        path: AppConstants.routeProductDetail,
+        builder: (context, state) {
+          final idParam = state.uri.queryParameters['id'];
+          final rewardId = idParam != null ? int.tryParse(idParam) : null;
+          if (rewardId == null) {
+            return Scaffold(
+              body: Center(child: Text('商品ID无效')),
+            );
+          }
+          return ProductDetailPage(rewardId: rewardId);
         },
       ),
     ],

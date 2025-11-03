@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
-import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/custom_button.dart';
