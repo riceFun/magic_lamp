@@ -9,7 +9,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 商城页面 - 积分兑换奖励
 class ShopPage extends StatefulWidget {
-  const ShopPage({super.key});
+  ShopPage({super.key});
 
   @override
   State<ShopPage> createState() => _ShopPageState();
@@ -30,21 +30,21 @@ class _ShopPageState extends State<ShopPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('商城'),
+        title: Text('商城'),
         actions: [
           // 显示当前积分
           Consumer<UserProvider>(
             builder: (context, userProvider, child) {
               final user = userProvider.currentUser;
-              if (user == null) return const SizedBox.shrink();
+              if (user == null) return SizedBox.shrink();
 
               return Padding(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: AppTheme.spacingMedium,
                   vertical: AppTheme.spacingSmall,
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingMedium,
                     vertical: AppTheme.spacingSmall,
                   ),
@@ -54,15 +54,15 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.monetization_on,
                         size: 20,
                         color: AppTheme.accentYellow,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         '${user.totalPoints}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: AppTheme.fontSizeMedium,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -89,15 +89,15 @@ class _ShopPageState extends State<ShopPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     size: 80,
                     color: AppTheme.accentRed,
                   ),
-                  const SizedBox(height: AppTheme.spacingMedium),
+                  SizedBox(height: AppTheme.spacingMedium),
                   Text(
                     rewardProvider.errorMessage!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: AppTheme.fontSizeMedium,
                       color: AppTheme.textSecondaryColor,
                     ),
@@ -117,7 +117,7 @@ class _ShopPageState extends State<ShopPage> {
               if (rewardProvider.hotRewards.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingLarge),
+                    padding: EdgeInsets.all(AppTheme.spacingLarge),
                     child: Row(
                       children: [
                         Icon(
@@ -125,8 +125,8 @@ class _ShopPageState extends State<ShopPage> {
                           color: AppTheme.accentOrange,
                           size: 24,
                         ),
-                        const SizedBox(width: AppTheme.spacingSmall),
-                        const Text(
+                        SizedBox(width: AppTheme.spacingSmall),
+                        Text(
                           '热门商品',
                           style: TextStyle(
                             fontSize: AppTheme.fontSizeLarge,
@@ -139,12 +139,12 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingLarge,
                   ),
                   sliver: SliverGrid(
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                        SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 0.75,
                       crossAxisSpacing: AppTheme.spacingMedium,
@@ -169,13 +169,13 @@ class _ShopPageState extends State<ShopPage> {
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: SizedBox(height: AppTheme.spacingLarge),
                 ),
               ],
 
               // 所有商品
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(AppTheme.spacingLarge),
                   child: Text(
@@ -189,11 +189,11 @@ class _ShopPageState extends State<ShopPage> {
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: AppTheme.spacingLarge,
                 ),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.75,
                     crossAxisSpacing: AppTheme.spacingMedium,
@@ -218,7 +218,7 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: SizedBox(height: AppTheme.spacingLarge),
               ),
             ],
@@ -245,16 +245,16 @@ class _ShopPageState extends State<ShopPage> {
             if (reward.description != null) ...[
               Text(
                 reward.description!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: AppTheme.fontSizeMedium,
                   color: AppTheme.textPrimaryColor,
                 ),
               ),
-              const SizedBox(height: AppTheme.spacingMedium),
+              SizedBox(height: AppTheme.spacingMedium),
             ],
             Row(
               children: [
-                const Text(
+                Text(
                   '词汇代号：',
                   style: TextStyle(
                     fontSize: AppTheme.fontSizeMedium,
@@ -262,7 +262,7 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingSmall,
                     vertical: 2,
                   ),
@@ -272,7 +272,7 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                   child: Text(
                     reward.wordCode,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: AppTheme.fontSizeMedium,
                       color: AppTheme.accentGreen,
                       fontWeight: FontWeight.bold,
@@ -281,7 +281,7 @@ class _ShopPageState extends State<ShopPage> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.spacingMedium),
+            SizedBox(height: AppTheme.spacingMedium),
             Row(
               children: [
                 Icon(
@@ -289,10 +289,10 @@ class _ShopPageState extends State<ShopPage> {
                   size: 24,
                   color: AppTheme.accentYellow,
                 ),
-                const SizedBox(width: AppTheme.spacingSmall),
+                SizedBox(width: AppTheme.spacingSmall),
                 Text(
                   '${reward.points} 积分',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: AppTheme.fontSizeLarge,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primaryColor,
@@ -301,10 +301,10 @@ class _ShopPageState extends State<ShopPage> {
               ],
             ),
             if (!canAfford) ...[
-              const SizedBox(height: AppTheme.spacingSmall),
+              SizedBox(height: AppTheme.spacingSmall),
               Text(
                 '积分不足，还需 ${reward.points - (user?.totalPoints ?? 0)} 积分',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: AppTheme.fontSizeSmall,
                   color: AppTheme.accentRed,
                 ),
@@ -315,7 +315,7 @@ class _ShopPageState extends State<ShopPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text('取消'),
           ),
           ElevatedButton(
             onPressed: canAfford
@@ -323,11 +323,11 @@ class _ShopPageState extends State<ShopPage> {
                     Navigator.of(context).pop();
                     // TODO: 实现兑换功能
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('兑换功能开发中...')),
+                      SnackBar(content: Text('兑换功能开发中...')),
                     );
                   }
                 : null,
-            child: const Text('兑换'),
+            child: Text('兑换'),
           ),
         ],
       ),

@@ -51,7 +51,7 @@ class HomePage extends StatelessWidget {
           final user = userProvider.currentUser;
 
           if (user == null) {
-            return const Center(
+            return Center(
               child: Text(
                 '未登录',
                 style: TextStyle(
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     '${_getGreeting()}，${user.name}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: AppTheme.fontSizeLarge,
                       fontWeight: FontWeight.bold,

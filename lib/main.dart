@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
+import 'data/database_helper.dart';
 
 /// 神灯积分管理 - 应用入口
 void main() async {
   // 确保 Flutter 绑定已初始化
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 初始化数据库
+  await DatabaseHelper.instance.database;
+
   // 设置状态栏样式
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
+    SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
@@ -25,5 +29,5 @@ void main() async {
   configureEasyLoading();
 
   // 启动应用
-  runApp(const MyApp());
+  runApp(MyApp());
 }

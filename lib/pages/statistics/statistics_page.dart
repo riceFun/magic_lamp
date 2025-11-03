@@ -3,13 +3,13 @@ import '../../config/theme.dart';
 
 /// 统计页面 - 积分统计和图表
 class StatisticsPage extends StatelessWidget {
-  const StatisticsPage({super.key});
+  StatisticsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('统计'),
+        title: Text('统计'),
       ),
       body: Center(
         child: Column(
@@ -20,8 +20,8 @@ class StatisticsPage extends StatelessWidget {
               size: 80,
               color: AppTheme.accentOrange.withValues(alpha: 0.5),
             ),
-            const SizedBox(height: AppTheme.spacingLarge),
-            const Text(
+            SizedBox(height: AppTheme.spacingLarge),
+            Text(
               '统计',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeXLarge,
@@ -29,8 +29,8 @@ class StatisticsPage extends StatelessWidget {
                 color: AppTheme.textPrimaryColor,
               ),
             ),
-            const SizedBox(height: AppTheme.spacingSmall),
-            const Text(
+            SizedBox(height: AppTheme.spacingSmall),
+            Text(
               '积分统计、任务完成统计、图表展示',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeMedium,
