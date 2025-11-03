@@ -13,6 +13,8 @@ import '../pages/advance/advance_list_page.dart';
 import '../pages/shop/reward_management_page.dart';
 import '../pages/shop/edit_reward_page.dart';
 import '../pages/shop/product_detail_page.dart';
+import '../pages/shop/exchange_history_page.dart';
+import '../pages/shop/my_words_page.dart';
 import 'constants.dart';
 
 /// 应用路由配置
@@ -112,6 +114,18 @@ class AppRouter {
           }
           return ProductDetailPage(rewardId: rewardId);
         },
+      ),
+
+      // 兑换记录
+      GoRoute(
+        path: AppConstants.routeExchangeHistory,
+        builder: (context, state) => ExchangeHistoryPage(),
+      ),
+
+      // 我的词汇库
+      GoRoute(
+        path: AppConstants.routeMyWords,
+        builder: (context, state) => MyWordsPage(),
       ),
     ],
 

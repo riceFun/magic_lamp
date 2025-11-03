@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
 import '../../providers/exchange_provider.dart';
 import '../../providers/user_provider.dart';
@@ -308,6 +310,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ],
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              context.push(AppConstants.routeExchangeHistory);
+            },
+            child: Text('查看记录'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();

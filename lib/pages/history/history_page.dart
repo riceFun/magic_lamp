@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/point_record_provider.dart';
 import '../../widgets/common/custom_card.dart';
@@ -38,6 +40,22 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(
         title: Text('历史记录'),
         actions: [
+          // 词汇库按钮
+          IconButton(
+            icon: Icon(Icons.school),
+            onPressed: () {
+              context.push(AppConstants.routeMyWords);
+            },
+            tooltip: '词汇库',
+          ),
+          // 兑换记录按钮
+          IconButton(
+            icon: Icon(Icons.card_giftcard),
+            onPressed: () {
+              context.push(AppConstants.routeExchangeHistory);
+            },
+            tooltip: '兑换记录',
+          ),
           // 筛选按钮
           PopupMenuButton<String>(
             icon: Icon(Icons.filter_list),
