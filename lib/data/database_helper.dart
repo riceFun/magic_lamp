@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../config/constants.dart';
+import 'repositories/task_template_repository.dart';
 
 /// 数据库帮助类 - 单例模式
 class DatabaseHelper {
@@ -188,18 +189,17 @@ class DatabaseHelper {
       )
     ''');
 
-    // 10. 模板表
+    // 10. 任务模板表
     await db.execute('''
-      CREATE TABLE templates (
+      CREATE TABLE task_templates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        title TEXT NOT NULL,
         description TEXT,
         points INTEGER NOT NULL,
         type TEXT NOT NULL,
-        priority TEXT NOT NULL DEFAULT 'normal',
+        priority TEXT DEFAULT 'medium',
         category TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        created_at TEXT NOT NULL
       )
     ''');
 
@@ -306,6 +306,10 @@ class DatabaseHelper {
     // 用户词汇库索引
     await db.execute('CREATE INDEX idx_user_words_user_id ON user_words(user_id)');
     await db.execute('CREATE INDEX idx_user_words_word_type ON user_words(word_type)');
+
+    // 任务模板表索引
+    await db.execute('CREATE INDEX idx_task_templates_type ON task_templates(type)');
+    await db.execute('CREATE INDEX idx_task_templates_category ON task_templates(category)');
 
     // 统计数据表索引
     await db.execute('CREATE INDEX idx_statistics_user_id ON statistics(user_id)');
@@ -421,6 +425,9 @@ class DatabaseHelper {
       'created_at': now,
       'updated_at': now,
     });
+
+    // 插入任务模板
+    await TaskTemplateRepository.insertInitialTemplates(db);
   }
 
   /// 数据库升级

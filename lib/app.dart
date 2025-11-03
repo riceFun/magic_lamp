@@ -7,6 +7,7 @@ import 'providers/user_provider.dart';
 import 'providers/reward_provider.dart';
 import 'providers/point_record_provider.dart';
 import 'providers/task_provider.dart';
+import 'providers/task_template_provider.dart';
 import 'providers/exchange_provider.dart';
 import 'providers/advance_provider.dart';
 

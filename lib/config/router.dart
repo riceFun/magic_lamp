@@ -5,6 +5,7 @@ import '../pages/login/login_page.dart';
 import '../pages/main_navigation_page.dart';
 import '../pages/task/task_list_page.dart';
 import '../pages/task/create_task_page.dart';
+import '../pages/task/task_template_marketplace_page.dart';
 import '../pages/user/create_user_page.dart';
 import '../pages/user/user_list_page.dart';
 import '../pages/settings/edit_profile_page.dart';
@@ -54,6 +55,12 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeTaskCreate,
         builder: (context, state) => CreateTaskPage(),
+      ),
+
+      // 任务模板超市
+      GoRoute(
+        path: AppConstants.routeTaskTemplateMarketplace,
+        builder: (context, state) => TaskTemplateMarketplacePage(),
       ),
 
       // 用户管理
