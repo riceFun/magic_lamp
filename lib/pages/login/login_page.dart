@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../widgets/common/custom_button.dart';
@@ -7,7 +8,6 @@ import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/user.dart';
-import '../user/create_user_page.dart';
 
 /// 登录页面 - 用户选择或创建
 class LoginPage extends StatefulWidget {
@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (success && mounted) {
       // 跳转到主页面
-      Navigator.of(context).pushReplacementNamed(AppConstants.routeMain);
+      context.go(AppConstants.routeMain);
     } else if (mounted) {
       // 显示错误提示
       ScaffoldMessenger.of(context).showSnackBar(
@@ -47,11 +47,7 @@ class _LoginPageState extends State<LoginPage> {
 
   /// 创建新用户
   Future<void> _createNewUser() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CreateUserPage(),
-      ),
-    );
+    await context.push(AppConstants.routeUserCreate);
     // 返回后重新加载用户列表
     if (mounted) {
       context.read<UserProvider>().loadAllUsers();

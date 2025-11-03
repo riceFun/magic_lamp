@@ -115,6 +115,9 @@ class AppConstants {
   /// 主页（含底部导航）
   static const String routeMain = '/main';
 
+  /// 任务列表
+  static const String routeTaskList = '/task/list';
+
   /// 任务详情
   static const String routeTaskDetail = '/task/detail';
 
@@ -151,8 +154,17 @@ class AppConstants {
   /// 用户管理
   static const String routeUserManagement = '/settings/users';
 
+  /// 创建用户
+  static const String routeUserCreate = '/settings/users/create';
+
   /// 个人资料
   static const String routeProfile = '/settings/profile';
+
+  /// 预支申请
+  static const String routeAdvanceApply = '/advance/apply';
+
+  /// 预支列表
+  static const String routeAdvanceList = '/advance/list';
 
   // ==================== 动画时长 ====================
 

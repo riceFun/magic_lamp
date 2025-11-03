@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'config/theme.dart';
-import 'config/constants.dart';
-import 'pages/splash/splash_page.dart';
-import 'pages/login/login_page.dart';
-import 'pages/main_navigation_page.dart';
+import 'config/router.dart';
 import 'providers/user_provider.dart';
 import 'providers/reward_provider.dart';
 import 'providers/point_record_provider.dart';
@@ -28,9 +25,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExchangeProvider()),
         ChangeNotifierProvider(create: (_) => AdvanceProvider()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         // 应用标题
-        title: AppConstants.appName,
+        title: '神灯积分管理',
 
         // 主题配置
         theme: AppTheme.lightTheme,
@@ -38,15 +35,8 @@ class MyApp extends StatelessWidget {
         // 禁用调试标签
         debugShowCheckedModeBanner: false,
 
-        // 初始路由
-        initialRoute: AppConstants.routeSplash,
-
-        // 路由配置
-        routes: {
-          AppConstants.routeSplash: (context) => SplashPage(),
-          AppConstants.routeLogin: (context) => LoginPage(),
-          AppConstants.routeMain: (context) => MainNavigationPage(),
-        },
+        // GoRouter 配置
+        routerConfig: AppRouter.router,
 
         // EasyLoading 配置
         builder: EasyLoading.init(),

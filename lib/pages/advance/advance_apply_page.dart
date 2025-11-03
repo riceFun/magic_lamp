@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/advance_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_button.dart';
-import 'advance_list_page.dart';
 
 /// 预支申请页面
 class AdvanceApplyPage extends StatefulWidget {
@@ -223,11 +223,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
             icon: Icon(Icons.history),
             tooltip: '查看预支记录',
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => AdvanceListPage(),
-                ),
-              );
+              context.push(AppConstants.routeAdvanceList);
             },
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 
@@ -63,7 +64,7 @@ class _SplashPageState extends State<SplashPage>
     await Future.delayed(const Duration(milliseconds: 2500));
 
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed(AppConstants.routeLogin);
+      context.go(AppConstants.routeLogin);
     }
   }
 

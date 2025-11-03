@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
-import '../task/task_list_page.dart';
-import '../advance/advance_apply_page.dart';
 
 /// 首页 - 显示积分概况和快捷操作
 class HomePage extends StatelessWidget {
@@ -259,11 +259,7 @@ class HomePage extends StatelessWidget {
                               color: AppTheme.accentGreen,
                               onTap: () {
                                 // 跳转到任务列表
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => TaskListPage(),
-                                  ),
-                                );
+                                context.push(AppConstants.routeTaskList);
                               },
                             ),
                           ),
@@ -307,11 +303,7 @@ class HomePage extends StatelessWidget {
                               color: AppTheme.accentOrange,
                               onTap: () {
                                 // 跳转到预支申请页面
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => AdvanceApplyPage(),
-                                  ),
-                                );
+                                context.push(AppConstants.routeAdvanceApply);
                               },
                             ),
                           ),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
 import '../../data/models/task.dart';
-import 'create_task_page.dart';
 
 /// 任务列表页面
 class TaskListPage extends StatefulWidget {
@@ -45,11 +46,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   icon: Icon(Icons.add),
                   onPressed: () async {
                     // 跳转到创建任务页面
-                    final result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => CreateTaskPage(),
-                      ),
-                    );
+                    final result = await context.push(AppConstants.routeTaskCreate);
 
                     // 如果创建成功，刷新列表
                     if (result == true && user.id != null) {

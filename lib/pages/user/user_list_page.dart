@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/user.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
-import 'create_user_page.dart';
 
 /// 用户列表页面（管理员功能）
 class UserListPage extends StatefulWidget {
@@ -155,11 +156,7 @@ class _UserListPageState extends State<UserListPage> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CreateUserPage(),
-                ),
-              );
+              final result = await context.push(AppConstants.routeUserCreate);
               if (result == true) {
                 _loadUsers();
               }

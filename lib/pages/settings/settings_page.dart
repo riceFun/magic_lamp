@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/custom_button.dart';
-import 'edit_profile_page.dart';
-import '../user/user_list_page.dart';
 
 /// 设置页面 - 个人信息、系统设置
 class SettingsPage extends StatelessWidget {
@@ -190,11 +189,7 @@ class SettingsPage extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => EditProfilePage(),
-                              ),
-                            );
+                            context.push(AppConstants.routeProfile);
                           },
                           icon: Icon(Icons.edit),
                           label: Text('编辑资料'),
@@ -232,11 +227,7 @@ class SettingsPage extends StatelessWidget {
                           title: '用户管理',
                           subtitle: '管理所有用户信息',
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => UserListPage(),
-                              ),
-                            );
+                            context.push(AppConstants.routeUserManagement);
                           },
                         ),
                         Divider(height: 1),
@@ -322,10 +313,7 @@ class SettingsPage extends StatelessWidget {
 
               // 返回登录页面
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppConstants.routeLogin,
-                  (route) => false,
-                );
+                context.go(AppConstants.routeLogin);
               }
             },
             style: ElevatedButton.styleFrom(
