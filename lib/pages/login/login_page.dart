@@ -7,6 +7,7 @@ import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/user.dart';
+import '../user/create_user_page.dart';
 
 /// 登录页面 - 用户选择或创建
 class LoginPage extends StatefulWidget {
@@ -45,11 +46,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /// 创建新用户
-  void _createNewUser() {
-    // TODO: 跳转到创建用户页面
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('创建新用户功能开发中...')),
+  Future<void> _createNewUser() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CreateUserPage(),
+      ),
     );
+    // 返回后重新加载用户列表
+    if (mounted) {
+      context.read<UserProvider>().loadAllUsers();
+    }
   }
 
   /// 获取头像图标
@@ -61,6 +67,10 @@ class _LoginPageState extends State<LoginPage> {
         return Icons.face_2;
       case 'person':
         return Icons.person;
+      case 'child_care':
+        return Icons.child_care;
+      case 'emoji_people':
+        return Icons.emoji_people;
       default:
         return Icons.account_circle;
     }

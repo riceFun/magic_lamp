@@ -17,6 +17,10 @@ class HomePage extends StatelessWidget {
         return Icons.face_2;
       case 'person':
         return Icons.person;
+      case 'child_care':
+        return Icons.child_care;
+      case 'emoji_people':
+        return Icons.emoji_people;
       default:
         return Icons.account_circle;
     }
