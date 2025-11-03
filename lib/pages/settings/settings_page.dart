@@ -231,6 +231,16 @@ class SettingsPage extends StatelessWidget {
                           },
                         ),
                         Divider(height: 1),
+                        _SettingItem(
+                          icon: Icons.card_giftcard,
+                          iconColor: AppTheme.accentYellow,
+                          title: '商品管理',
+                          subtitle: '管理商城奖励商品',
+                          onTap: () {
+                            context.push(AppConstants.routeRewardManagement);
+                          },
+                        ),
+                        Divider(height: 1),
                       },
                       _SettingItem(
                         icon: Icons.lock,

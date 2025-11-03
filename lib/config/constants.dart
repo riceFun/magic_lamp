@@ -145,6 +145,12 @@ class AppConstants {
   /// 商城管理
   static const String routeShopManagement = '/settings/shop';
 
+  /// 商品管理
+  static const String routeRewardManagement = '/shop/management';
+
+  /// 编辑商品
+  static const String routeRewardEdit = '/shop/edit';
+
   /// 目标设定
   static const String routeGoalManagement = '/settings/goals';
 

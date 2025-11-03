@@ -76,6 +76,81 @@ class RewardProvider extends ChangeNotifier {
     }
   }
 
+  /// 获取所有奖励商品（包括未激活的）
+  List<Reward> get rewards => _allRewards;
+
+  /// 加载所有商品（包括未激活）
+  Future<void> loadAllRewardsIncludingInactive() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _allRewards = await _rewardRepository.getAllRewards();
+      _errorMessage = null;
+    } catch (e) {
+      _errorMessage = '加载商品失败: $e';
+      debugPrint('RewardProvider loadAllRewardsIncludingInactive error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 创建奖励商品
+  Future<int?> createReward(Reward reward) async {
+    try {
+      final id = await _rewardRepository.createReward(reward);
+
+      // 刷新列表
+      await loadAllRewardsIncludingInactive();
+
+      _errorMessage = null;
+      return id;
+    } catch (e) {
+      _errorMessage = '创建商品失败: $e';
+      debugPrint('RewardProvider createReward error: $e');
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// 更新奖励商品
+  Future<bool> updateReward(Reward reward) async {
+    try {
+      await _rewardRepository.updateReward(reward);
+
+      // 刷新列表
+      await loadAllRewardsIncludingInactive();
+
+      _errorMessage = null;
+      return true;
+    } catch (e) {
+      _errorMessage = '更新商品失败: $e';
+      debugPrint('RewardProvider updateReward error: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// 删除奖励商品
+  Future<bool> deleteReward(int id) async {
+    try {
+      await _rewardRepository.deleteReward(id);
+
+      // 从列表中移除
+      _allRewards.removeWhere((reward) => reward.id == id);
+
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = '删除商品失败: $e';
+      debugPrint('RewardProvider deleteReward error: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// 清除错误信息
   void clearError() {
     _errorMessage = null;

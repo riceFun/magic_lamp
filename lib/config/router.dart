@@ -10,6 +10,8 @@ import '../pages/user/user_list_page.dart';
 import '../pages/settings/edit_profile_page.dart';
 import '../pages/advance/advance_apply_page.dart';
 import '../pages/advance/advance_list_page.dart';
+import '../pages/shop/reward_management_page.dart';
+import '../pages/shop/edit_reward_page.dart';
 import 'constants.dart';
 
 /// 应用路由配置
@@ -78,6 +80,22 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeAdvanceList,
         builder: (context, state) => AdvanceListPage(),
+      ),
+
+      // 商品管理
+      GoRoute(
+        path: AppConstants.routeRewardManagement,
+        builder: (context, state) => RewardManagementPage(),
+      ),
+
+      // 编辑商品
+      GoRoute(
+        path: AppConstants.routeRewardEdit,
+        builder: (context, state) {
+          final idParam = state.uri.queryParameters['id'];
+          final rewardId = idParam != null ? int.tryParse(idParam) : null;
+          return EditRewardPage(rewardId: rewardId);
+        },
       ),
     ],
 
