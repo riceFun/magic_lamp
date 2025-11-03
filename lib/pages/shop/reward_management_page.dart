@@ -11,7 +11,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 商品管理页面（管理员功能）
 class RewardManagementPage extends StatefulWidget {
-  RewardManagementPage({super.key});
+  const RewardManagementPage({super.key});
 
   @override
   State<RewardManagementPage> createState() => _RewardManagementPageState();

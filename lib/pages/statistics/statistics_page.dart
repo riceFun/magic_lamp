@@ -13,7 +13,7 @@ import '../../widgets/common/loading_widget.dart';
 
 /// 统计页面 - 积分统计和图表
 class StatisticsPage extends StatefulWidget {
-  StatisticsPage({super.key});
+  const StatisticsPage({super.key});
 
   @override
   State<StatisticsPage> createState() => _StatisticsPageState();
@@ -156,7 +156,13 @@ class _StatisticsPageState extends State<StatisticsPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('统计'),
+        title: Row(
+          children: [
+            Icon(Icons.bar_chart, size: 24),
+            SizedBox(width: AppTheme.spacingSmall),
+            Text('统计'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -831,7 +837,7 @@ class _StatisticItem extends StatelessWidget {
   final Color iconColor;
   final bool isLight; // 是否是浅色背景（白色文字）
 
-  _StatisticItem({
+  const _StatisticItem({
     required this.label,
     required this.value,
     required this.icon,
@@ -890,7 +896,7 @@ class _CompactStatItem extends StatelessWidget {
   final String value;
   final Color color;
 
-  _CompactStatItem({
+  const _CompactStatItem({
     required this.label,
     required this.value,
     required this.color,

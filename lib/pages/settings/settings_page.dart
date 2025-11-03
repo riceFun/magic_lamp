@@ -9,7 +9,7 @@ import '../../widgets/common/custom_button.dart';
 
 /// 设置页面 - 个人信息、系统设置
 class SettingsPage extends StatelessWidget {
-  SettingsPage({super.key});
+  const SettingsPage({super.key});
 
   /// 获取头像图标
   IconData _getAvatarIcon(String? avatar) {
@@ -34,7 +34,13 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('设置'),
+        title: Row(
+          children: [
+            Icon(Icons.settings, size: 24),
+            SizedBox(width: AppTheme.spacingSmall),
+            Text('设置'),
+          ],
+        ),
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
@@ -232,6 +238,16 @@ class SettingsPage extends StatelessWidget {
                         ),
                         Divider(height: 1),
                         _SettingItem(
+                          icon: Icons.task,
+                          iconColor: AppTheme.accentGreen,
+                          title: '激励任务管理',
+                          subtitle: '管理和创建激励任务',
+                          onTap: () {
+                            context.push(AppConstants.routeTaskList);
+                          },
+                        ),
+                        Divider(height: 1),
+                        _SettingItem(
                           icon: Icons.card_giftcard,
                           iconColor: AppTheme.accentYellow,
                           title: '商品管理',
@@ -420,7 +436,7 @@ class _SettingItem extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  _SettingItem({
+  const _SettingItem({
     required this.icon,
     required this.iconColor,
     required this.title,

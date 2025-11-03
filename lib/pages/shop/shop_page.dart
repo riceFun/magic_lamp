@@ -33,7 +33,13 @@ class _ShopPageState extends State<ShopPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('商城'),
+        title: Row(
+          children: [
+            Icon(Icons.store, size: 24),
+            SizedBox(width: AppTheme.spacingSmall),
+            Text('商城'),
+          ],
+        ),
         actions: [
           // 显示当前积分
           Consumer<UserProvider>(

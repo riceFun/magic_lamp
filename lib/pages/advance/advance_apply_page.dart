@@ -491,7 +491,7 @@ class _DurationChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _DurationChip({
+  const _DurationChip({
     required this.label,
     required this.days,
     required this.isSelected,
@@ -546,7 +546,7 @@ class _InfoRow extends StatelessWidget {
   final Color valueColor;
   final bool isBold;
 
-  _InfoRow({
+  const _InfoRow({
     required this.label,
     required this.value,
     required this.valueColor,

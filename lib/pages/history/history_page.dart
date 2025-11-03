@@ -13,7 +13,7 @@ import '../../data/models/point.dart';
 
 /// 历史记录页面 - 积分收支记录
 class HistoryPage extends StatefulWidget {
-  HistoryPage({super.key});
+  const HistoryPage({super.key});
 
   @override
   State<HistoryPage> createState() => _HistoryPageState();

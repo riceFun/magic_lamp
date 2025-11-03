@@ -10,7 +10,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 预支积分列表页面
 class AdvanceListPage extends StatefulWidget {
-  AdvanceListPage({super.key});
+  const AdvanceListPage({super.key});
 
   @override
   State<AdvanceListPage> createState() => _AdvanceListPageState();
@@ -377,7 +377,7 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  _StatItem({
+  const _StatItem({
     required this.label,
     required this.value,
   });
@@ -413,7 +413,7 @@ class _FilterChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _FilterChip({
+  const _FilterChip({
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -451,7 +451,7 @@ class _AdvanceCard extends StatelessWidget {
   final Advance advance;
   final VoidCallback onRepay;
 
-  _AdvanceCard({
+  const _AdvanceCard({
     required this.advance,
     required this.onRepay,
   });
@@ -769,7 +769,7 @@ class _InfoRow extends StatelessWidget {
   final Color valueColor;
   final bool isBold;
 
-  _InfoRow({
+  const _InfoRow({
     required this.label,
     required this.value,
     required this.valueColor,

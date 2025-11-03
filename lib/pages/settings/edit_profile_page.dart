@@ -4,11 +4,10 @@ import '../../config/theme.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/user.dart';
 import '../../widgets/common/custom_button.dart';
-import '../../widgets/common/custom_card.dart';
 
 /// 编辑个人资料页面
 class EditProfilePage extends StatefulWidget {
-  EditProfilePage({super.key});
+  const EditProfilePage({super.key});
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -272,7 +271,7 @@ class _AvatarOption extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _AvatarOption({
+  const _AvatarOption({
     required this.icon,
     required this.name,
     required this.isSelected,

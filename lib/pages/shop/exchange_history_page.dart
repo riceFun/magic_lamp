@@ -11,7 +11,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 兑换记录页面
 class ExchangeHistoryPage extends StatefulWidget {
-  ExchangeHistoryPage({super.key});
+  const ExchangeHistoryPage({super.key});
 
   @override
   State<ExchangeHistoryPage> createState() => _ExchangeHistoryPageState();
@@ -448,7 +448,7 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  _StatItem({
+  const _StatItem({
     required this.icon,
     required this.label,
     required this.value,
@@ -491,7 +491,7 @@ class _DetailRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  _DetailRow({
+  const _DetailRow({
     required this.label,
     required this.value,
     this.valueColor,

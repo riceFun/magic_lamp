@@ -14,7 +14,7 @@ import '../../widgets/common/loading_widget.dart';
 class ProductDetailPage extends StatefulWidget {
   final int rewardId;
 
-  ProductDetailPage({super.key, required this.rewardId});
+  const ProductDetailPage({super.key, required this.rewardId});
 
   @override
   State<ProductDetailPage> createState() => _ProductDetailPageState();

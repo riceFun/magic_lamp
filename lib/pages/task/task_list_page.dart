@@ -404,7 +404,7 @@ class _FilterBar extends StatelessWidget {
   final String currentFilter;
   final Function(String) onFilterChanged;
 
-  _FilterBar({
+  const _FilterBar({
     required this.currentFilter,
     required this.onFilterChanged,
   });
@@ -478,7 +478,7 @@ class _FilterChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _FilterChip({
+  const _FilterChip({
     required this.label,
     required this.value,
     required this.isSelected,
@@ -524,7 +524,7 @@ class _TaskCard extends StatelessWidget {
   final int userId;
   final VoidCallback onTap;
 
-  _TaskCard({
+  const _TaskCard({
     required this.task,
     required this.userId,
     required this.onTap,
@@ -731,7 +731,7 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final Color color;
 
-  _InfoRow({
+  const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,

@@ -11,7 +11,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 我的词汇库页面
 class MyWordsPage extends StatefulWidget {
-  MyWordsPage({super.key});
+  const MyWordsPage({super.key});
 
   @override
   State<MyWordsPage> createState() => _MyWordsPageState();
@@ -382,7 +382,7 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  _StatItem({
+  const _StatItem({
     required this.icon,
     required this.label,
     required this.value,

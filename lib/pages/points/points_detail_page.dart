@@ -13,7 +13,7 @@ import '../../data/models/point.dart';
 
 /// 积分详情页面 - 显示积分数值和历史记录
 class PointsDetailPage extends StatefulWidget {
-  PointsDetailPage({super.key});
+  const PointsDetailPage({super.key});
 
   @override
   State<PointsDetailPage> createState() => _PointsDetailPageState();
@@ -347,7 +347,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
 class _PointRecordCard extends StatelessWidget {
   final PointRecord record;
 
-  _PointRecordCard({required this.record});
+  const _PointRecordCard({required this.record});
 
   /// 获取积分变动图标
   IconData _getIcon() {

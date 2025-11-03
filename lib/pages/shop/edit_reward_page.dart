@@ -10,7 +10,7 @@ import '../../widgets/common/custom_button.dart';
 class EditRewardPage extends StatefulWidget {
   final int? rewardId;
 
-  EditRewardPage({super.key, this.rewardId});
+  const EditRewardPage({super.key, this.rewardId});
 
   @override
   State<EditRewardPage> createState() => _EditRewardPageState();
