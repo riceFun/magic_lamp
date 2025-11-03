@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
+import '../task/task_list_page.dart';
+import '../advance/advance_apply_page.dart';
 
 /// 首页 - 显示积分概况和快捷操作
 class HomePage extends StatelessWidget {
@@ -256,9 +258,11 @@ class HomePage extends StatelessWidget {
                               title: '完成任务',
                               color: AppTheme.accentGreen,
                               onTap: () {
-                                // TODO: 跳转到任务列表
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('任务功能开发中...')),
+                                // 跳转到任务列表
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => TaskListPage(),
+                                  ),
                                 );
                               },
                             ),
@@ -298,13 +302,15 @@ class HomePage extends StatelessWidget {
                           const SizedBox(width: AppTheme.spacingMedium),
                           Expanded(
                             child: _QuickActionCard(
-                              icon: Icons.bar_chart,
-                              title: '数据统计',
+                              icon: Icons.account_balance_wallet,
+                              title: '预支积分',
                               color: AppTheme.accentOrange,
                               onTap: () {
-                                // TODO: 跳转到统计页面
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('统计功能开发中...')),
+                                // 跳转到预支申请页面
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => AdvanceApplyPage(),
+                                  ),
                                 );
                               },
                             ),

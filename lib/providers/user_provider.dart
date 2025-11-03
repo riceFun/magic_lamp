@@ -69,6 +69,14 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// 获取所有用户（如果列表为空则加载）
+  Future<List<User>> getAllUsers() async {
+    if (_allUsers.isEmpty) {
+      await loadAllUsers();
+    }
+    return _allUsers;
+  }
+
   /// 用户登录
   Future<bool> login(int userId) async {
     _isLoading = true;
@@ -231,6 +239,61 @@ class UserProvider extends ChangeNotifier {
   bool hasEnoughPoints(int requiredPoints) {
     if (_currentUser == null) return false;
     return _currentUser!.totalPoints >= requiredPoints;
+  }
+
+  /// 更新用户信息（通用方法）
+  Future<bool> updateUser(User user) async {
+    try {
+      await _userRepository.updateUser(user);
+
+      // 如果更新的是当前用户，同步更新currentUser
+      if (_currentUser?.id == user.id) {
+        _currentUser = user;
+      }
+
+      // 刷新用户列表
+      if (_allUsers.isNotEmpty) {
+        final index = _allUsers.indexWhere((u) => u.id == user.id);
+        if (index != -1) {
+          _allUsers[index] = user;
+        }
+      }
+
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = '更新用户失败: $e';
+      debugPrint('UserProvider updateUser error: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// 删除用户
+  Future<bool> deleteUser(int userId) async {
+    // 不能删除当前登录的用户
+    if (_currentUser?.id == userId) {
+      _errorMessage = '不能删除当前登录的用户';
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      await _userRepository.deleteUser(userId);
+
+      // 从用户列表中移除
+      _allUsers.removeWhere((user) => user.id == userId);
+
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = '删除用户失败: $e';
+      debugPrint('UserProvider deleteUser error: $e');
+      notifyListeners();
+      return false;
+    }
   }
 
   /// 清除错误信息

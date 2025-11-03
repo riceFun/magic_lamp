@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/reward_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/exchange_provider.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
@@ -319,15 +320,179 @@ class _ShopPageState extends State<ShopPage> {
           ),
           ElevatedButton(
             onPressed: canAfford
-                ? () {
+                ? () async {
                     Navigator.of(context).pop();
-                    // TODO: 实现兑换功能
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('兑换功能开发中...')),
-                    );
+                    await _performExchange(context, reward, user!.id!);
                   }
                 : null,
             child: Text('兑换'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 执行兑换操作
+  Future<void> _performExchange(BuildContext context, reward, int userId) async {
+    final exchangeProvider = context.read<ExchangeProvider>();
+    final userProvider = context.read<UserProvider>();
+
+    // 显示加载提示
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Container(
+          padding: EdgeInsets.all(AppTheme.spacingLarge),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: AppTheme.spacingMedium),
+              Text('兑换中...'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    // 执行兑换
+    final exchangeId = await exchangeProvider.exchangeReward(
+      userId: userId,
+      rewardId: reward.id!,
+    );
+
+    // 关闭加载对话框
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+
+    if (exchangeId != null) {
+      // 刷新用户积分
+      await userProvider.refreshCurrentUser();
+
+      // 显示成功对话框
+      if (context.mounted) {
+        _showExchangeSuccessDialog(context, reward);
+      }
+    } else {
+      // 显示失败消息
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(exchangeProvider.errorMessage ?? '兑换失败'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 显示兑换成功对话框
+  void _showExchangeSuccessDialog(BuildContext context, reward) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.celebration,
+              color: AppTheme.accentYellow,
+              size: 28,
+            ),
+            SizedBox(width: AppTheme.spacingSmall),
+            Text('兑换成功！'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '恭喜你兑换了',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeMedium,
+                color: AppTheme.textSecondaryColor,
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingSmall),
+            Text(
+              reward.name,
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeLarge,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingMedium),
+            Container(
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              decoration: BoxDecoration(
+                color: AppTheme.accentGreen.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.school,
+                        color: AppTheme.accentGreen,
+                        size: 20,
+                      ),
+                      SizedBox(width: AppTheme.spacingSmall),
+                      Text(
+                        '学习新词汇',
+                        style: TextStyle(
+                          fontSize: AppTheme.fontSizeMedium,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  Text(
+                    reward.wordCode,
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeXLarge,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  if (reward.description != null) ...{
+                    SizedBox(height: 4),
+                    Text(
+                      reward.description!,
+                      style: TextStyle(
+                        fontSize: AppTheme.fontSizeSmall,
+                        color: AppTheme.textSecondaryColor,
+                        height: 1.5,
+                      ),
+                    ),
+                  },
+                ],
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingMedium),
+            Text(
+              '请找家长领取奖励哦！',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeSmall,
+                color: AppTheme.textHintColor,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('好的'),
           ),
         ],
       ),

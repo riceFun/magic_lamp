@@ -1,0 +1,256 @@
+import 'package:flutter/foundation.dart';
+import '../data/models/reward.dart';
+import '../data/models/point.dart';
+import '../data/models/user_word.dart';
+import '../data/repositories/exchange_repository.dart';
+import '../data/repositories/point_record_repository.dart';
+import '../data/repositories/user_repository.dart';
+import '../data/repositories/reward_repository.dart';
+
+/// 兑换状态管理
+class ExchangeProvider with ChangeNotifier {
+  final _exchangeRepository = ExchangeRepository();
+  final _userWordRepository = UserWordRepository();
+  final _pointRecordRepository = PointRecordRepository();
+  final _userRepository = UserRepository();
+  final _rewardRepository = RewardRepository();
+
+  List<Exchange> _exchanges = [];
+  List<UserWord> _userWords = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  List<Exchange> get exchanges => _exchanges;
+  List<UserWord> get userWords => _userWords;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  /// 兑换奖励
+  /// 返回兑换ID，失败返回null
+  Future<int?> exchangeReward({
+    required int userId,
+    required int rewardId,
+    String? note,
+  }) async {
+    try {
+      // 获取奖励信息
+      final reward = await _rewardRepository.getRewardById(rewardId);
+      if (reward == null) {
+        _errorMessage = '奖励不存在';
+        notifyListeners();
+        return null;
+      }
+
+      // 检查奖励是否激活
+      if (reward.status != 'active') {
+        _errorMessage = '该奖励已下架';
+        notifyListeners();
+        return null;
+      }
+
+      // 检查库存
+      if (reward.stock != -1 && reward.stock <= 0) {
+        _errorMessage = '该奖励已售罄';
+        notifyListeners();
+        return null;
+      }
+
+      // 获取用户信息
+      final user = await _userRepository.getUserById(userId);
+      if (user == null) {
+        _errorMessage = '用户不存在';
+        notifyListeners();
+        return null;
+      }
+
+      // 检查积分是否足够
+      if (user.totalPoints < reward.points) {
+        _errorMessage = '积分不足，还需 ${reward.points - user.totalPoints} 积分';
+        notifyListeners();
+        return null;
+      }
+
+      // 扣除积分
+      await _userRepository.subtractUserPoints(userId, reward.points);
+
+      // 创建兑换记录
+      final exchange = Exchange(
+        userId: userId,
+        rewardId: rewardId,
+        rewardName: reward.name,
+        pointsSpent: reward.points,
+        wordCode: reward.wordCode,
+        status: 'pending',
+        exchangeAt: DateTime.now(),
+        note: note,
+      );
+
+      final exchangeId = await _exchangeRepository.createExchange(exchange);
+
+      // 创建积分记录
+      final updatedUser = await _userRepository.getUserById(userId);
+      if (updatedUser != null) {
+        final pointRecord = PointRecord(
+          userId: userId,
+          type: 'spend',
+          points: -reward.points,
+          balance: updatedUser.totalPoints,
+          sourceType: 'exchange',
+          sourceId: exchangeId,
+          description: '兑换：${reward.name}',
+        );
+        await _pointRecordRepository.createPointRecord(pointRecord);
+      }
+
+      // 减少库存（如果有库存限制）
+      if (reward.stock != -1) {
+        await _rewardRepository.updateReward(
+          reward.copyWith(stock: reward.stock - 1),
+        );
+      }
+
+      // 学习词汇
+      if (reward.wordCode.isNotEmpty) {
+        await _learnWord(
+          userId: userId,
+          wordCode: reward.wordCode,
+          wordType: reward.wordType,
+          sourceType: 'exchange',
+          sourceId: exchangeId,
+        );
+      }
+
+      // 刷新兑换列表
+      await loadUserExchanges(userId);
+
+      _errorMessage = null;
+      return exchangeId;
+    } catch (e) {
+      _errorMessage = '兑换失败：$e';
+      notifyListeners();
+      debugPrint('ExchangeProvider exchangeReward error: $e');
+      return null;
+    }
+  }
+
+  /// 学习词汇
+  Future<void> _learnWord({
+    required int userId,
+    required String wordCode,
+    required String wordType,
+    required String sourceType,
+    required int sourceId,
+  }) async {
+    try {
+      // 检查是否已学习
+      final hasLearned = await _userWordRepository.hasLearnedWord(userId, wordCode);
+      if (hasLearned) {
+        debugPrint('Word already learned: $wordCode');
+        return;
+      }
+
+      // 创建学习记录
+      final userWord = UserWord(
+        userId: userId,
+        wordCode: wordCode,
+        wordType: wordType,
+        learnedAt: DateTime.now(),
+        sourceType: sourceType,
+        sourceId: sourceId,
+      );
+
+      await _userWordRepository.createUserWord(userWord);
+
+      // 刷新词汇列表
+      await loadUserWords(userId);
+    } catch (e) {
+      debugPrint('ExchangeProvider _learnWord error: $e');
+    }
+  }
+
+  /// 加载用户兑换记录
+  Future<void> loadUserExchanges(int userId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _exchanges = await _exchangeRepository.getUserExchanges(userId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = '加载兑换记录失败：$e';
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('ExchangeProvider loadUserExchanges error: $e');
+    }
+  }
+
+  /// 加载用户学习的词汇
+  Future<void> loadUserWords(int userId) async {
+    try {
+      _userWords = await _userWordRepository.getUserWords(userId);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = '加载词汇列表失败：$e';
+      notifyListeners();
+      debugPrint('ExchangeProvider loadUserWords error: $e');
+    }
+  }
+
+  /// 更新兑换状态
+  Future<bool> updateExchangeStatus(int exchangeId, String status) async {
+    try {
+      final count = await _exchangeRepository.updateExchangeStatus(exchangeId, status);
+      if (count > 0) {
+        // 更新本地列表
+        final index = _exchanges.indexWhere((e) => e.id == exchangeId);
+        if (index != -1) {
+          _exchanges[index] = _exchanges[index].copyWith(status: status);
+          notifyListeners();
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _errorMessage = '更新状态失败：$e';
+      notifyListeners();
+      debugPrint('ExchangeProvider updateExchangeStatus error: $e');
+      return false;
+    }
+  }
+
+  /// 获取兑换统计
+  Future<Map<String, int>> getExchangeStats(int userId) async {
+    try {
+      return await _exchangeRepository.getUserExchangeStats(userId);
+    } catch (e) {
+      debugPrint('ExchangeProvider getExchangeStats error: $e');
+      return {
+        'totalCount': 0,
+        'totalPoints': 0,
+        'pendingCount': 0,
+      };
+    }
+  }
+
+  /// 获取词汇学习统计
+  Future<Map<String, int>> getWordStats(int userId) async {
+    try {
+      return await _userWordRepository.getUserWordStats(userId);
+    } catch (e) {
+      debugPrint('ExchangeProvider getWordStats error: $e');
+      return {
+        'totalCount': 0,
+        'chineseCount': 0,
+        'englishCount': 0,
+      };
+    }
+  }
+
+  /// 清除错误信息
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+}

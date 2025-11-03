@@ -9,6 +9,9 @@ import 'pages/main_navigation_page.dart';
 import 'providers/user_provider.dart';
 import 'providers/reward_provider.dart';
 import 'providers/point_record_provider.dart';
+import 'providers/task_provider.dart';
+import 'providers/exchange_provider.dart';
+import 'providers/advance_provider.dart';
 
 /// 神灯积分管理 - 应用根Widget
 class MyApp extends StatelessWidget {
@@ -21,6 +24,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => RewardProvider()),
         ChangeNotifierProvider(create: (_) => PointRecordProvider()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => ExchangeProvider()),
+        ChangeNotifierProvider(create: (_) => AdvanceProvider()),
       ],
       child: MaterialApp(
         // 应用标题
