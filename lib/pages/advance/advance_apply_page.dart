@@ -10,7 +10,7 @@ import '../../widgets/common/custom_button.dart';
 
 /// 预支申请页面
 class AdvanceApplyPage extends StatefulWidget {
-  AdvanceApplyPage({super.key});
+  const AdvanceApplyPage({super.key});
 
   @override
   State<AdvanceApplyPage> createState() => _AdvanceApplyPageState();

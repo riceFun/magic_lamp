@@ -8,6 +8,7 @@ import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
+import '../../widgets/points/points_badge.dart';
 
 /// 商城页面 - 积分兑换奖励
 class ShopPage extends StatefulWidget {
@@ -39,41 +40,7 @@ class _ShopPageState extends State<ShopPage> {
             builder: (context, userProvider, child) {
               final user = userProvider.currentUser;
               if (user == null) return SizedBox.shrink();
-
-              return Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMedium,
-                  vertical: AppTheme.spacingSmall,
-                ),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingMedium,
-                    vertical: AppTheme.spacingSmall,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.monetization_on,
-                        size: 20,
-                        color: AppTheme.accentYellow,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        '${user.totalPoints}',
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeMedium,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return PointsBadge(points: user.totalPoints);
             },
           ),
         ],

@@ -7,7 +7,7 @@ import '../../providers/user_provider.dart';
 
 /// 创建用户页面
 class CreateUserPage extends StatefulWidget {
-  CreateUserPage({super.key});
+  const CreateUserPage({super.key});
 
   @override
   State<CreateUserPage> createState() => _CreateUserPageState();

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import 'home/home_page.dart';
 import 'shop/shop_page.dart';
-import 'points/points_detail_page.dart';
 import 'statistics/statistics_page.dart';
 import 'settings/settings_page.dart';
 
@@ -25,7 +24,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   final List<Widget> _pages = [
     HomePage(),
     ShopPage(),
-    PointsDetailPage(),
     StatisticsPage(),
     SettingsPage(),
   ];
@@ -41,11 +39,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       icon: Icon(Icons.store_outlined),
       activeIcon: Icon(Icons.store),
       label: '商城',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.monetization_on_outlined),
-      activeIcon: Icon(Icons.monetization_on),
-      label: '我的',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.bar_chart_outlined),

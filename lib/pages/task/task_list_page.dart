@@ -11,7 +11,7 @@ import '../../data/models/task.dart';
 
 /// 任务列表页面
 class TaskListPage extends StatefulWidget {
-  TaskListPage({super.key});
+  const TaskListPage({super.key});
 
   @override
   State<TaskListPage> createState() => _TaskListPageState();

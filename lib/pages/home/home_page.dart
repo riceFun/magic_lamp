@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
+import '../../widgets/points/points_badge.dart';
 
 /// 首页 - 显示积分概况和快捷操作
 class HomePage extends StatelessWidget {
@@ -72,6 +73,9 @@ class HomePage extends StatelessWidget {
                 floating: false,
                 pinned: true,
                 backgroundColor: AppTheme.primaryColor,
+                actions: [
+                  PointsBadge(points: user.totalPoints),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     '${_getGreeting()}，${user.name}',
@@ -181,86 +185,6 @@ class HomePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 积分卡片（可点击）
-                      GestureDetector(
-                        onTap: () {
-                          context.push(AppConstants.routePointsDetail);
-                        },
-                        child: CustomCard(
-                          child: Column(
-                            children: [
-                              const Text(
-                                '当前积分',
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeMedium,
-                                  color: AppTheme.textSecondaryColor,
-                                ),
-                              ),
-                              const SizedBox(height: AppTheme.spacingSmall),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Icon(
-                                    Icons.monetization_on,
-                                    size: 40,
-                                    color: AppTheme.accentYellow,
-                                  ),
-                                  const SizedBox(width: AppTheme.spacingSmall),
-                                  Text(
-                                    '${user.totalPoints}',
-                                    style: const TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.primaryColor,
-                                      height: 1,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppTheme.spacingSmall),
-                                  const Padding(
-                                    padding: EdgeInsets.only(bottom: 8),
-                                    child: Text(
-                                      '积分',
-                                      style: TextStyle(
-                                        fontSize: AppTheme.fontSizeLarge,
-                                        color: AppTheme.textSecondaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: AppTheme.spacingSmall),
-                              Text(
-                                '约等于 ${(user.totalPoints * 0.1).toStringAsFixed(2)} 元',
-                                style: const TextStyle(
-                                  fontSize: AppTheme.fontSizeSmall,
-                                  color: AppTheme.textHintColor,
-                                ),
-                              ),
-                              const SizedBox(height: AppTheme.spacingSmall),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '点击查看详情',
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeSmall,
-                                      color: AppTheme.primaryColor,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right,
-                                    size: 16,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppTheme.spacingLarge),
-
                       // 快捷操作
                       const Text(
                         '快捷操作',

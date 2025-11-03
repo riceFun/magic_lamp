@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
-import '../../config/constants.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/task.dart';
@@ -12,7 +11,7 @@ import '../../widgets/common/custom_button.dart';
 
 /// 创建任务页面（管理员功能）
 class CreateTaskPage extends StatefulWidget {
-  CreateTaskPage({super.key});
+  const CreateTaskPage({super.key});
 
   @override
   State<CreateTaskPage> createState() => _CreateTaskPageState();
@@ -518,7 +517,7 @@ class _TypeChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _TypeChip({
+  const _TypeChip({
     required this.label,
     required this.value,
     required this.description,
@@ -576,7 +575,7 @@ class _PriorityChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  _PriorityChip({
+  const _PriorityChip({
     required this.label,
     required this.value,
     required this.color,
@@ -620,7 +619,7 @@ class _DateButton extends StatelessWidget {
   final DateTime? date;
   final VoidCallback onTap;
 
-  _DateButton({
+  const _DateButton({
     required this.label,
     required this.date,
     required this.onTap,

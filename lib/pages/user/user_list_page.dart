@@ -11,7 +11,7 @@ import '../../widgets/common/empty_widget.dart';
 
 /// 用户列表页面（管理员功能）
 class UserListPage extends StatefulWidget {
-  UserListPage({super.key});
+  const UserListPage({super.key});
 
   @override
   State<UserListPage> createState() => _UserListPageState();
