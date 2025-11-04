@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../pages/splash/splash_page.dart';
 import '../pages/login/login_page.dart';
 import '../pages/main_navigation_page.dart';
-import '../pages/task/task_list_page.dart';
 import '../pages/task/create_task_page.dart';
 import '../pages/task/task_template_marketplace_page.dart';
 import '../pages/user/create_user_page.dart';
@@ -43,12 +42,6 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeMain,
         builder: (context, state) => MainNavigationPage(),
-      ),
-
-      // 任务列表
-      GoRoute(
-        path: AppConstants.routeTaskList,
-        builder: (context, state) => TaskListPage(),
       ),
 
       // 任务创建

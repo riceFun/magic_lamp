@@ -121,6 +121,7 @@ class TaskProvider with ChangeNotifier {
         points: task.points,
         type: task.type,
         priority: task.priority,
+        icon: task.icon,
         startDate: task.startDate,
         endDate: task.endDate,
         repeatType: task.repeatType,
