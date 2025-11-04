@@ -10,6 +10,8 @@ import '../pages/user/user_list_page.dart';
 import '../pages/settings/edit_profile_page.dart';
 import '../pages/advance/advance_apply_page.dart';
 import '../pages/advance/advance_list_page.dart';
+import '../pages/story/story_list_page.dart';
+import '../pages/story/story_detail_page.dart';
 import '../pages/shop/reward_management_page.dart';
 import '../pages/shop/edit_reward_page.dart';
 import '../pages/shop/product_detail_page.dart';
@@ -84,6 +86,27 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeAdvanceList,
         builder: (context, state) => AdvanceListPage(),
+      ),
+
+      // 故事列表
+      GoRoute(
+        path: AppConstants.routeStoryList,
+        builder: (context, state) => StoryListPage(),
+      ),
+
+      // 故事详情
+      GoRoute(
+        path: '${AppConstants.routeStoryDetail}/:id',
+        builder: (context, state) {
+          final idParam = state.pathParameters['id'];
+          final storyId = idParam != null ? int.tryParse(idParam) : null;
+          if (storyId == null) {
+            return Scaffold(
+              body: Center(child: Text('故事ID无效')),
+            );
+          }
+          return StoryDetailPage(storyId: storyId);
+        },
       ),
 
       // 商品管理

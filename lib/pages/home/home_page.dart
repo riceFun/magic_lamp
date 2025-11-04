@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/task_provider.dart';
+import '../../providers/story_provider.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
@@ -24,12 +25,16 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // 加载任务列表
+    // 加载任务列表和故事列表
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = context.read<UserProvider>();
       final user = userProvider.currentUser;
       if (user != null) {
         context.read<TaskProvider>().loadUserTasks(user.id!);
+        // 加载故事
+        final storyProvider = context.read<StoryProvider>();
+        storyProvider.loadStories();
+        storyProvider.loadLearnedStories(user.id!);
       }
     });
   }
@@ -38,8 +43,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      body: Consumer2<UserProvider, TaskProvider>(
-        builder: (context, userProvider, taskProvider, child) {
+      body: Consumer3<UserProvider, TaskProvider, StoryProvider>(
+        builder: (context, userProvider, taskProvider, storyProvider, child) {
           final user = userProvider.currentUser;
 
           if (user == null) {
@@ -72,6 +77,118 @@ class _HomePageState extends State<HomePage> {
                   PointsBadge(points: user.totalPoints),
                 ],
               ),
+
+              // 每日故事卡片
+              if (storyProvider.todayStory != null)
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      0,
+                    ),
+                    child: CustomCard(
+                      child: InkWell(
+                        onTap: () {
+                          context.push(AppConstants.routeStoryList);
+                        },
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        child: Padding(
+                          padding: EdgeInsets.all(AppTheme.spacingMedium),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentYellow.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                    ),
+                                    child: Text(
+                                      '📖',
+                                      style: TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                  SizedBox(width: AppTheme.spacingSmall),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '每日故事',
+                                              style: TextStyle(
+                                                fontSize: AppTheme.fontSizeMedium,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppTheme.textPrimaryColor,
+                                              ),
+                                            ),
+                                            SizedBox(width: 6),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.accentYellow,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                '+10',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          '点击阅读今日故事',
+                                          style: TextStyle(
+                                            fontSize: AppTheme.fontSizeSmall,
+                                            color: AppTheme.textSecondaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: AppTheme.textHintColor,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: AppTheme.spacingSmall),
+                              Container(
+                                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.backgroundColor,
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                ),
+                                child: Text(
+                                  storyProvider.todayStory!.content,
+                                  style: TextStyle(
+                                    fontSize: AppTheme.fontSizeSmall,
+                                    color: AppTheme.textPrimaryColor,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
               // 任务列表
               if (taskProvider.isLoading)

@@ -475,6 +475,28 @@ class DatabaseHelper {
 
       print('Database upgraded to version 4: added icon column to tasks table');
     }
+
+    // 从版本4升级到版本5：添加故事学习记录表
+    if (oldVersion < 5) {
+      // 创建故事学习记录表
+      await db.execute('''
+        CREATE TABLE story_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          story_id INTEGER NOT NULL,
+          learned_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id),
+          UNIQUE(user_id, story_id, learned_at)
+        )
+      ''');
+
+      // 创建索引
+      await db.execute('CREATE INDEX idx_story_records_user_id ON story_records(user_id)');
+      await db.execute('CREATE INDEX idx_story_records_learned_at ON story_records(learned_at)');
+
+      print('Database upgraded to version 5: added story_records table');
+    }
   }
 
   /// 关闭数据库

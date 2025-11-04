@@ -148,36 +148,73 @@ class _TaskTemplateMarketplacePageState
           ],
         ),
         actions: [
-          if (_isSelectionMode)
-            Consumer<TaskTemplateProvider>(
-              builder: (context, provider, child) {
-                return IconButton(
-                  icon: Icon(
-                    _selectedTemplateIds.length == provider.filteredTemplates.length && provider.filteredTemplates.isNotEmpty
-                        ? Icons.check_box
-                        : Icons.check_box_outline_blank,
-                  ),
-                  onPressed: () => _toggleSelectAll(provider.filteredTemplates),
-                  tooltip: '全选',
-                );
-              },
-            ),
-          if (_isSelectionMode && _selectedTemplateIds.isNotEmpty)
-            IconButton(
-              icon: Icon(Icons.done_all),
-              onPressed: () async {
-                final provider = context.read<TaskTemplateProvider>();
-                await _batchAddTasks(context, provider.filteredTemplates);
-              },
-              tooltip: '添加选中的任务',
-            ),
           IconButton(
-            icon: Icon(_isSelectionMode ? Icons.close : Icons.check_circle_outline),
+            icon: Icon(Icons.checklist),
             onPressed: _toggleSelectionMode,
             tooltip: _isSelectionMode ? '退出选择' : '多选模式',
           ),
         ],
       ),
+      bottomNavigationBar: _isSelectionMode
+          ? Consumer<TaskTemplateProvider>(
+              builder: (context, provider, child) {
+                final isAllSelected = _selectedTemplateIds.length == provider.filteredTemplates.length &&
+                    provider.filteredTemplates.isNotEmpty;
+
+                return Container(
+                  padding: EdgeInsets.all(AppTheme.spacingMedium),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _toggleSelectAll(provider.filteredTemplates),
+                            icon: Icon(
+                              isAllSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                            ),
+                            label: Text(isAllSelected ? '取消全选' : '全选'),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMedium),
+                              side: BorderSide(color: AppTheme.primaryColor),
+                              foregroundColor: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: AppTheme.spacingMedium),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _selectedTemplateIds.isEmpty
+                                ? null
+                                : () async {
+                                    await _batchAddTasks(context, provider.filteredTemplates);
+                                  },
+                            icon: Icon(Icons.done_all),
+                            label: Text('确定添加 (${_selectedTemplateIds.length})'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMedium),
+                              disabledBackgroundColor: AppTheme.textHintColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )
+          : null,
       body: Consumer<TaskTemplateProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {

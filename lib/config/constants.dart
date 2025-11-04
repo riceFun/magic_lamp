@@ -88,7 +88,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 4;
+  static const int databaseVersion = 5;
 
   // ==================== 本地存储 Key ====================
 
@@ -177,6 +177,12 @@ class AppConstants {
 
   /// 预支列表
   static const String routeAdvanceList = '/advance/list';
+
+  /// 故事列表
+  static const String routeStoryList = '/story/list';
+
+  /// 故事详情
+  static const String routeStoryDetail = '/story/detail';
 
   // ==================== 动画时长 ====================
 
