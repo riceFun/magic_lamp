@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../widgets/common/custom_card.dart';
@@ -62,7 +64,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Icon(Icons.home, size: 24),
                     SizedBox(width: AppTheme.spacingSmall),
-                    Text('首页'),
+                    Text(user.name),
                   ],
                 ),
                 actions: [
@@ -100,7 +102,72 @@ class _HomePageState extends State<HomePage> {
                 )
               else if (taskProvider.activeTasks.isEmpty)
                 SliverFillRemaining(
-                  child: EmptyWidget.noTasks(),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.task_alt,
+                          size: 80,
+                          color: AppTheme.textHintColor,
+                        ),
+                        SizedBox(height: AppTheme.spacingLarge),
+                        Text(
+                          '还没有任务',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimaryColor,
+                          ),
+                        ),
+                        SizedBox(height: AppTheme.spacingSmall),
+                        Text(
+                          '添加一些激励任务开始积分之旅吧！',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeMedium,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                        SizedBox(height: AppTheme.spacingLarge),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                context.push(AppConstants.routeTaskTemplateMarketplace);
+                              },
+                              icon: Icon(Icons.store),
+                              label: Text('从任务超市选择'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryColor,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingLarge,
+                                  vertical: AppTheme.spacingMedium,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                context.push(AppConstants.routeTaskCreate);
+                              },
+                              icon: Icon(Icons.add),
+                              label: Text('手动创建任务'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primaryColor,
+                                side: BorderSide(color: AppTheme.primaryColor),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppTheme.spacingLarge,
+                                  vertical: AppTheme.spacingMedium,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               else
                 SliverPadding(
