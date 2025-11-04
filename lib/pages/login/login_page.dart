@@ -185,10 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                                   width: 60,
                                   height: 60,
                                   decoration: BoxDecoration(
-                                    color: user.isAdmin
-                                        ? AppTheme.accentOrange
-                                            .withValues(alpha: 0.2)
-                                        : AppTheme.primaryLightColor
+                                    color: AppTheme.primaryLightColor
                                             .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(
                                       AppTheme.radiusMedium,
@@ -197,9 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                                   child: Icon(
                                     _getAvatarIcon(user.avatar),
                                     size: 36,
-                                    color: user.isAdmin
-                                        ? AppTheme.accentOrange
-                                        : AppTheme.primaryColor,
+                                    color: AppTheme.primaryColor,
                                   ),
                                 ),
                                 const SizedBox(width: AppTheme.spacingMedium),
@@ -220,35 +215,6 @@ class _LoginPageState extends State<LoginPage> {
                                               color: AppTheme.textPrimaryColor,
                                             ),
                                           ),
-                                          if (user.isAdmin) ...[
-                                            const SizedBox(
-                                                width:
-                                                    AppTheme.spacingSmall),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal:
-                                                    AppTheme.spacingSmall,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: AppTheme.accentOrange,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                  AppTheme.radiusSmall,
-                                                ),
-                                              ),
-                                              child: const Text(
-                                                '管理员',
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      AppTheme.fontSizeXSmall,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
                                         ],
                                       ),
                                       const SizedBox(height: 4),

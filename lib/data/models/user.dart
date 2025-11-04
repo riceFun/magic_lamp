@@ -22,7 +22,7 @@ class User {
         updatedAt = updatedAt ?? DateTime.now();
 
   /// 是否是管理员
-  bool get isAdmin => role == 'admin';
+  // bool get isAdmin => role == 'admin';
 
   /// 是否是儿童用户
   bool get isChild => role == 'child';

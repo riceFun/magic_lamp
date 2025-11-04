@@ -26,7 +26,7 @@ class UserProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _currentUser != null;
-  bool get isAdmin => _currentUser?.isAdmin ?? false;
+  // bool get isAdmin => _currentUser?.isAdmin ?? false;
   bool get isChild => _currentUser?.isChild ?? true;
 
   /// 初始化 - 从SharedPreferences恢复登录状态

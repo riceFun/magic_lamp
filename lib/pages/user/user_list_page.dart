@@ -236,33 +236,6 @@ class _UserListPageState extends State<UserListPage> {
                                             color: AppTheme.textPrimaryColor,
                                           ),
                                         ),
-                                        if (user.isAdmin) ...[
-                                          SizedBox(
-                                              width: AppTheme.spacingSmall),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  AppTheme.spacingSmall,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.accentYellow,
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                AppTheme.radiusSmall,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              '管理员',
-                                              style: TextStyle(
-                                                fontSize:
-                                                    AppTheme.fontSizeXSmall,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
                                         if (isCurrentUser) ...[
                                           SizedBox(
                                               width: AppTheme.spacingSmall),
