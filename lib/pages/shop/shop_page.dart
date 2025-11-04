@@ -12,7 +12,7 @@ import '../../widgets/points/points_badge.dart';
 
 /// 商城页面 - 积分兑换奖励
 class ShopPage extends StatefulWidget {
-  ShopPage({super.key});
+  const ShopPage({super.key});
 
   @override
   State<ShopPage> createState() => _ShopPageState();
