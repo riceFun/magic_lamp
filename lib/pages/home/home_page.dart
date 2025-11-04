@@ -10,6 +10,7 @@ import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
 import '../../data/models/task.dart';
+import 'package:magic_lamp/pages/task/edit_task_page.dart';
 
 /// 首页 - 显示激励任务列表
 class HomePage extends StatefulWidget {
@@ -365,13 +366,21 @@ class _HomePageState extends State<HomePage> {
     Color color;
 
     switch (priority) {
-      case 'high':
+      case 'urgent':
         icon = Icons.priority_high;
         color = AppTheme.accentRed;
         break;
+      case 'high':
+        icon = Icons.priority_high;
+        color = AppTheme.accentOrange;
+        break;
       case 'medium':
         icon = Icons.remove;
-        color = AppTheme.accentOrange;
+        color = AppTheme.primaryColor;
+        break;
+      case 'normal':
+        icon = Icons.remove;
+        color = AppTheme.primaryColor;
         break;
       case 'low':
         icon = Icons.trending_down;
@@ -554,6 +563,40 @@ class _TaskCard extends StatelessWidget {
                         isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                         size: 24,
                         color: isCompleted ? AppTheme.accentGreen : AppTheme.primaryColor,
+                      ),
+                    ),
+
+                    // 编辑按钮
+                    SizedBox(width: AppTheme.spacingSmall),
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditTaskPage(task: task),
+                          ),
+                        );
+
+                        // 如果编辑或删除成功，刷新列表
+                        if (result == true) {
+                          final userProvider = context.read<UserProvider>();
+                          final user = userProvider.currentUser;
+                          if (user != null) {
+                            context.read<TaskProvider>().loadUserTasks(user.id!);
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.textHintColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        ),
+                        child: Icon(
+                          Icons.edit,
+                          size: 18,
+                          color: AppTheme.textSecondaryColor,
+                        ),
                       ),
                     ),
                   ],

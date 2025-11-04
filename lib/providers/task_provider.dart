@@ -94,19 +94,59 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  /// 更新任务
+  /// 更新任务（实际是归档旧任务并创建新任务）
+  /// 这样可以保留历史记录和已完成的积分记录
   Future<bool> updateTask(Task task) async {
     try {
-      final count = await _taskRepository.updateTask(task);
-      if (count > 0) {
-        // 更新本地列表
-        final index = _tasks.indexWhere((t) => t.id == task.id);
-        if (index != -1) {
-          _tasks[index] = task;
-          notifyListeners();
-        }
+      if (task.id == null) {
+        _errorMessage = '任务ID不能为空';
+        notifyListeners();
+        return false;
+      }
+
+      // 1. 将原任务状态设为'replaced'（已替换/归档）
+      final originalTask = _tasks.firstWhere((t) => t.id == task.id);
+      final archivedTask = originalTask.copyWith(
+        status: 'replaced',
+        updatedAt: DateTime.now(),
+      );
+
+      await _taskRepository.updateTask(archivedTask);
+
+      // 2. 创建新任务（不包含id，让数据库自动生成新id）
+      final newTask = Task(
+        userId: task.userId,
+        title: task.title,
+        description: task.description,
+        points: task.points,
+        type: task.type,
+        priority: task.priority,
+        startDate: task.startDate,
+        endDate: task.endDate,
+        repeatType: task.repeatType,
+        repeatConfig: task.repeatConfig,
+        status: 'active', // 新任务状态为active
+        projectId: task.projectId,
+        tags: task.tags,
+      );
+
+      final newTaskId = await _taskRepository.createTask(newTask);
+
+      if (newTaskId > 0) {
+        // 3. 更新原任务的replaced_by_task_id字段
+        final updatedArchivedTask = archivedTask.copyWith(
+          replacedByTaskId: newTaskId,
+          updatedAt: DateTime.now(),
+        );
+        await _taskRepository.updateTask(updatedArchivedTask);
+
+        // 4. 重新加载任务列表（会自动过滤掉status='replaced'的任务）
+        await loadUserTasks(task.userId);
+
+        debugPrint('Task updated: archived task ${task.id}, created new task $newTaskId');
         return true;
       }
+
       return false;
     } catch (e) {
       _errorMessage = '更新任务失败：$e';

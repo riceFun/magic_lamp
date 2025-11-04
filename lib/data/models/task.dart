@@ -13,9 +13,10 @@ class Task {
   final DateTime? endDate;
   final String repeatType; // 'none', 'daily', 'weekly', 'monthly', 'custom'
   final Map<String, dynamic>? repeatConfig;
-  final String status; // 'active', 'paused', 'completed', 'expired'
+  final String status; // 'active', 'paused', 'completed', 'expired', 'replaced'
   final int? projectId;
   final List<String>? tags;
+  final int? replacedByTaskId; // 指向替换此任务的新任务ID
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -34,6 +35,7 @@ class Task {
     this.status = 'active',
     this.projectId,
     this.tags,
+    this.replacedByTaskId,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -82,6 +84,7 @@ class Task {
               .map((e) => e.toString())
               .toList()
           : null,
+      replacedByTaskId: map['replaced_by_task_id'] as int?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -104,6 +107,7 @@ class Task {
       'status': status,
       'project_id': projectId,
       'tags': tags != null ? jsonEncode(tags) : null,
+      'replaced_by_task_id': replacedByTaskId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -125,6 +129,7 @@ class Task {
     String? status,
     int? projectId,
     List<String>? tags,
+    int? replacedByTaskId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -143,6 +148,7 @@ class Task {
       status: status ?? this.status,
       projectId: projectId ?? this.projectId,
       tags: tags ?? this.tags,
+      replacedByTaskId: replacedByTaskId ?? this.replacedByTaskId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

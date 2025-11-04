@@ -5,13 +5,16 @@ import '../../config/theme.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/task.dart';
+import '../../data/models/task_template.dart';
 import '../../data/models/user.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 
-/// 创建任务页面（管理员功能）
+/// 创建任务页面
 class CreateTaskPage extends StatefulWidget {
-  const CreateTaskPage({super.key});
+  final TaskTemplate? template;
+
+  const CreateTaskPage({super.key, this.template});
 
   @override
   State<CreateTaskPage> createState() => _CreateTaskPageState();
@@ -36,6 +39,18 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   void initState() {
     super.initState();
     _loadUsers();
+    _initializeFromTemplate();
+  }
+
+  /// 从模板初始化表单
+  void _initializeFromTemplate() {
+    if (widget.template != null) {
+      _titleController.text = widget.template!.title;
+      _descriptionController.text = widget.template!.description ?? '';
+      _pointsController.text = widget.template!.points.toString();
+      _selectedType = widget.template!.type;
+      _selectedPriority = widget.template!.priority;
+    }
   }
 
   @override
@@ -156,7 +171,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('创建任务'),
+        title: Text(widget.template != null ? '使用模板创建任务' : '创建任务'),
       ),
       body: Form(
         key: _formKey,

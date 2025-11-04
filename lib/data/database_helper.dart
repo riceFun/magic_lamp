@@ -455,6 +455,26 @@ class DatabaseHelper {
       // 插入初始模板数据
       await TaskTemplateRepository.insertInitialTemplates(db);
     }
+
+    // 从版本2升级到版本3：添加任务替换关系字段
+    if (oldVersion < 3) {
+      // 为tasks表添加replaced_by_task_id字段
+      await db.execute('''
+        ALTER TABLE tasks ADD COLUMN replaced_by_task_id INTEGER
+      ''');
+
+      print('Database upgraded to version 3: added replaced_by_task_id column to tasks table');
+    }
+
+    // 从版本3升级到版本4：添加任务图标字段
+    if (oldVersion < 4) {
+      // 为tasks表添加icon字段
+      await db.execute('''
+        ALTER TABLE tasks ADD COLUMN icon TEXT
+      ''');
+
+      print('Database upgraded to version 4: added icon column to tasks table');
+    }
   }
 
   /// 关闭数据库

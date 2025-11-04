@@ -32,7 +32,7 @@ class ExchangeRepository {
       'exchanges',
       where: 'user_id = ?',
       whereArgs: [userId],
-      orderBy: 'exchanged_at DESC',
+      orderBy: 'exchange_at DESC',
     );
 
     return maps.map((map) => Exchange.fromMap(map)).toList();
@@ -45,7 +45,7 @@ class ExchangeRepository {
       'exchanges',
       where: 'reward_id = ?',
       whereArgs: [rewardId],
-      orderBy: 'exchanged_at DESC',
+      orderBy: 'exchange_at DESC',
     );
 
     return maps.map((map) => Exchange.fromMap(map)).toList();
@@ -106,13 +106,13 @@ class ExchangeRepository {
 
     final maps = await db.query(
       'exchanges',
-      where: 'user_id = ? AND exchanged_at >= ? AND exchanged_at < ?',
+      where: 'user_id = ? AND exchange_at >= ? AND exchange_at < ?',
       whereArgs: [
         userId,
         today.toIso8601String(),
         tomorrow.toIso8601String(),
       ],
-      orderBy: 'exchanged_at DESC',
+      orderBy: 'exchange_at DESC',
     );
 
     return maps.map((map) => Exchange.fromMap(map)).toList();

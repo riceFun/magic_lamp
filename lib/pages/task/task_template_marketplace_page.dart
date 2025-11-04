@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../providers/task_template_provider.dart';
+import '../../providers/task_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../data/models/task_template.dart';
+import '../../data/models/task.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
@@ -21,6 +24,8 @@ class _TaskTemplateMarketplacePageState
     extends State<TaskTemplateMarketplacePage> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'all';
+  bool _isSelectionMode = false;
+  Set<int> _selectedTemplateIds = {};
 
   @override
   void initState() {
@@ -36,6 +41,100 @@ class _TaskTemplateMarketplacePageState
     super.dispose();
   }
 
+  /// 切换选择模式
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) {
+        _selectedTemplateIds.clear();
+      }
+    });
+  }
+
+  /// 全选/取消全选
+  void _toggleSelectAll(List<TaskTemplate> templates) {
+    setState(() {
+      if (_selectedTemplateIds.length == templates.length) {
+        // 已全选，取消全选
+        _selectedTemplateIds.clear();
+      } else {
+        // 全选
+        _selectedTemplateIds = templates.map((t) => t.id!).toSet();
+      }
+    });
+  }
+
+  /// 切换单个模板的选中状态
+  void _toggleTemplateSelection(int templateId) {
+    setState(() {
+      if (_selectedTemplateIds.contains(templateId)) {
+        _selectedTemplateIds.remove(templateId);
+      } else {
+        _selectedTemplateIds.add(templateId);
+      }
+    });
+  }
+
+  /// 批量添加任务
+  Future<void> _batchAddTasks(BuildContext context, List<TaskTemplate> templates) async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('未登录，无法创建任务'),
+          backgroundColor: AppTheme.accentRed,
+        ),
+      );
+      return;
+    }
+
+    final taskProvider = context.read<TaskProvider>();
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final template in templates) {
+      if (_selectedTemplateIds.contains(template.id)) {
+        final task = Task(
+          userId: user.id!,
+          title: template.title,
+          description: template.description,
+          points: template.points,
+          type: template.type,
+          priority: template.priority,
+          status: 'active',
+        );
+
+        final success = await taskProvider.createTask(task);
+        if (success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+    }
+
+    // 刷新任务列表
+    await taskProvider.loadUserTasks(user.id!);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ 成功添加 $successCount 个任务${failCount > 0 ? '，失败 $failCount 个' : ''}'),
+          backgroundColor: failCount > 0 ? AppTheme.accentOrange : AppTheme.accentGreen,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // 退出选择模式
+      setState(() {
+        _isSelectionMode = false;
+        _selectedTemplateIds.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,9 +144,39 @@ class _TaskTemplateMarketplacePageState
           children: [
             Icon(Icons.store, size: 24),
             SizedBox(width: AppTheme.spacingSmall),
-            Text('任务超市'),
+            Text(_isSelectionMode ? '选择任务模板' : '任务超市'),
           ],
         ),
+        actions: [
+          if (_isSelectionMode)
+            Consumer<TaskTemplateProvider>(
+              builder: (context, provider, child) {
+                return IconButton(
+                  icon: Icon(
+                    _selectedTemplateIds.length == provider.filteredTemplates.length && provider.filteredTemplates.isNotEmpty
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                  ),
+                  onPressed: () => _toggleSelectAll(provider.filteredTemplates),
+                  tooltip: '全选',
+                );
+              },
+            ),
+          if (_isSelectionMode && _selectedTemplateIds.isNotEmpty)
+            IconButton(
+              icon: Icon(Icons.done_all),
+              onPressed: () async {
+                final provider = context.read<TaskTemplateProvider>();
+                await _batchAddTasks(context, provider.filteredTemplates);
+              },
+              tooltip: '添加选中的任务',
+            ),
+          IconButton(
+            icon: Icon(_isSelectionMode ? Icons.close : Icons.check_circle_outline),
+            onPressed: _toggleSelectionMode,
+            tooltip: _isSelectionMode ? '退出选择' : '多选模式',
+          ),
+        ],
       ),
       body: Consumer<TaskTemplateProvider>(
         builder: (context, provider, child) {
@@ -195,10 +324,17 @@ class _TaskTemplateMarketplacePageState
                           itemCount: provider.filteredTemplates.length,
                           itemBuilder: (context, index) {
                             final template = provider.filteredTemplates[index];
+                            final isSelected = _selectedTemplateIds.contains(template.id);
                             return _TemplateCard(
                               template: template,
+                              isSelectionMode: _isSelectionMode,
+                              isSelected: isSelected,
                               onTap: () {
-                                _showTemplateDetail(context, template);
+                                if (_isSelectionMode) {
+                                  _toggleTemplateSelection(template.id!);
+                                } else {
+                                  _showTemplateDetail(context, template);
+                                }
                               },
                             );
                           },
@@ -303,15 +439,57 @@ class _TaskTemplateMarketplacePageState
             child: Text('取消'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(dialogContext).pop();
-              // TODO: 跳转到任务编辑页面，将模板数据传递过去
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('即将实现：编辑并创建任务'),
-                  backgroundColor: AppTheme.primaryColor,
-                ),
+
+              // 获取当前用户
+              final userProvider = context.read<UserProvider>();
+              final user = userProvider.currentUser;
+
+              if (user == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('未登录，无法创建任务'),
+                    backgroundColor: AppTheme.accentRed,
+                  ),
+                );
+                return;
+              }
+
+              // 根据模板创建任务
+              final task = Task(
+                userId: user.id!,
+                title: template.title,
+                description: template.description,
+                points: template.points,
+                type: template.type,
+                priority: template.priority,
+                status: 'active',
               );
+
+              // 创建任务
+              final taskProvider = context.read<TaskProvider>();
+              final success = await taskProvider.createTask(task);
+
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✅ 任务"${template.title}"已添加！'),
+                    backgroundColor: AppTheme.accentGreen,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+
+                // 刷新任务列表
+                await taskProvider.loadUserTasks(user.id!);
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('任务添加失败，请重试'),
+                    backgroundColor: AppTheme.accentRed,
+                  ),
+                );
+              }
             },
             child: Text('使用模板'),
           ),
@@ -454,10 +632,14 @@ class _CategoryChip extends StatelessWidget {
 /// 模板卡片
 class _TemplateCard extends StatelessWidget {
   final TaskTemplate template;
+  final bool isSelectionMode;
+  final bool isSelected;
   final VoidCallback onTap;
 
   const _TemplateCard({
     required this.template,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.onTap,
   });
 
@@ -469,84 +651,103 @@ class _TemplateCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          child: Padding(
-            padding: EdgeInsets.all(AppTheme.spacingMedium),
-            child: Row(
-              children: [
-                // 图标
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _getTypeColor(template.type).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Icon(
-                    _getTypeIcon(template.type),
-                    color: _getTypeColor(template.type),
-                    size: 28,
-                  ),
-                ),
-                SizedBox(width: AppTheme.spacingMedium),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              border: isSelected
+                  ? Border.all(color: AppTheme.primaryColor, width: 2)
+                  : null,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              child: Row(
+                children: [
+                  // 选择模式下显示复选框
+                  if (isSelectionMode) ...{
+                    Icon(
+                      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                      color: isSelected ? AppTheme.primaryColor : AppTheme.textHintColor,
+                      size: 28,
+                    ),
+                    SizedBox(width: AppTheme.spacingMedium),
+                  },
 
-                // 信息
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        template.title,
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeMedium,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                  // 图标
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _getTypeColor(template.type).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    ),
+                    child: Icon(
+                      _getTypeIcon(template.type),
+                      color: _getTypeColor(template.type),
+                      size: 28,
+                    ),
+                  ),
+                  SizedBox(width: AppTheme.spacingMedium),
+
+                  // 信息
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          template.title,
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeMedium,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimaryColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.monetization_on,
-                            size: 16,
-                            color: AppTheme.accentYellow,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '${template.points} 积分',
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeSmall,
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.monetization_on,
+                              size: 16,
+                              color: AppTheme.accentYellow,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '${template.points} 积分',
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeSmall,
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                            ),
+                            SizedBox(width: AppTheme.spacingSmall),
+                            Icon(
+                              Icons.repeat,
+                              size: 16,
                               color: AppTheme.textSecondaryColor,
                             ),
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          Icon(
-                            Icons.repeat,
-                            size: 16,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            _getTaskTypeText(template.type),
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeSmall,
-                              color: AppTheme.textSecondaryColor,
+                            SizedBox(width: 4),
+                            Text(
+                              _getTaskTypeText(template.type),
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeSmall,
+                                color: AppTheme.textSecondaryColor,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // 箭头
-                Icon(
-                  Icons.chevron_right,
-                  color: AppTheme.textHintColor,
-                  size: 24,
-                ),
-              ],
+                  // 箭头（仅非选择模式显示）
+                  if (!isSelectionMode)
+                    Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textHintColor,
+                      size: 24,
+                    ),
+                ],
+              ),
             ),
           ),
         ),

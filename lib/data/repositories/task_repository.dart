@@ -24,13 +24,13 @@ class TaskRepository {
     return Task.fromMap(maps.first);
   }
 
-  /// 获取用户的所有任务
+  /// 获取用户的所有任务（不包括已替换的任务）
   Future<List<Task>> getUserTasks(int userId) async {
     final db = await _db.database;
     final maps = await db.query(
       'tasks',
-      where: 'user_id = ?',
-      whereArgs: [userId],
+      where: 'user_id = ? AND status != ?',
+      whereArgs: [userId, 'replaced'],
       orderBy: 'created_at DESC',
     );
 
