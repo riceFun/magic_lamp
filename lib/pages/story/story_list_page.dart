@@ -261,27 +261,15 @@ class _StoryCard extends StatelessWidget {
                   )
                 : null,
             child: Padding(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
+              padding: EdgeInsets.all(2),
               child: Row(
                 children: [
                   // 故事图标
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: isTodayStory
-                          ? AppTheme.accentYellow.withValues(alpha: 0.2)
-                          : AppTheme.primaryColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '📖',
-                        style: TextStyle(fontSize: 28),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: AppTheme.spacingMedium),
+                  // Text(
+                  //   '📖',
+                  //   style: TextStyle(fontSize: 64),
+                  // ),
+                  // SizedBox(width: AppTheme.spacingSmall),
 
                   // 故事信息
                   Expanded(
@@ -289,6 +277,7 @@ class _StoryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // 序号
                             Container(
@@ -339,8 +328,6 @@ class _StoryCard extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textPrimaryColor,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -362,14 +349,10 @@ class _StoryCard extends StatelessWidget {
                   // 学习状态
                   if (isLearned)
                     Container(
-                      padding: EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentGreen.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                      ),
+                      padding: EdgeInsets.all(4),
                       child: Icon(
                         Icons.check_circle,
-                        size: 24,
+                        size: 20,
                         color: AppTheme.accentGreen,
                       ),
                     ),
