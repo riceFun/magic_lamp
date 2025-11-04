@@ -41,7 +41,7 @@ class _TaskListPageState extends State<TaskListPage> {
           Consumer<UserProvider>(
             builder: (context, userProvider, child) {
               final user = userProvider.currentUser;
-              if (user != null && user.isAdmin) {
+              if (user != null) {
                 return PopupMenuButton<String>(
                   icon: Icon(Icons.add),
                   tooltip: '添加任务',

@@ -51,12 +51,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     final userProvider = context.read<UserProvider>();
     _users = await userProvider.getAllUsers();
 
-    // 默认选择当前用户（如果不是管理员）
-    final currentUser = userProvider.currentUser;
-    if (currentUser != null && !currentUser.isAdmin) {
-      _selectedUserId = currentUser.id;
-    }
-
     setState(() {});
   }
 
@@ -159,9 +153,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = context.watch<UserProvider>().currentUser;
-    final isAdmin = currentUser?.isAdmin ?? false;
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
@@ -202,72 +193,46 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
             SizedBox(height: AppTheme.spacingLarge),
 
-            // 选择用户（仅管理员可见）
-            if (isAdmin) ...{
-              Text(
-                '任务对象',
-                style: TextStyle(
-                  fontSize: AppTheme.fontSizeMedium,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
-                ),
+            // 选择用户
+            Text(
+              '任务对象',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeMedium,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
               ),
-              SizedBox(height: AppTheme.spacingSmall),
-              DropdownButtonFormField<int>(
-                value: _selectedUserId,
-                decoration: InputDecoration(
-                  hintText: '请选择任务对象',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
+            ),
+            SizedBox(height: AppTheme.spacingSmall),
+            DropdownButtonFormField<int>(
+              value: _selectedUserId,
+              decoration: InputDecoration(
+                hintText: '请选择任务对象',
+                prefixIcon: Icon(Icons.person),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
-                items: _users.map((user) {
-                  return DropdownMenuItem<int>(
-                    value: user.id,
-                    child: Row(
-                      children: [
-                        Text(user.name),
-                        if (user.isAdmin) ...{
-                          SizedBox(width: AppTheme.spacingSmall),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingSmall,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentYellow,
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                            ),
-                            child: Text(
-                              '管理员',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        },
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedUserId = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return '请选择任务对象';
-                  }
-                  return null;
-                },
+                filled: true,
+                fillColor: Colors.white,
               ),
-              SizedBox(height: AppTheme.spacingLarge),
-            },
+              items: _users.map((user) {
+                return DropdownMenuItem<int>(
+                  value: user.id,
+                  child: Text(user.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedUserId = value;
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return '请选择任务对象';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: AppTheme.spacingLarge),
 
             // 任务标题
             Text(

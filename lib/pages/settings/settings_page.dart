@@ -113,34 +113,13 @@ class SettingsPage extends StatelessWidget {
                               color: AppTheme.textPrimaryColor,
                             ),
                           ),
-                          if (user.isAdmin) ...{
-                            SizedBox(width: AppTheme.spacingSmall),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppTheme.spacingSmall,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentYellow,
-                                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                              ),
-                              child: Text(
-                                '管理员',
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeXSmall,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          },
                         ],
                       ),
                       SizedBox(height: AppTheme.spacingSmall),
 
                       // 角色说明
                       Text(
-                        user.isAdmin ? '拥有所有管理权限' : '普通用户',
+                        '神灯积分管理系统用户',
                         style: TextStyle(
                           fontSize: AppTheme.fontSizeMedium,
                           color: AppTheme.textSecondaryColor,
@@ -226,38 +205,36 @@ class SettingsPage extends StatelessWidget {
                 CustomCard(
                   child: Column(
                     children: [
-                      if (user.isAdmin) ...{
-                        _SettingItem(
-                          icon: Icons.group,
-                          iconColor: AppTheme.primaryColor,
-                          title: '用户管理',
-                          subtitle: '管理所有用户信息',
-                          onTap: () {
-                            context.push(AppConstants.routeUserManagement);
-                          },
-                        ),
-                        Divider(height: 1),
-                        _SettingItem(
-                          icon: Icons.task,
-                          iconColor: AppTheme.accentGreen,
-                          title: '激励任务管理',
-                          subtitle: '管理和创建激励任务',
-                          onTap: () {
-                            context.push(AppConstants.routeTaskList);
-                          },
-                        ),
-                        Divider(height: 1),
-                        _SettingItem(
-                          icon: Icons.card_giftcard,
-                          iconColor: AppTheme.accentYellow,
-                          title: '商品管理',
-                          subtitle: '管理商城奖励商品',
-                          onTap: () {
-                            context.push(AppConstants.routeRewardManagement);
-                          },
-                        ),
-                        Divider(height: 1),
-                      },
+                      _SettingItem(
+                        icon: Icons.group,
+                        iconColor: AppTheme.primaryColor,
+                        title: '用户管理',
+                        subtitle: '管理所有用户信息',
+                        onTap: () {
+                          context.push(AppConstants.routeUserManagement);
+                        },
+                      ),
+                      Divider(height: 1),
+                      _SettingItem(
+                        icon: Icons.task,
+                        iconColor: AppTheme.accentGreen,
+                        title: '激励任务管理',
+                        subtitle: '管理和创建激励任务',
+                        onTap: () {
+                          context.push(AppConstants.routeTaskList);
+                        },
+                      ),
+                      Divider(height: 1),
+                      _SettingItem(
+                        icon: Icons.card_giftcard,
+                        iconColor: AppTheme.accentYellow,
+                        title: '商品管理',
+                        subtitle: '管理商城奖励商品',
+                        onTap: () {
+                          context.push(AppConstants.routeRewardManagement);
+                        },
+                      ),
+                      Divider(height: 1),
                       _SettingItem(
                         icon: Icons.lock,
                         iconColor: AppTheme.accentOrange,

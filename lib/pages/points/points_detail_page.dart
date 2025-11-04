@@ -135,30 +135,6 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                   color: Colors.white,
                                 ),
                               ),
-                              if (user.isAdmin)
-                                Container(
-                                  margin: EdgeInsets.only(
-                                    top: AppTheme.spacingXSmall,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppTheme.spacingSmall,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.accentYellow,
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusSmall,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '管理员',
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeXSmall,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
                             ],
                           ),
                         ),
