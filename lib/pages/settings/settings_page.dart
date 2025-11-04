@@ -216,16 +216,6 @@ class SettingsPage extends StatelessWidget {
                       ),
                       Divider(height: 1),
                       _SettingItem(
-                        icon: Icons.add_task,
-                        iconColor: AppTheme.accentGreen,
-                        title: '添加任务',
-                        subtitle: '从任务超市选择任务',
-                        onTap: () {
-                          context.push(AppConstants.routeTaskTemplateMarketplace);
-                        },
-                      ),
-                      Divider(height: 1),
-                      _SettingItem(
                         icon: Icons.card_giftcard,
                         iconColor: AppTheme.accentYellow,
                         title: '商品管理',

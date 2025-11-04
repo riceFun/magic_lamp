@@ -63,7 +63,7 @@ class CustomCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            padding: const EdgeInsets.all(AppTheme.spacingSmall),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -81,7 +81,7 @@ class CustomCard extends StatelessWidget {
           ),
           const Divider(height: 1),
           Padding(
-            padding: padding ?? const EdgeInsets.all(AppTheme.spacingMedium),
+            padding: padding ?? const EdgeInsets.all(AppTheme.spacingSmall),
             child: child,
           ),
         ],

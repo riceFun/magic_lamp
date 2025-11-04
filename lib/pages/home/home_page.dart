@@ -74,6 +74,13 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 actions: [
+                  IconButton(
+                    icon: Icon(Icons.add_circle_outline),
+                    onPressed: () {
+                      context.push(AppConstants.routeTaskTemplateMarketplace);
+                    },
+                    tooltip: '添加任务',
+                  ),
                   PointsBadge(points: user.totalPoints),
                 ],
               ),
@@ -595,139 +602,156 @@ class _TaskCard extends StatelessWidget {
 
         return Container(
           margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
+          decoration: BoxDecoration(
+            color: isCompleted
+                ? AppTheme.accentGreen.withValues(alpha: 0.05)
+                : AppTheme.accentOrange.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
           child: CustomCard(
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               child: Padding(
-                padding: EdgeInsets.all(AppTheme.spacingMedium),
-                child: Row(
+                padding: EdgeInsets.all(AppTheme.spacingSmall),
+                child: Column(
                   children: [
-                    // 任务类型图标
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: _getTypeColor(task.type).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                      ),
-                      child: Center(
-                        child: task.icon != null
-                            ? Text(
-                                task.icon!,
-                                style: TextStyle(fontSize: 28),
-                              )
-                            : Icon(
-                                _getTypeIcon(task.type),
-                                color: _getTypeColor(task.type),
-                                size: 28,
-                              ),
-                      ),
-                    ),
-                    SizedBox(width: AppTheme.spacingMedium),
-
-                    // 任务信息
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                    // 顶部行：任务信息和编辑按钮
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 任务图标（无背景）
+                        if (task.icon != null)
                           Text(
-                            task.title,
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeMedium,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimaryColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            task.icon!,
+                            style: TextStyle(fontSize: 32),
+                          )
+                        else
+                          Icon(
+                            _getTypeIcon(task.type),
+                            color: _getTypeColor(task.type),
+                            size: 32,
                           ),
-                          SizedBox(height: 4),
-                          Row(
+                        SizedBox(width: AppTheme.spacingSmall),
+
+                        // 任务标题和类型
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                task.title,
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeMedium,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.repeat,
+                                    size: 14,
+                                    color: AppTheme.textSecondaryColor,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    _getTaskTypeText(task.type),
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: AppTheme.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // 编辑按钮
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditTaskPage(task: task),
+                              ),
+                            );
+
+                            if (result == true) {
+                              final userProvider = context.read<UserProvider>();
+                              final user = userProvider.currentUser;
+                              if (user != null) {
+                                context.read<TaskProvider>().loadUserTasks(user.id!);
+                              }
+                            }
+                          },
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 20,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: AppTheme.spacingSmall),
+
+                    // 底部行：积分和完成状态
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 完成状态
+                        Row(
+                          children: [
+                            Icon(
+                              isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                              size: 20,
+                              color: isCompleted ? AppTheme.accentGreen : AppTheme.textHintColor,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              isCompleted ? '已完成' : '待完成',
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeSmall,
+                                color: isCompleted ? AppTheme.accentGreen : AppTheme.textSecondaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // 积分（大而显眼）
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentYellow.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
                             children: [
                               Icon(
                                 Icons.monetization_on,
-                                size: 16,
+                                size: 18,
                                 color: AppTheme.accentYellow,
                               ),
                               SizedBox(width: 4),
                               Text(
-                                '${task.points} 积分',
+                                '${task.points}',
                                 style: TextStyle(
-                                  fontSize: AppTheme.fontSizeSmall,
-                                  color: AppTheme.textSecondaryColor,
-                                ),
-                              ),
-                              SizedBox(width: AppTheme.spacingSmall),
-                              Icon(
-                                Icons.repeat,
-                                size: 16,
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                _getTaskTypeText(task.type),
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeSmall,
-                                  color: AppTheme.textSecondaryColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.accentYellow,
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // 完成状态
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingSmall,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isCompleted
-                            ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                            : AppTheme.primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                      ),
-                      child: Icon(
-                        isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                        size: 24,
-                        color: isCompleted ? AppTheme.accentGreen : AppTheme.primaryColor,
-                      ),
-                    ),
-
-                    // 编辑按钮
-                    SizedBox(width: AppTheme.spacingSmall),
-                    GestureDetector(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditTaskPage(task: task),
-                          ),
-                        );
-
-                        // 如果编辑或删除成功，刷新列表
-                        if (result == true) {
-                          final userProvider = context.read<UserProvider>();
-                          final user = userProvider.currentUser;
-                          if (user != null) {
-                            context.read<TaskProvider>().loadUserTasks(user.id!);
-                          }
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.textHintColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         ),
-                        child: Icon(
-                          Icons.edit,
-                          size: 18,
-                          color: AppTheme.textSecondaryColor,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),

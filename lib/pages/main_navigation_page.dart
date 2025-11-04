@@ -4,6 +4,7 @@ import 'home/home_page.dart';
 import 'shop/shop_page.dart';
 import 'statistics/statistics_page.dart';
 import 'settings/settings_page.dart';
+import 'points/points_detail_page.dart';
 
 /// 主导航页面 - 底部导航栏 + PageView
 class MainNavigationPage extends StatefulWidget {
@@ -23,6 +24,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   /// 页面列表
   final List<Widget> _pages = [
     HomePage(),
+    PointsDetailPage(),
     ShopPage(),
     StatisticsPage(),
     SettingsPage(),
@@ -34,6 +36,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       icon: Icon(Icons.home_outlined),
       activeIcon: Icon(Icons.home),
       label: '首页',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.account_balance_wallet_outlined),
+      activeIcon: Icon(Icons.account_balance_wallet),
+      label: '积分',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.store_outlined),
@@ -86,6 +93,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
+        physics: NeverScrollableScrollPhysics(), // 禁用左右滑动
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
