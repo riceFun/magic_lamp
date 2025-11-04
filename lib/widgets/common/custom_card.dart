@@ -322,69 +322,40 @@ class CustomCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
 
-                  // 积分和词汇
-                  Row(
-                    children: [
-                      // 积分徽章
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.accentOrange.withValues(alpha: 0.2),
-                              AppTheme.accentYellow.withValues(alpha: 0.2),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.monetization_on,
-                              size: 12,
-                              color: AppTheme.accentOrange,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              isRangeProduct ? '$minPoints-$maxPoints' : '$points',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.accentOrange,
-                              ),
-                            ),
-                          ],
-                        ),
+                  // 积分显示
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.accentOrange.withValues(alpha: 0.2),
+                          AppTheme.accentYellow.withValues(alpha: 0.2),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      // 词汇徽章
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentGreen.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            wordCode,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppTheme.accentGreen,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.monetization_on,
+                          size: 14,
+                          color: AppTheme.accentOrange,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isRangeProduct ? '$minPoints-$maxPoints 积分' : '$points 积分',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.accentOrange,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 8),

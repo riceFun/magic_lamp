@@ -70,6 +70,22 @@ class ExchangeProvider with ChangeNotifier {
         return null;
       }
 
+      // 检查兑换频率和次数限制
+      if (reward.exchangeFrequency != null || reward.maxExchangeCount != null) {
+        final isAllowed = await _checkExchangeLimit(
+          userId: userId,
+          rewardId: rewardId,
+          frequency: reward.exchangeFrequency,
+          maxCount: reward.maxExchangeCount,
+        );
+
+        if (!isAllowed) {
+          // _errorMessage 已在 _checkExchangeLimit 中设置
+          notifyListeners();
+          return null;
+        }
+      }
+
       // 扣除积分
       await _userRepository.subtractUserPoints(userId, reward.points);
 
@@ -260,5 +276,109 @@ class ExchangeProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// 检查兑换频率和次数限制
+  /// 返回 true 表示允许兑换，false 表示不允许
+  Future<bool> _checkExchangeLimit({
+    required int userId,
+    required int rewardId,
+    String? frequency,
+    int? maxCount,
+  }) async {
+    // 如果没有限制，直接允许
+    if (frequency == null && maxCount == null) {
+      return true;
+    }
+
+    // 计算时间范围
+    final now = DateTime.now();
+    final (startTime, endTime) = _calculatePeriodRange(now, frequency);
+
+    // 查询该时间段内的兑换记录
+    final exchanges = await _exchangeRepository.getUserRewardExchangesInRange(
+      userId: userId,
+      rewardId: rewardId,
+      startTime: startTime,
+      endTime: endTime,
+    );
+
+    final exchangeCount = exchanges.length;
+
+    // 检查是否超过最大次数限制
+    if (maxCount != null && exchangeCount >= maxCount) {
+      final periodText = _getPeriodText(frequency);
+      _errorMessage = '该商品$periodText最多兑换 $maxCount 次，您已兑换 $exchangeCount 次';
+      return false;
+    }
+
+    return true;
+  }
+
+  /// 根据频率计算时间范围
+  /// 返回 (startTime, endTime)
+  (DateTime, DateTime) _calculatePeriodRange(DateTime now, String? frequency) {
+    if (frequency == null) {
+      // 如果没有频率限制，返回一个很大的时间范围（从很久之前到现在）
+      return (DateTime(2000, 1, 1), now);
+    }
+
+    switch (frequency) {
+      case 'daily':
+        // 今天 00:00:00 到明天 00:00:00
+        final today = DateTime(now.year, now.month, now.day);
+        final tomorrow = today.add(Duration(days: 1));
+        return (today, tomorrow);
+
+      case 'weekly':
+        // 本周一 00:00:00 到下周一 00:00:00
+        final weekday = now.weekday; // 1=周一, 7=周日
+        final monday = now.subtract(Duration(days: weekday - 1));
+        final thisMonday = DateTime(monday.year, monday.month, monday.day);
+        final nextMonday = thisMonday.add(Duration(days: 7));
+        return (thisMonday, nextMonday);
+
+      case 'monthly':
+        // 本月1号 00:00:00 到下月1号 00:00:00
+        final firstDayOfMonth = DateTime(now.year, now.month, 1);
+        final firstDayOfNextMonth = DateTime(now.year, now.month + 1, 1);
+        return (firstDayOfMonth, firstDayOfNextMonth);
+
+      case 'quarterly':
+        // 本季度第一天到下季度第一天
+        final currentQuarter = ((now.month - 1) ~/ 3) + 1; // 1-4
+        final firstMonthOfQuarter = (currentQuarter - 1) * 3 + 1;
+        final firstDayOfQuarter = DateTime(now.year, firstMonthOfQuarter, 1);
+        final firstDayOfNextQuarter = DateTime(now.year, firstMonthOfQuarter + 3, 1);
+        return (firstDayOfQuarter, firstDayOfNextQuarter);
+
+      case 'yearly':
+        // 今年1月1日 00:00:00 到明年1月1日 00:00:00
+        final firstDayOfYear = DateTime(now.year, 1, 1);
+        final firstDayOfNextYear = DateTime(now.year + 1, 1, 1);
+        return (firstDayOfYear, firstDayOfNextYear);
+
+      default:
+        // 未知频率，返回一个很大的时间范围
+        return (DateTime(2000, 1, 1), now);
+    }
+  }
+
+  /// 获取周期文本描述
+  String _getPeriodText(String? frequency) {
+    switch (frequency) {
+      case 'daily':
+        return '每日';
+      case 'weekly':
+        return '每周';
+      case 'monthly':
+        return '每月';
+      case 'quarterly':
+        return '每季度';
+      case 'yearly':
+        return '每年';
+      default:
+        return '';
+    }
   }
 }

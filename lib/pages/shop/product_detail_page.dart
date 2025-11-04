@@ -167,34 +167,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
             ),
-            SizedBox(height: AppTheme.spacingSmall),
-            Container(
-              padding: EdgeInsets.all(AppTheme.spacingSmall),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGreen.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.school,
-                    color: AppTheme.accentGreen,
-                    size: 20,
-                  ),
-                  SizedBox(width: AppTheme.spacingSmall),
-                  Expanded(
-                    child: Text(
-                      '学习词汇：${_reward!.wordCode}',
-                      style: TextStyle(
-                        fontSize: AppTheme.fontSizeMedium,
-                        color: AppTheme.accentGreen,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
         actions: [
@@ -289,53 +261,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             SizedBox(height: AppTheme.spacingMedium),
             Container(
-              padding: EdgeInsets.all(AppTheme.spacingMedium),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGreen.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.school,
-                        color: AppTheme.accentGreen,
-                        size: 24,
-                      ),
-                      SizedBox(width: AppTheme.spacingSmall),
-                      Text(
-                        '已学习词汇',
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeMedium,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.accentGreen,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  Text(
-                    _reward!.wordCode,
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeXLarge,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingXSmall),
-                  Text(
-                    _determineWordType(_reward!.wordCode) == 'idiom' ? '成语' : '英文单词',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeSmall,
-                      color: AppTheme.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: AppTheme.spacingMedium),
-            Container(
               padding: EdgeInsets.all(AppTheme.spacingSmall),
               decoration: BoxDecoration(
                 color: AppTheme.accentYellow.withValues(alpha: 0.1),
@@ -382,13 +307,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
       ),
     );
-  }
-
-  /// 判断词汇类型（根据字符判断是成语还是英文）
-  String _determineWordType(String wordCode) {
-    // 检查是否包含中文字符
-    final chinesePattern = RegExp(r'[\u4e00-\u9fa5]');
-    return chinesePattern.hasMatch(wordCode) ? 'idiom' : 'english';
   }
 
   /// 获取类型图标
@@ -627,87 +545,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                             ),
                                           ),
                                         ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                SizedBox(height: AppTheme.spacingLarge),
-
-                                // 词汇学习卡片
-                                Container(
-                                  padding: EdgeInsets.all(AppTheme.spacingMedium),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        AppTheme.accentGreen,
-                                        AppTheme.accentGreen.withValues(alpha: 0.7),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusMedium,
-                                    ),
-                                    boxShadow: AppTheme.cardShadow,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.school,
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                          SizedBox(width: AppTheme.spacingSmall),
-                                          Text(
-                                            '学习词汇',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeMedium,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: AppTheme.spacingMedium),
-                                      Center(
-                                        child: Text(
-                                          _reward!.wordCode,
-                                          style: TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: AppTheme.spacingSmall),
-                                      Center(
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: AppTheme.spacingSmall,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withValues(alpha: 0.3),
-                                            borderRadius: BorderRadius.circular(
-                                              AppTheme.radiusSmall,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _determineWordType(_reward!.wordCode) == 'idiom'
-                                                ? '中文成语'
-                                                : '英文单词',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeSmall,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),

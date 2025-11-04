@@ -117,6 +117,29 @@ class ExchangeRepository {
 
     return maps.map((map) => Exchange.fromMap(map)).toList();
   }
+
+  /// 获取用户在指定时间范围内兑换特定奖励的记录
+  Future<List<Exchange>> getUserRewardExchangesInRange({
+    required int userId,
+    required int rewardId,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final db = await _db.database;
+    final maps = await db.query(
+      'exchanges',
+      where: 'user_id = ? AND reward_id = ? AND exchange_at >= ? AND exchange_at < ?',
+      whereArgs: [
+        userId,
+        rewardId,
+        startTime.toIso8601String(),
+        endTime.toIso8601String(),
+      ],
+      orderBy: 'exchange_at DESC',
+    );
+
+    return maps.map((map) => Exchange.fromMap(map)).toList();
+  }
 }
 
 /// 用户词汇学习记录数据访问类
