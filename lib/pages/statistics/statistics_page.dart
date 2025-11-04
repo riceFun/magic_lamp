@@ -21,7 +21,6 @@ class StatisticsPage extends StatefulWidget {
 
 class _StatisticsPageState extends State<StatisticsPage> {
   final _repository = PointRecordRepository();
-  final _userWordRepository = UserWordRepository();
   bool _isLoading = true;
 
   // 总体统计
@@ -51,9 +50,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   // 预支统计
   Map<String, dynamic> _advanceStats = {};
-
-  // 词汇学习统计
-  Map<String, int> _wordStats = {};
 
   @override
   void initState() {
@@ -132,9 +128,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
       // 获取预支统计
       final advanceProvider = context.read<AdvanceProvider>();
       _advanceStats = await advanceProvider.getAdvanceStats(user.id!);
-
-      // 获取词汇学习统计
-      _wordStats = await _userWordRepository.getUserWordStats(user.id!);
 
       setState(() {
         _isLoading = false;
@@ -704,88 +697,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: AppTheme.spacingMedium),
-
-                  // 词汇学习统计
-                  CustomCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.school,
-                              color: AppTheme.primaryColor,
-                              size: 24,
-                            ),
-                            SizedBox(width: AppTheme.spacingSmall),
-                            Text(
-                              '词汇学习',
-                              style: TextStyle(
-                                fontSize: AppTheme.fontSizeLarge,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _CompactStatItem(
-                                label: '已学词汇',
-                                value: '${_wordStats['totalCount'] ?? 0}',
-                                color: AppTheme.primaryColor,
-                              ),
-                            ),
-                            Expanded(
-                              child: _CompactStatItem(
-                                label: '成语',
-                                value: '${_wordStats['chineseCount'] ?? 0}',
-                                color: AppTheme.accentGreen,
-                              ),
-                            ),
-                            Expanded(
-                              child: _CompactStatItem(
-                                label: '英文',
-                                value: '${_wordStats['englishCount'] ?? 0}',
-                                color: AppTheme.accentOrange,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AppTheme.spacingSmall),
-                        Container(
-                          padding: EdgeInsets.all(AppTheme.spacingSmall),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.lightbulb,
-                                size: 16,
-                                color: AppTheme.primaryColor,
-                              ),
-                              SizedBox(width: AppTheme.spacingSmall),
-                              Expanded(
-                                child: Text(
-                                  '每次兑换奖励都会学习一个新词汇',
-                                  style: TextStyle(
-                                    fontSize: AppTheme.fontSizeSmall,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ),

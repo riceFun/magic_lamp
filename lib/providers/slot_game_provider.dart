@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../data/models/slot_game_record.dart';
 import '../data/database_helper.dart';
+import '../data/repositories/user_repository.dart';
 
 /// 老虎机游戏Provider
 class SlotGameProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
+  final UserRepository _userRepository = UserRepository();
 
   ///77777 调整中奖概率：修改这个列表可以改变各符号出现的概率
   /// 例如：如果想让7更容易出现，可以在列表中多次添加'7'
@@ -29,7 +31,7 @@ class SlotGameProvider extends ChangeNotifier {
 
   ///77777 调整每日可玩次数：修改这里的数值即可（当前为10次）
   // 每日限制
-  static const int dailyLimit = 40;
+  static const int dailyLimit =  10;
 
   // Getters
   bool get isPlaying => _isPlaying;
@@ -112,6 +114,9 @@ class SlotGameProvider extends ChangeNotifier {
       final prizeType = prizeResult['type'] as String;
       final reward = prizeResult['reward'] as int;
 
+      // 计算最终积分
+      final finalPoints = currentPoints - 1 + reward;
+
       // 1. 扣除1积分（投入）
       await db.insert('point_records', {
         'user_id': userId,
@@ -128,7 +133,7 @@ class SlotGameProvider extends ChangeNotifier {
         await db.insert('point_records', {
           'user_id': userId,
           'points': reward,
-          'balance': currentPoints - 1 + reward,
+          'balance': finalPoints,
           'type': 'earn',
           'source_type': 'slot_game',
           'description': '积分大富翁中奖: ${prizeResult['name']}',
@@ -136,7 +141,10 @@ class SlotGameProvider extends ChangeNotifier {
         });
       }
 
-      // 3. 保存游戏记录
+      // 3. 更新用户表的总积分
+      await _userRepository.updateUserPoints(userId, finalPoints);
+
+      // 4. 保存游戏记录
       final gameRecord = SlotGameRecord(
         userId: userId,
         result1: result1,
@@ -149,7 +157,7 @@ class SlotGameProvider extends ChangeNotifier {
 
       await db.insert('slot_game_records', gameRecord.toMap());
 
-      // 4. 刷新今日记录
+      // 5. 刷新今日记录
       await loadTodayRecords(userId);
 
       _isPlaying = false;

@@ -17,7 +17,7 @@ class SlotMachineGamePage extends StatefulWidget {
 }
 
 class _SlotMachineGamePageState extends State<SlotMachineGamePage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _slotController1;
   late AnimationController _slotController2;
   late AnimationController _slotController3;
@@ -36,39 +36,37 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _slotController1 = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration: Duration(milliseconds: 300),
     );
 
     _slotController2 = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration: Duration(milliseconds: 300),
     );
 
     _slotController3 = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration: Duration(milliseconds: 300),
     );
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 1000),
     )..repeat(reverse: true);
 
-    // 加载今日游戏记录
+    // 加载今日游戏记录和刷新用户余额
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = context.read<UserProvider>();
-      final user = userProvider.currentUser;
-      if (user != null) {
-        context.read<SlotGameProvider>().loadTodayRecords(user.id!);
-      }
+      _refreshData();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _slotController1.dispose();
     _slotController2.dispose();
     _slotController3.dispose();
@@ -77,6 +75,28 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
     _spinTimer2?.cancel();
     _spinTimer3?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 当应用恢复到前台时刷新数据
+    if (state == AppLifecycleState.resumed) {
+      _refreshData();
+    }
+  }
+
+  /// 刷新数据（用户余额 + 游戏记录）
+  Future<void> _refreshData() async {
+    final userProvider = context.read<UserProvider>();
+    final slotProvider = context.read<SlotGameProvider>();
+    final user = userProvider.currentUser;
+    if (user != null) {
+      await Future.wait([
+        userProvider.refreshCurrentUser(),
+        slotProvider.loadTodayRecords(user.id!),
+      ]);
+    }
   }
 
   /// 开始游戏
@@ -242,21 +262,21 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
     String result3,
   ) async {
     // 第一个转盘停止
-    await Future.delayed(Duration(milliseconds: 800));
+    await Future.delayed(Duration(milliseconds: 1200));
     _spinTimer1?.cancel();
     setState(() => _displaySlot1 = result1);
 
     // 第二个转盘停止
-    await Future.delayed(Duration(milliseconds: 600));
+    await Future.delayed(Duration(milliseconds: 1200));
     _spinTimer2?.cancel();
     setState(() => _displaySlot2 = result2);
 
     // 第三个转盘停止
-    await Future.delayed(Duration(milliseconds: 600));
+    await Future.delayed(Duration(milliseconds: 1200));
     _spinTimer3?.cancel();
     setState(() => _displaySlot3 = result3);
 
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1000));
   }
 
   /// 显示中奖动画
@@ -305,9 +325,7 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
         backgroundColor: AppTheme.primaryColor,
         title: Text('🎰 积分大富翁'),
         actions: [
-          // 调试模式：模拟中奖按钮（发布版本不显示）
-          if (kDebugMode)
-            PopupMenuButton<String>(
+          PopupMenuButton<String>(
               icon: Icon(Icons.bug_report, color: Colors.yellow),
               tooltip: '模拟中奖（调试用）',
               onSelected: (value) => _simulateWin(value),
@@ -403,43 +421,9 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
             padding: EdgeInsets.all(AppTheme.spacingLarge),
             child: Column(
               children: [
-                // 积分余额显示
-                CustomCard(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.monetization_on,
-                          color: AppTheme.accentYellow,
-                          size: 32,
-                        ),
-                        SizedBox(width: AppTheme.spacingSmall),
-                        Text(
-                          '当前积分：',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeLarge,
-                            color: AppTheme.textPrimaryColor,
-                          ),
-                        ),
-                        Text(
-                          '${user.totalPoints}',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeXLarge,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: AppTheme.spacingMedium),
-
-                // 剩余次数显示
-                _RemainingPlaysCard(
+                // 积分余额&剩余次数显示
+                _PlaysCard(
+                  points: user.totalPoints,
                   remaining: slotProvider.remainingPlays,
                   total: SlotGameProvider.dailyLimit,
                 ),
@@ -673,11 +657,13 @@ class _SlotReel extends StatelessWidget {
 }
 
 /// 剩余次数卡片
-class _RemainingPlaysCard extends StatelessWidget {
+class _PlaysCard extends StatelessWidget {
+  final int points;
   final int remaining;
   final int total;
 
-  const _RemainingPlaysCard({
+  const _PlaysCard({
+    required this.points,
     required this.remaining,
     required this.total,
   });
@@ -687,33 +673,64 @@ class _RemainingPlaysCard extends StatelessWidget {
     return CustomCard(
       child: Padding(
         padding: EdgeInsets.all(AppTheme.spacingMedium),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.confirmation_number,
-                  color: AppTheme.primaryColor,
-                  size: 24,
+                  Icons.monetization_on,
+                  color: AppTheme.accentYellow,
+                  size: 32,
                 ),
                 SizedBox(width: AppTheme.spacingSmall),
                 Text(
-                  '今日剩余次数',
+                  '当前积分：',
                   style: TextStyle(
-                    fontSize: AppTheme.fontSizeMedium,
+                    fontSize: AppTheme.fontSizeLarge,
                     color: AppTheme.textPrimaryColor,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  '$points',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSizeXLarge,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
               ],
             ),
-            Text(
-              '$remaining / $total',
-              style: TextStyle(
-                fontSize: AppTheme.fontSizeXLarge,
-                fontWeight: FontWeight.bold,
-                color: remaining > 0 ? AppTheme.accentGreen : AppTheme.accentRed,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.confirmation_number,
+                      color: AppTheme.primaryColor,
+                      size: 24,
+                    ),
+                    SizedBox(width: AppTheme.spacingSmall),
+                    Text(
+                      '今日剩余次数',
+                      style: TextStyle(
+                        fontSize: AppTheme.fontSizeMedium,
+                        color: AppTheme.textPrimaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '$remaining / $total',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSizeXLarge,
+                    fontWeight: FontWeight.bold,
+                    color: remaining > 0 ? AppTheme.accentGreen : AppTheme.accentRed,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -19,18 +19,44 @@ class PointsDetailPage extends StatefulWidget {
   State<PointsDetailPage> createState() => _PointsDetailPageState();
 }
 
-class _PointsDetailPageState extends State<PointsDetailPage> {
+class _PointsDetailPageState extends State<PointsDetailPage>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // 加载积分记录
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = context.read<UserProvider>();
-      final user = userProvider.currentUser;
-      if (user != null) {
-        context.read<PointRecordProvider>().loadUserRecords(user.id!);
-      }
+      _refreshData();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 当应用恢复到前台时刷新数据
+    if (state == AppLifecycleState.resumed) {
+      _refreshData();
+    }
+  }
+
+  /// 刷新数据（用户余额 + 积分记录）
+  Future<void> _refreshData() async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+    if (user != null) {
+      // 同时刷新用户余额和积分记录
+      await Future.wait([
+        userProvider.refreshCurrentUser(),
+        context.read<PointRecordProvider>().loadUserRecords(user.id!),
+      ]);
+    }
   }
 
   /// 按日期分组记录
@@ -174,11 +200,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
           final groupedRecords = _groupRecordsByDate(records);
 
           return RefreshIndicator(
-            onRefresh: () async {
-              if (user != null) {
-                await recordProvider.loadUserRecords(user.id!);
-              }
-            },
+            onRefresh: _refreshData,
             child: ListView.builder(
               padding: EdgeInsets.all(AppTheme.spacingLarge),
               itemCount: _calculateItemCount(groupedRecords),
