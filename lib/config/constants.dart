@@ -88,7 +88,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 8;
+  static const int databaseVersion = 9;
 
   // ==================== 本地存储 Key ====================
 
@@ -205,31 +205,4 @@ class AppConstants {
 
   /// 图片缓存最大数量
   static const int maxImageCacheCount = 100;
-
-  /// 成语和英文词汇示例
-  static const List<String> idiomExamples = [
-    '一帆风顺',
-    '心想事成',
-    '如虎添翼',
-    '锦上添花',
-    '书香门第',
-    '妙笔生花',
-    '马到成功',
-    '大展宏图',
-    '劳逸结合',
-    '心旷神怡',
-  ];
-
-  static const List<String> englishWordExamples = [
-    'Success',
-    'Happy',
-    'Bright',
-    'Smart',
-    'Knowledge',
-    'Achievement',
-    'Excellent',
-    'Outstanding',
-    'Relax',
-    'Freedom',
-  ];
 }

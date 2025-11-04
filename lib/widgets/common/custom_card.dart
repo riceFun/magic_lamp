@@ -169,134 +169,302 @@ class CustomCard extends StatelessWidget {
     required String name,
     required int points,
     required String wordCode,
+    String? icon,
     String? imageUrl,
     String? exchangeFrequency,
     int? maxExchangeCount,
+    int? minPoints,
+    int? maxPoints,
+    int? currentUserPoints,
     VoidCallback? onTap,
   }) {
+    // 判断是否为积分范围商品
+    final isRangeProduct = minPoints != null && maxPoints != null;
+    final requiredPoints = isRangeProduct ? minPoints : points;
+
+    // 计算兑换进度
+    final userPoints = currentUserPoints ?? 0;
+    final canAfford = userPoints >= requiredPoints;
+    final progress = requiredPoints > 0 ? (userPoints / requiredPoints).clamp(0.0, 1.0) : 0.0;
+
     return CustomCard(
       key: key,
       onTap: onTap,
       padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      borderRadius: AppTheme.radiusLarge,
+      child: Stack(
         children: [
-          // 商品图片区域
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.primaryLightColor.withValues(alpha: 0.2),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppTheme.radiusMedium),
-              ),
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: imageUrl != null
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.card_giftcard,
-                              size: 60,
-                              color: AppTheme.primaryColor,
-                            );
-                          },
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 商品图片区域
+              Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.primaryLightColor.withValues(alpha: 0.3),
+                      AppTheme.primaryColor.withValues(alpha: 0.15),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusLarge),
+                  ),
+                ),
+                child: Center(
+                  child: icon != null && icon.isNotEmpty
+                      ? Text(
+                          icon,
+                          style: const TextStyle(fontSize: 72),
                         )
-                      : const Icon(
-                          Icons.card_giftcard,
-                          size: 60,
-                          color: AppTheme.primaryColor,
-                        ),
+                      : imageUrl != null
+                          ? ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(AppTheme.radiusLarge),
+                              ),
+                              child: Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.card_giftcard,
+                                    size: 64,
+                                    color: AppTheme.primaryColor,
+                                  );
+                                },
+                              ),
+                            )
+                          : const Icon(
+                              Icons.card_giftcard,
+                              size: 64,
+                              color: AppTheme.primaryColor,
+                            ),
                 ),
-              ],
-            ),
-          ),
-          // 商品信息区域
-          Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingMedium),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: AppTheme.fontSizeMedium,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                // 词汇代号
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSmall,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentGreen.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Text(
-                    wordCode,
-                    style: const TextStyle(
-                      fontSize: AppTheme.fontSizeSmall,
-                      color: AppTheme.accentGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingSmall),
-                // 积分
-                Row(
+              ),
+
+              // 商品信息区域
+              Padding(
+                padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.monetization_on,
-                      size: 16,
-                      color: AppTheme.accentYellow,
-                    ),
-                    const SizedBox(width: 4),
+                    // 商品名称
                     Text(
-                      '$points 积分',
+                      name,
                       style: const TextStyle(
                         fontSize: AppTheme.fontSizeMedium,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.textPrimaryColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 积分显示
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingSmall,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.accentOrange.withValues(alpha: 0.2),
+                                AppTheme.accentYellow.withValues(alpha: 0.2),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.monetization_on,
+                                size: 14,
+                                color: AppTheme.accentOrange,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isRangeProduct
+                                    ? '$minPoints-$maxPoints'
+                                    : '$points',
+                                style: const TextStyle(
+                                  fontSize: AppTheme.fontSizeSmall,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.accentOrange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // 词汇代号
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingSmall,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentGreen.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                            ),
+                            child: Text(
+                              wordCode,
+                              style: const TextStyle(
+                                fontSize: AppTheme.fontSizeXSmall,
+                                color: AppTheme.accentGreen,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // 兑换进度条
+                    if (currentUserPoints != null) ...[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                canAfford ? '可兑换' : '不可兑换',
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeXSmall,
+                                  fontWeight: FontWeight.bold,
+                                  color: canAfford
+                                      ? AppTheme.accentGreen
+                                      : AppTheme.textSecondaryColor,
+                                ),
+                              ),
+                              Text(
+                                '${(progress * 100).toInt()}%',
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeXSmall,
+                                  fontWeight: FontWeight.bold,
+                                  color: canAfford
+                                      ? AppTheme.accentGreen
+                                      : AppTheme.textSecondaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // 进度条
+                          Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                backgroundColor: Colors.transparent,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  canAfford
+                                      ? AppTheme.accentGreen
+                                      : AppTheme.accentOrange,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    // 兑换限制信息
+                    if (exchangeFrequency != null || maxExchangeCount != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 12,
+                            color: AppTheme.textSecondaryColor.withValues(alpha: 0.7),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              _getExchangeLimitText(exchangeFrequency, maxExchangeCount),
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeXSmall,
+                                color: AppTheme.textSecondaryColor.withValues(alpha: 0.8),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // 积分范围角标
+          if (isRangeProduct)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.accentPurple.withValues(alpha: 0.9),
+                      AppTheme.primaryColor.withValues(alpha: 0.9),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentPurple.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      '范围',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ],
                 ),
-                // 兑换限制信息
-                if (exchangeFrequency != null || maxExchangeCount != null) ...[
-                  const SizedBox(height: AppTheme.spacingSmall),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 14,
-                        color: AppTheme.textSecondaryColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          _getExchangeLimitText(exchangeFrequency, maxExchangeCount),
-                          style: const TextStyle(
-                            fontSize: AppTheme.fontSizeXSmall,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
+              ),
             ),
-          ),
         ],
       ),
     );

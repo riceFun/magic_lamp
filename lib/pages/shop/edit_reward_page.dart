@@ -26,6 +26,9 @@ class _EditRewardPageState extends State<EditRewardPage> {
   final _wordCodeController = TextEditingController();
   final _stockController = TextEditingController();
   final _maxExchangeCountController = TextEditingController();
+  final _iconController = TextEditingController();
+  final _typeController = TextEditingController();
+  final _noteController = TextEditingController();
 
   String _selectedCategory = 'snack';
   String _selectedStatus = 'active';
@@ -58,6 +61,9 @@ class _EditRewardPageState extends State<EditRewardPage> {
     _wordCodeController.dispose();
     _stockController.dispose();
     _maxExchangeCountController.dispose();
+    _iconController.dispose();
+    _typeController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
@@ -79,6 +85,9 @@ class _EditRewardPageState extends State<EditRewardPage> {
         _selectedCategory = reward.category;
         _selectedStatus = reward.status;
         _selectedExchangeFrequency = reward.exchangeFrequency;
+        _iconController.text = reward.icon ?? '';
+        _typeController.text = reward.type ?? '';
+        _noteController.text = reward.note ?? '';
 
         // 设置积分（固定或范围）
         if (reward.isRangePoints) {
@@ -167,6 +176,9 @@ class _EditRewardPageState extends State<EditRewardPage> {
         maxExchangeCount: _hasMaxExchangeCount
             ? int.parse(_maxExchangeCountController.text)
             : null,
+        icon: _iconController.text.trim().isEmpty ? null : _iconController.text.trim(),
+        type: _typeController.text.trim().isEmpty ? null : _typeController.text.trim(),
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
         createdAt: _existingReward?.createdAt,
         updatedAt: DateTime.now(),
       );
@@ -297,6 +309,32 @@ class _EditRewardPageState extends State<EditRewardPage> {
                       }
                       return null;
                     },
+                  ),
+
+                  SizedBox(height: AppTheme.spacingLarge),
+
+                  // 商品图标
+                  Text(
+                    '商品图标',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeMedium,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  TextFormField(
+                    controller: _iconController,
+                    decoration: InputDecoration(
+                      hintText: '请输入emoji图标（如🍔）',
+                      prefixIcon: Icon(Icons.emoji_emotions),
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusMedium),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
                   ),
 
                   SizedBox(height: AppTheme.spacingLarge),
@@ -541,6 +579,32 @@ class _EditRewardPageState extends State<EditRewardPage> {
 
                   SizedBox(height: AppTheme.spacingLarge),
 
+                  // 自定义类型
+                  Text(
+                    '自定义类型',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeMedium,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  TextFormField(
+                    controller: _typeController,
+                    decoration: InputDecoration(
+                      hintText: '请输入商品类型（如食物、体验等）',
+                      prefixIcon: Icon(Icons.category),
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusMedium),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+
+                  SizedBox(height: AppTheme.spacingLarge),
+
                   // 库存
                   Text(
                     '库存数量',
@@ -736,6 +800,33 @@ class _EditRewardPageState extends State<EditRewardPage> {
                         ),
                       );
                     }).toList(),
+                  ),
+
+                  SizedBox(height: AppTheme.spacingLarge),
+
+                  // 备注
+                  Text(
+                    '备注信息',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeMedium,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  TextFormField(
+                    controller: _noteController,
+                    decoration: InputDecoration(
+                      hintText: '请输入备注信息',
+                      prefixIcon: Icon(Icons.note),
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusMedium),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    maxLines: 3,
                   ),
 
                   SizedBox(height: AppTheme.spacingLarge),

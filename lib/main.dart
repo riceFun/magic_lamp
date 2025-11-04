@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
 import 'data/database_helper.dart';
+import 'services/product_import_service.dart';
 
 /// 神灯积分管理 - 应用入口
 void main() async {
@@ -10,6 +11,15 @@ void main() async {
 
   // 初始化数据库
   await DatabaseHelper.instance.database;
+
+  // 导入商品数据
+  try {
+    final importService = ProductImportService();
+    final result = await importService.importProducts();
+    debugPrint('商品导入完成: $result');
+  } catch (e) {
+    debugPrint('商品导入失败: $e');
+  }
 
   // 设置状态栏样式
   SystemChrome.setSystemUIOverlayStyle(

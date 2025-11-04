@@ -19,6 +19,7 @@ class AppTheme {
   static const Color accentGreen = Color(0xFF66BB6A); // 明亮绿色
   static const Color accentOrange = Color(0xFFFF9800); // 明亮橙色
   static const Color accentRed = Color(0xFFEF5350); // 明亮红色
+  static const Color accentPurple = Color(0xFFAB47BC); // 明亮紫色
 
   /// 背景色
   static const Color backgroundColor = Color(0xFFF5F5F5); // 浅灰背景

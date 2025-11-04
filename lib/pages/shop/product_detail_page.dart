@@ -58,6 +58,60 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  /// 删除商品
+  Future<void> _deleteReward() async {
+    if (_reward == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('确认删除'),
+        content: Text('确定要删除商品 "${_reward!.name}" 吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('删除', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final rewardProvider = context.read<RewardProvider>();
+      final success = await rewardProvider.deleteReward(_reward!.id!);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('商品已删除')),
+        );
+        // 返回到商城页面
+        Navigator.of(context).pop();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败：$e'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+      }
+    }
+  }
+
   /// 兑换商品
   Future<void> _exchangeReward() async {
     final userProvider = context.read<UserProvider>();
@@ -381,6 +435,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text('商品详情'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete_outline),
+            onPressed: _deleteReward,
+            tooltip: '删除商品',
+          ),
+        ],
       ),
       body: _isLoading
           ? LoadingWidget(message: '加载商品信息...')
@@ -731,7 +792,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
 
-                        // 底部兑换按钮
+                        // 底部按钮区域
                         Container(
                           padding: EdgeInsets.all(AppTheme.spacingMedium),
                           decoration: BoxDecoration(
@@ -745,14 +806,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ],
                           ),
                           child: SafeArea(
-                            child: CustomButton.primary(
-                              text: _reward!.hasStock ? '立即兑换' : '已售罄',
-                              onPressed: _reward!.hasStock && canAfford && !_isExchanging
-                                  ? _exchangeReward
-                                  : null,
-                              isLoading: _isExchanging,
-                              icon: Icons.redeem,
-                              width: double.infinity,
+                            child: Row(
+                              children: [
+                                // 编辑按钮
+                                Expanded(
+                                  flex: 2,
+                                  child: CustomButton.secondary(
+                                    text: '编辑商品',
+                                    onPressed: () {
+                                      context.push(
+                                        '${AppConstants.routeRewardEdit}?id=${_reward!.id}',
+                                      );
+                                    },
+                                    icon: Icons.edit,
+                                  ),
+                                ),
+                                SizedBox(width: AppTheme.spacingMedium),
+                                // 兑换按钮
+                                Expanded(
+                                  flex: 3,
+                                  child: CustomButton.primary(
+                                    text: _reward!.hasStock ? '立即兑换' : '已售罄',
+                                    onPressed: _reward!.hasStock && canAfford && !_isExchanging
+                                        ? _exchangeReward
+                                        : null,
+                                    isLoading: _isExchanging,
+                                    icon: Icons.redeem,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

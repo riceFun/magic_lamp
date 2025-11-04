@@ -101,12 +101,15 @@ class DatabaseHelper {
         min_points INTEGER,
         max_points INTEGER,
         word_code TEXT NOT NULL,
+        icon TEXT,
         image_url TEXT,
         category TEXT NOT NULL,
+        type TEXT,
         stock INTEGER NOT NULL DEFAULT -1,
         status TEXT NOT NULL DEFAULT 'active',
         exchange_frequency TEXT,
         max_exchange_count INTEGER,
+        note TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -369,55 +372,6 @@ class DatabaseHelper {
       'updated_at': now,
     });
 
-    // 插入一些示例奖励商品
-    final rewards = [
-      {
-        'name': '看电影',
-        'description': '去电影院看一场喜欢的电影',
-        'points': 500,
-        'word_code': '一帆风顺',
-        'category': 'entertainment',
-      },
-      {
-        'name': '买玩具',
-        'description': '购买一个心仪的玩具',
-        'points': 1000,
-        'word_code': '心想事成',
-        'category': 'toy',
-      },
-      {
-        'name': '游乐园',
-        'description': '去游乐园玩一天',
-        'points': 1500,
-        'word_code': 'Achievement',
-        'category': 'entertainment',
-      },
-      {
-        'name': '买书',
-        'description': '购买喜欢的课外书',
-        'points': 300,
-        'word_code': '书香门第',
-        'category': 'book',
-      },
-      {
-        'name': '延长游戏时间',
-        'description': '额外30分钟游戏时间',
-        'points': 200,
-        'word_code': 'Freedom',
-        'category': 'privilege',
-      },
-    ];
-
-    for (final reward in rewards) {
-      await db.insert('rewards', {
-        ...reward,
-        'status': 'active',
-        'stock': -1,
-        'created_at': now,
-        'updated_at': now,
-      });
-    }
-
     // 插入默认项目
     await db.insert('projects', {
       'name': '学习',
@@ -603,6 +557,26 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_rewards_category ON rewards(category)');
 
       print('Database upgraded to version 8: restructured rewards table, removed unused columns, added points range support');
+    }
+
+    // 从版本8升级到版本9：添加icon、type、note字段
+    if (oldVersion < 9) {
+      // 添加 icon 字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN icon TEXT
+      ''');
+
+      // 添加 type 字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN type TEXT
+      ''');
+
+      // 添加 note 字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN note TEXT
+      ''');
+
+      print('Database upgraded to version 9: added icon, type, note columns to rewards table');
     }
   }
 
