@@ -19,6 +19,7 @@ class StoryListPage extends StatefulWidget {
 
 class _StoryListPageState extends State<StoryListPage> {
   final ScrollController _scrollController = ScrollController();
+  int? _highlightStoryId; // 需要高亮的故事ID
 
   @override
   void initState() {
@@ -33,28 +34,48 @@ class _StoryListPageState extends State<StoryListPage> {
         storyProvider.loadLearnedStories(user.id!);
       }
 
-      // 滚动到今日故事位置
-      if (storyProvider.todayStory != null) {
-        _scrollToTodayStory();
+      // 检查是否有需要滚动到的故事
+      if (storyProvider.scrollToStoryId != null) {
+        final targetId = storyProvider.scrollToStoryId!;
+        // 先滚动
+        _scrollToStory(targetId).then((_) {
+          // 滚动完成后再设置高亮
+          if (mounted) {
+            setState(() {
+              _highlightStoryId = targetId;
+            });
+            // 3秒后清除高亮
+            Future.delayed(Duration(seconds: 3), () {
+              if (mounted) {
+                setState(() {
+                  _highlightStoryId = null;
+                });
+              }
+            });
+          }
+        });
+        // 清除滚动标记
+        storyProvider.clearScrollToStoryId();
+      } else if (storyProvider.todayStory != null) {
+        // 如果没有指定滚动位置，默认滚动到今日故事
+        _scrollToStory(storyProvider.todayStory!.id);
       }
     });
   }
 
-  /// 滚动到今日故事
-  void _scrollToTodayStory() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final storyProvider = context.read<StoryProvider>();
-      if (storyProvider.todayStory != null && _scrollController.hasClients) {
-        final index = storyProvider.todayStory!.id;
-        // 计算滚动位置（每个卡片约100高度 + 间距）
-        final offset = index * 110.0;
-        _scrollController.animateTo(
-          offset,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
+  /// 滚动到指定故事
+  Future<void> _scrollToStory(int storyId) async {
+    await Future.delayed(Duration(milliseconds: 100)); // 等待列表渲染
+    if (_scrollController.hasClients) {
+      final index = storyId;
+      // 计算滚动位置（每个卡片约110高度 + 间距）
+      final offset = index * 110.0;
+      await _scrollController.animateTo(
+        offset,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -151,11 +172,13 @@ class _StoryListPageState extends State<StoryListPage> {
               final story = storyProvider.stories[index];
               final isTodayStory = storyProvider.todayStory?.id == story.id;
               final isLearned = storyProvider.learnedStoryIds.contains(story.id);
+              final shouldHighlight = _highlightStoryId == story.id;
 
               return _StoryCard(
                 story: story,
                 isTodayStory: isTodayStory,
                 isLearned: isLearned,
+                shouldHighlight: shouldHighlight,
                 onTap: () {
                   context.push(
                     '${AppConstants.routeStoryDetail}/${story.id}',
@@ -171,37 +194,97 @@ class _StoryListPageState extends State<StoryListPage> {
 }
 
 /// 故事卡片
-class _StoryCard extends StatelessWidget {
+class _StoryCard extends StatefulWidget {
   final Story story;
   final bool isTodayStory;
   final bool isLearned;
+  final bool shouldHighlight;
   final VoidCallback onTap;
 
   const _StoryCard({
     required this.story,
     required this.isTodayStory,
     required this.isLearned,
+    required this.shouldHighlight,
     required this.onTap,
   });
 
   @override
+  State<_StoryCard> createState() => _StoryCardState();
+}
+
+class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _colorAnimation = ColorTween(
+      begin: AppTheme.accentYellow.withValues(alpha: 0.3),
+      end: Colors.transparent,
+    ).animate(_animationController);
+
+    if (widget.shouldHighlight) {
+      _startBlinking();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_StoryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shouldHighlight && !oldWidget.shouldHighlight) {
+      _startBlinking();
+    }
+  }
+
+  void _startBlinking() {
+    // 闪烁3次
+    _animationController.repeat(reverse: true);
+    Future.delayed(Duration(milliseconds: 1500), () {
+      if (mounted) {
+        _animationController.stop();
+        _animationController.value = 1.0;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
-      child: CustomCard(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          child: Container(
-            decoration: isTodayStory
-                ? BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.accentYellow,
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  )
-                : null,
+    return AnimatedBuilder(
+      animation: _colorAnimation,
+      builder: (context, child) {
+        return Container(
+          margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
+          decoration: BoxDecoration(
+            color: widget.shouldHighlight ? _colorAnimation.value : null,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+          child: CustomCard(
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              child: Container(
+                decoration: widget.isTodayStory
+                    ? BoxDecoration(
+                        border: Border.all(
+                          color: AppTheme.accentYellow,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      )
+                    : null,
             child: Padding(
               padding: EdgeInsets.all(AppTheme.spacingMedium),
               child: Row(
@@ -211,7 +294,7 @@ class _StoryCard extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: isTodayStory
+                      color: widget.isTodayStory
                           ? AppTheme.accentYellow.withValues(alpha: 0.2)
                           : AppTheme.primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -232,7 +315,27 @@ class _StoryCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            if (isTodayStory) ...[
+                            // 序号
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '#${widget.story.id + 1}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            if (widget.isTodayStory) ...[
                               Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 6,
@@ -255,7 +358,7 @@ class _StoryCard extends StatelessWidget {
                             ],
                             Expanded(
                               child: Text(
-                                story.content,
+                                widget.story.content,
                                 style: TextStyle(
                                   fontSize: AppTheme.fontSizeMedium,
                                   fontWeight: FontWeight.bold,
@@ -269,7 +372,7 @@ class _StoryCard extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          story.source,
+                          widget.story.source,
                           style: TextStyle(
                             fontSize: AppTheme.fontSizeSmall,
                             color: AppTheme.textSecondaryColor,
@@ -282,7 +385,7 @@ class _StoryCard extends StatelessWidget {
                   ),
 
                   // 学习状态
-                  if (isLearned)
+                  if (widget.isLearned)
                     Container(
                       padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
@@ -301,6 +404,8 @@ class _StoryCard extends StatelessWidget {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

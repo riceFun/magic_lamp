@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/story_provider.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -21,13 +22,14 @@ class StoryDetailPage extends StatefulWidget {
 
 class _StoryDetailPageState extends State<StoryDetailPage> {
   bool _isProcessing = false;
+  bool _hasHandledBack = false;
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_isProcessing,
-      onPopInvoked: (didPop) async {
-        if (didPop) {
+      canPop: false, // 阻止默认返回行为
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop || _hasHandledBack) {
           return;
         }
         await _handleBackNavigation();
@@ -40,7 +42,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
             children: [
               Icon(Icons.book, size: 24),
               SizedBox(width: AppTheme.spacingSmall),
-              Text('故事详情'),
+              Text('故事 #${widget.storyId + 1}'),
             ],
           ),
         ),
@@ -96,13 +98,37 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
                             Expanded(
-                              child: Text(
-                                story.content,
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeLarge,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimaryColor,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '第 ${widget.storyId + 1} 篇',
+                                      style: TextStyle(
+                                        fontSize: AppTheme.fontSizeSmall,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    story.content,
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeLarge,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimaryColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -170,39 +196,38 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                       builder: (context, snapshot) {
                         final isLearned = snapshot.data ?? false;
 
-                        return Container(
-                          padding: EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: BoxDecoration(
-                            color: isLearned
-                                ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                                : AppTheme.accentYellow.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                            border: Border.all(
-                              color: isLearned ? AppTheme.accentGreen : AppTheme.accentYellow,
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isLearned ? Icons.check_circle : Icons.info_outline,
-                                color: isLearned ? AppTheme.accentGreen : AppTheme.accentYellow,
-                                size: 24,
+                        return Visibility(
+                          visible: isLearned == false,
+                          child: Container(
+                            padding: EdgeInsets.all(AppTheme.spacingMedium),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentGreen.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                              border: Border.all(
+                                color: AppTheme.accentGreen,
+                                width: 1,
                               ),
-                              SizedBox(width: AppTheme.spacingSmall),
-                              Expanded(
-                                child: Text(
-                                  isLearned
-                                      ? '您已学习过此故事'
-                                      : '阅读完成后点击返回可获得 10 积分奖励',
-                                  style: TextStyle(
-                                    fontSize: AppTheme.fontSizeSmall,
-                                    color: isLearned ? AppTheme.accentGreen : AppTheme.primaryColor,
-                                    fontWeight: FontWeight.bold,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: AppTheme.accentGreen,
+                                  size: 24,
+                                ),
+                                SizedBox(width: AppTheme.spacingSmall),
+                                Expanded(
+                                  child: Text(
+                                    '阅读完成后点击返回可获得 10 积分奖励',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: AppTheme.accentGreen,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -218,8 +243,9 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
 
   /// 处理返回导航
   Future<void> _handleBackNavigation() async {
-    if (_isProcessing) return;
+    if (_isProcessing || _hasHandledBack) return;
 
+    _hasHandledBack = true;
     setState(() {
       _isProcessing = true;
     });
@@ -244,6 +270,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
             await userProvider.refreshCurrentUser();
 
             if (mounted) {
+              // 显示积分奖励提示
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('恭喜！学习故事获得 10 积分'),
@@ -257,13 +284,12 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
       }
     }
 
-    setState(() {
-      _isProcessing = false;
-    });
-
-    // 返回故事列表
+    // 设置需要滚动到的故事ID
     if (mounted) {
-      context.pop();
+      storyProvider.setScrollToStoryId(widget.storyId);
+
+      // 跳转到故事列表
+      context.push(AppConstants.routeStoryList);
     }
   }
 }

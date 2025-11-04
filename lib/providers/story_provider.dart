@@ -17,12 +17,25 @@ class StoryProvider with ChangeNotifier {
   Story? _todayStory;
   bool _isLoading = false;
   String? _errorMessage;
+  int? _scrollToStoryId; // 需要滚动到的故事ID
 
   List<Story> get stories => _stories;
   Set<int> get learnedStoryIds => _learnedStoryIds;
   Story? get todayStory => _todayStory;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  int? get scrollToStoryId => _scrollToStoryId;
+
+  /// 设置需要滚动到的故事ID
+  void setScrollToStoryId(int? storyId) {
+    _scrollToStoryId = storyId;
+    notifyListeners();
+  }
+
+  /// 清除滚动标记
+  void clearScrollToStoryId() {
+    _scrollToStoryId = null;
+  }
 
   /// 加载故事列表
   Future<void> loadStories() async {

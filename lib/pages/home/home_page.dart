@@ -91,7 +91,12 @@ class _HomePageState extends State<HomePage> {
                     child: CustomCard(
                       child: InkWell(
                         onTap: () {
-                          context.push(AppConstants.routeStoryList);
+                          // 直接跳转到今日故事详情
+                          if (storyProvider.todayStory != null) {
+                            context.push(
+                              '${AppConstants.routeStoryDetail}/${storyProvider.todayStory!.id}',
+                            );
+                          }
                         },
                         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                         child: Padding(
