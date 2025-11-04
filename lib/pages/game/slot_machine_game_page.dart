@@ -258,6 +258,41 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
             padding: EdgeInsets.all(AppTheme.spacingLarge),
             child: Column(
               children: [
+                // 积分余额显示
+                CustomCard(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppTheme.spacingMedium),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.monetization_on,
+                          color: AppTheme.accentYellow,
+                          size: 32,
+                        ),
+                        SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          '当前积分：',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeLarge,
+                            color: AppTheme.textPrimaryColor,
+                          ),
+                        ),
+                        Text(
+                          '${user.totalPoints}',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeXLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: AppTheme.spacingMedium),
+
                 // 剩余次数显示
                 _RemainingPlaysCard(
                   remaining: slotProvider.remainingPlays,
@@ -409,6 +444,40 @@ class _SlotReel extends StatelessWidget {
     required this.controller,
   });
 
+  /// 根据值返回背景颜色
+  Color _getBackgroundColor() {
+    switch (value) {
+      case '0':
+        return Colors.purple;
+      case '1':
+        return Colors.blue;
+      case '2':
+        return Colors.green;
+      case '3':
+        return Colors.teal;
+      case '4':
+        return Colors.orange;
+      case '5':
+        return Colors.pink;
+      case '6':
+        return Colors.indigo;
+      case '7':
+        return Colors.red; // 7是红色
+      case '8':
+        return Colors.brown;
+      case '9':
+        return Colors.deepPurple;
+      case '💎':
+        return Colors.cyan;
+      case '⭐':
+        return Colors.amber;
+      case '🍀':
+        return Colors.lightGreen;
+      default:
+        return AppTheme.primaryColor;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -420,19 +489,19 @@ class _SlotReel extends StatelessWidget {
             width: 90,
             height: 100,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primaryColor.withValues(alpha: 0.3),
-                  AppTheme.primaryDarkColor.withValues(alpha: 0.3),
-                ],
-              ),
+              color: _getBackgroundColor(),
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               border: Border.all(
-                color: AppTheme.primaryColor,
+                color: Colors.white,
                 width: 3,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
@@ -440,6 +509,14 @@ class _SlotReel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white, // 数字颜色为白色
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
                 ),
               ),
             ),
