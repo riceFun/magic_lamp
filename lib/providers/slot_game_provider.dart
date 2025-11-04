@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../data/models/slot_game_record.dart';
 import '../data/database_helper.dart';
-import '../data/models/point.dart';
 
 /// 老虎机游戏Provider
 class SlotGameProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
 
+  ///77777 调整中奖概率：修改这个列表可以改变各符号出现的概率
+  /// 例如：如果想让7更容易出现，可以在列表中多次添加'7'
+  /// 如：['0','1','2','3','4','5','6','7','7','7','8','9','💎','⭐','🍀']
   // 转盘选项
   static const List<String> slotItems = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -25,8 +27,9 @@ class SlotGameProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  ///77777 调整每日可玩次数：修改这里的数值即可（当前为10次）
   // 每日限制
-  static const int dailyLimit = 10;
+  static const int dailyLimit = 40;
 
   // Getters
   bool get isPlaying => _isPlaying;
@@ -90,6 +93,11 @@ class SlotGameProvider extends ChangeNotifier {
       final db = await _db.database;
       final random = Random();
 
+      ///77777 调整中奖概率：
+      /// 当前为完全随机（每个符号概率相等）
+      /// 如需调整概率，可以：
+      /// 1. 修改 slotItems 列表（增加某个符号的数量来提高其出现概率）
+      /// 2. 或者使用权重随机算法替换下面的 random.nextInt
       // 生成随机结果
       final result1 = slotItems[random.nextInt(slotItems.length)];
       final result2 = slotItems[random.nextInt(slotItems.length)];
@@ -205,5 +213,10 @@ class SlotGameProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// 测试用：公开的计算奖励方法（仅用于调试模式模拟中奖）
+  Map<String, dynamic> calculatePrizeForTest(String r1, String r2, String r3) {
+    return _calculatePrize(r1, r2, r3);
   }
 }

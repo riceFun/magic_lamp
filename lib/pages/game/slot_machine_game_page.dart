@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../config/theme.dart';
@@ -132,6 +133,71 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
     }
   }
 
+  /// 模拟中奖（仅调试模式）
+  Future<void> _simulateWin(String prizeType) async {
+    final userProvider = context.read<UserProvider>();
+    final slotProvider = context.read<SlotGameProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null) return;
+
+    setState(() => _isSpinning = true);
+    _startSpinning();
+
+    // 根据中奖类型设置结果
+    String result1, result2, result3;
+    switch (prizeType) {
+      case 'jackpot777':
+        result1 = result2 = result3 = '7';
+        break;
+      case 'diamond':
+        result1 = result2 = result3 = '💎';
+        break;
+      case 'star':
+        result1 = result2 = result3 = '⭐';
+        break;
+      case 'clover':
+        result1 = result2 = result3 = '🍀';
+        break;
+      case 'triple':
+        result1 = result2 = result3 = '5';
+        break;
+      case 'double':
+        result1 = result2 = '8';
+        result3 = '3';
+        break;
+      case 'none':
+      default:
+        result1 = '1';
+        result2 = '2';
+        result3 = '3';
+        break;
+    }
+
+    // 等待一会模拟转动
+    await Future.delayed(Duration(seconds: 2));
+
+    // 停止转盘
+    await _stopSpinningWithResult(result1, result2, result3);
+    setState(() => _isSpinning = false);
+
+    // 计算奖励
+    final prizeResult = slotProvider.calculatePrizeForTest(result1, result2, result3);
+
+    // 刷新用户积分（模拟模式不实际扣除积分）
+    await userProvider.refreshCurrentUser();
+
+    // 显示中奖动画
+    if (mounted) {
+      await _showPrizeAnimation(
+        prizeResult['type'],
+        prizeResult['name'],
+        prizeResult['reward'],
+        prizeResult['reward'] - 1,
+      );
+    }
+  }
+
   /// 开始转盘转动
   void _startSpinning() {
     _spinTimer1 = Timer.periodic(Duration(milliseconds: 100), (_) {
@@ -239,6 +305,85 @@ class _SlotMachineGamePageState extends State<SlotMachineGamePage>
         backgroundColor: AppTheme.primaryColor,
         title: Text('🎰 积分大富翁'),
         actions: [
+          // 调试模式：模拟中奖按钮（发布版本不显示）
+          if (kDebugMode)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.bug_report, color: Colors.yellow),
+              tooltip: '模拟中奖（调试用）',
+              onSelected: (value) => _simulateWin(value),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'jackpot777',
+                  child: Row(
+                    children: [
+                      Text('7️⃣7️⃣7️⃣', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('超级大奖 777 (+20)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'diamond',
+                  child: Row(
+                    children: [
+                      Text('💎💎💎', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('钻石三连 (+15)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'star',
+                  child: Row(
+                    children: [
+                      Text('⭐⭐⭐', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('星星三连 (+10)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'clover',
+                  child: Row(
+                    children: [
+                      Text('🍀🍀🍀', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('幸运三连 (+8)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'triple',
+                  child: Row(
+                    children: [
+                      Text('555', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('豹子 (+5)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'double',
+                  child: Row(
+                    children: [
+                      Text('883', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('对子 (+2)'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'none',
+                  child: Row(
+                    children: [
+                      Text('123', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Text('未中奖 (0)'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           IconButton(
             icon: Icon(Icons.help_outline),
             onPressed: () => _showRulesDialog(),
