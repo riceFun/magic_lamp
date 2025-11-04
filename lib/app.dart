@@ -11,6 +11,7 @@ import 'providers/task_template_provider.dart';
 import 'providers/exchange_provider.dart';
 import 'providers/advance_provider.dart';
 import 'providers/story_provider.dart';
+import 'providers/slot_game_provider.dart';
 
 /// 神灯积分管理 - 应用根Widget
 class MyApp extends StatelessWidget {
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExchangeProvider()),
         ChangeNotifierProvider(create: (_) => AdvanceProvider()),
         ChangeNotifierProvider(create: (_) => StoryProvider()),
+        ChangeNotifierProvider(create: (_) => SlotGameProvider()),
       ],
       child: MaterialApp.router(
         // 应用标题

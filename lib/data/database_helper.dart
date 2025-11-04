@@ -272,6 +272,21 @@ class DatabaseHelper {
       )
     ''');
 
+    // 16. 老虎机游戏记录表
+    await db.execute('''
+      CREATE TABLE slot_game_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        result1 TEXT NOT NULL,
+        result2 TEXT NOT NULL,
+        result3 TEXT NOT NULL,
+        reward INTEGER NOT NULL DEFAULT 0,
+        prize_type TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    ''');
+
     // 创建索引以提高查询性能
     await _createIndexes(db);
 
@@ -314,6 +329,10 @@ class DatabaseHelper {
     // 统计数据表索引
     await db.execute('CREATE INDEX idx_statistics_user_id ON statistics(user_id)');
     await db.execute('CREATE INDEX idx_statistics_date ON statistics(date)');
+
+    // 老虎机游戏记录表索引
+    await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
+    await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
   }
 
   /// 插入初始数据
@@ -496,6 +515,30 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_story_records_learned_at ON story_records(learned_at)');
 
       print('Database upgraded to version 5: added story_records table');
+    }
+
+    // 从版本5升级到版本6：添加积分大富翁游戏记录表
+    if (oldVersion < 6) {
+      // 创建老虎机游戏记录表
+      await db.execute('''
+        CREATE TABLE slot_game_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          result1 TEXT NOT NULL,
+          result2 TEXT NOT NULL,
+          result3 TEXT NOT NULL,
+          reward INTEGER NOT NULL DEFAULT 0,
+          prize_type TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+      ''');
+
+      // 创建索引
+      await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
+      await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
+
+      print('Database upgraded to version 6: added slot_game_records table');
     }
   }
 

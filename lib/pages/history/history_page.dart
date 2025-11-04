@@ -40,14 +40,6 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(
         title: Text('历史记录'),
         actions: [
-          // 词汇库按钮
-          IconButton(
-            icon: Icon(Icons.school),
-            onPressed: () {
-              context.push(AppConstants.routeMyWords);
-            },
-            tooltip: '词汇库',
-          ),
           // 兑换记录按钮
           IconButton(
             icon: Icon(Icons.card_giftcard),

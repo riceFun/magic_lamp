@@ -96,14 +96,6 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
         automaticallyImplyLeading: false,
         title: Text('积分详情'),
         actions: [
-          // 词汇库按钮
-          IconButton(
-            icon: Icon(Icons.school),
-            onPressed: () {
-              context.push(AppConstants.routeMyWords);
-            },
-            tooltip: '词汇库',
-          ),
           // 兑换记录按钮
           IconButton(
             icon: Icon(Icons.card_giftcard),
@@ -336,10 +328,7 @@ class _PointsSummaryCard extends StatelessWidget {
               // 第三行：积分大富翁游戏入口（777老虎机风格）
               InkWell(
                 onTap: () {
-                  // TODO: 跳转到积分大富翁游戏页面
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('积分大富翁游戏即将上线...')),
-                  );
+                  context.push(AppConstants.routeSlotGame);
                 },
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 child: Container(

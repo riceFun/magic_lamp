@@ -88,7 +88,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 5;
+  static const int databaseVersion = 6;
 
   // ==================== 本地存储 Key ====================
 
@@ -136,9 +136,6 @@ class AppConstants {
   /// 兑换记录
   static const String routeExchangeHistory = '/shop/exchange-history';
 
-  /// 我的词汇库
-  static const String routeMyWords = '/shop/my-words';
-
   /// 项目管理
   static const String routeProjectManagement = '/settings/projects';
 
@@ -183,6 +180,9 @@ class AppConstants {
 
   /// 故事详情
   static const String routeStoryDetail = '/story_list/story_detail';
+
+  /// 积分大富翁游戏
+  static const String routeSlotGame = '/game/slot-machine';
 
   // ==================== 动画时长 ====================
 
