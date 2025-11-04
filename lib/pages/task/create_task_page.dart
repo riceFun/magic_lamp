@@ -9,6 +9,7 @@ import '../../data/models/task_template.dart';
 import '../../data/models/user.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/emoji_picker.dart';
 
 /// 创建任务页面
 class CreateTaskPage extends StatefulWidget {
@@ -29,6 +30,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   int? _selectedUserId;
   String _selectedType = 'daily';
   String _selectedPriority = 'normal';
+  String? _selectedIcon;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
@@ -120,6 +122,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         points: int.parse(_pointsController.text),
         type: _selectedType,
         priority: _selectedPriority,
+        icon: _selectedIcon,
         startDate: _startDate,
         endDate: _endDate,
         status: 'active',
@@ -247,6 +250,89 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 return null;
               },
             ),
+            SizedBox(height: AppTheme.spacingLarge),
+
+            // 任务图标
+            Text(
+              '任务图标',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeMedium,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingSmall),
+            InkWell(
+              onTap: () async {
+                final emoji = await EmojiPicker.show(
+                  context,
+                  initialEmoji: _selectedIcon,
+                );
+                if (emoji != null || emoji == null) {
+                  setState(() {
+                    _selectedIcon = emoji;
+                  });
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppTheme.dividerColor),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      ),
+                      child: Center(
+                        child: _selectedIcon != null
+                            ? Text(
+                                _selectedIcon!,
+                                style: TextStyle(fontSize: 36),
+                              )
+                            : Icon(
+                                Icons.add_photo_alternate,
+                                size: 32,
+                                color: AppTheme.textHintColor,
+                              ),
+                      ),
+                    ),
+                    SizedBox(width: AppTheme.spacingMedium),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedIcon != null ? '点击更换图标' : '点击选择图标',
+                            style: TextStyle(
+                              fontSize: AppTheme.fontSizeMedium,
+                              color: AppTheme.textPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            '选择一个emoji作为任务图标',
+                            style: TextStyle(
+                              fontSize: AppTheme.fontSizeSmall,
+                              color: AppTheme.textSecondaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppTheme.textHintColor),
+                  ],
+                ),
+              ),
+            ),
+
             SizedBox(height: AppTheme.spacingLarge),
 
             // 任务标题

@@ -17,6 +17,7 @@ class Task {
   final int? projectId;
   final List<String>? tags;
   final int? replacedByTaskId; // 指向替换此任务的新任务ID
+  final String? icon; // 任务图标(emoji)
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -36,6 +37,7 @@ class Task {
     this.projectId,
     this.tags,
     this.replacedByTaskId,
+    this.icon,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -85,6 +87,7 @@ class Task {
               .toList()
           : null,
       replacedByTaskId: map['replaced_by_task_id'] as int?,
+      icon: map['icon'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -108,6 +111,7 @@ class Task {
       'project_id': projectId,
       'tags': tags != null ? jsonEncode(tags) : null,
       'replaced_by_task_id': replacedByTaskId,
+      'icon': icon,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -130,6 +134,7 @@ class Task {
     int? projectId,
     List<String>? tags,
     int? replacedByTaskId,
+    String? icon,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -149,6 +154,7 @@ class Task {
       projectId: projectId ?? this.projectId,
       tags: tags ?? this.tags,
       replacedByTaskId: replacedByTaskId ?? this.replacedByTaskId,
+      icon: icon ?? this.icon,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

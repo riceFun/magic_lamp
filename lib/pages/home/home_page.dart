@@ -488,10 +488,17 @@ class _TaskCard extends StatelessWidget {
                         color: _getTypeColor(task.type).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                       ),
-                      child: Icon(
-                        _getTypeIcon(task.type),
-                        color: _getTypeColor(task.type),
-                        size: 28,
+                      child: Center(
+                        child: task.icon != null
+                            ? Text(
+                                task.icon!,
+                                style: TextStyle(fontSize: 28),
+                              )
+                            : Icon(
+                                _getTypeIcon(task.type),
+                                color: _getTypeColor(task.type),
+                                size: 28,
+                              ),
                       ),
                     ),
                     SizedBox(width: AppTheme.spacingMedium),
