@@ -44,6 +44,37 @@ class CustomCard extends StatelessWidget {
     this.margin,
   });
 
+  /// 获取兑换限制文本
+  static String _getExchangeLimitText(String? frequency, int? maxCount) {
+    final List<String> limits = [];
+
+    if (frequency != null) {
+      switch (frequency) {
+        case 'daily':
+          limits.add('每日可兑换');
+          break;
+        case 'weekly':
+          limits.add('每周可兑换');
+          break;
+        case 'monthly':
+          limits.add('每月可兑换');
+          break;
+        case 'quarterly':
+          limits.add('每季度可兑换');
+          break;
+        case 'yearly':
+          limits.add('每年可兑换');
+          break;
+      }
+    }
+
+    if (maxCount != null) {
+      limits.add('最多$maxCount次');
+    }
+
+    return limits.isEmpty ? '' : limits.join('・');
+  }
+
   /// 带标题的卡片（快捷构造）
   factory CustomCard.withTitle({
     Key? key,
@@ -139,9 +170,9 @@ class CustomCard extends StatelessWidget {
     required int points,
     required String wordCode,
     String? imageUrl,
+    String? exchangeFrequency,
+    int? maxExchangeCount,
     VoidCallback? onTap,
-    bool isHot = false,
-    bool isSpecial = false,
   }) {
     return CustomCard(
       key: key,
@@ -179,33 +210,6 @@ class CustomCard extends StatelessWidget {
                           color: AppTheme.primaryColor,
                         ),
                 ),
-                // 热门/特惠标签
-                if (isHot || isSpecial)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingSmall,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isHot
-                            ? AppTheme.accentOrange
-                            : AppTheme.accentYellow,
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
-                      ),
-                      child: Text(
-                        isHot ? '热门' : '特惠',
-                        style: const TextStyle(
-                          fontSize: AppTheme.fontSizeXSmall,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -265,6 +269,31 @@ class CustomCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                // 兑换限制信息
+                if (exchangeFrequency != null || maxExchangeCount != null) ...[
+                  const SizedBox(height: AppTheme.spacingSmall),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 14,
+                        color: AppTheme.textSecondaryColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _getExchangeLimitText(exchangeFrequency, maxExchangeCount),
+                          style: const TextStyle(
+                            fontSize: AppTheme.fontSizeXSmall,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

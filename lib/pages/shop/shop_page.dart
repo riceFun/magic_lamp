@@ -19,6 +19,8 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
+  bool _isManagementMode = false; // 管理模式
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +28,44 @@ class _ShopPageState extends State<ShopPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RewardProvider>().loadAllRewards();
     });
+  }
+
+  /// 切换管理模式
+  void _toggleManagementMode() {
+    setState(() {
+      _isManagementMode = !_isManagementMode;
+    });
+  }
+
+  /// 删除商品
+  Future<void> _deleteReward(int rewardId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('确认删除'),
+        content: Text('确定要删除这个商品吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('删除', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final rewardProvider = context.read<RewardProvider>();
+      final success = await rewardProvider.deleteReward(rewardId);
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('商品已删除')),
+        );
+      }
+    }
   }
 
   @override
@@ -41,6 +81,15 @@ class _ShopPageState extends State<ShopPage> {
           ],
         ),
         actions: [
+          // 管理模式切换按钮
+          IconButton(
+            icon: Icon(
+              _isManagementMode ? Icons.visibility : Icons.edit,
+              color: _isManagementMode ? AppTheme.accentOrange : null,
+            ),
+            onPressed: _toggleManagementMode,
+            tooltip: _isManagementMode ? '退出管理模式' : '管理模式',
+          ),
           // 显示当前积分
           Consumer<UserProvider>(
             builder: (context, userProvider, child) {
@@ -88,67 +137,6 @@ class _ShopPageState extends State<ShopPage> {
 
           return CustomScrollView(
             slivers: [
-              // 热门商品
-              if (rewardProvider.hotRewards.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppTheme.spacingLarge),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.local_fire_department,
-                          color: AppTheme.accentOrange,
-                          size: 24,
-                        ),
-                        SizedBox(width: AppTheme.spacingSmall),
-                        Text(
-                          '热门商品',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeLarge,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingLarge,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: AppTheme.spacingMedium,
-                      mainAxisSpacing: AppTheme.spacingMedium,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final reward = rewardProvider.hotRewards[index];
-                        return CustomCard.product(
-                          name: reward.name,
-                          points: reward.points,
-                          wordCode: reward.wordCode,
-                          imageUrl: reward.imageUrl,
-                          isHot: reward.isHot,
-                          isSpecial: reward.isSpecial,
-                          onTap: () {
-                            _showRewardDetail(context, reward);
-                          },
-                        );
-                      },
-                      childCount: rewardProvider.hotRewards.length,
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: SizedBox(height: AppTheme.spacingLarge),
-                ),
-              ],
-
               // 所有商品
               SliverToBoxAdapter(
                 child: Padding(
@@ -177,16 +165,80 @@ class _ShopPageState extends State<ShopPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final reward = rewardProvider.activeRewards[index];
-                      return CustomCard.product(
-                        name: reward.name,
-                        points: reward.points,
-                        wordCode: reward.wordCode,
-                        imageUrl: reward.imageUrl,
-                        isHot: reward.isHot,
-                        isSpecial: reward.isSpecial,
-                        onTap: () {
-                          _showRewardDetail(context, reward);
-                        },
+                      return Stack(
+                        children: [
+                          CustomCard.product(
+                            name: reward.name,
+                            points: reward.points,
+                            wordCode: reward.wordCode,
+                            imageUrl: reward.imageUrl,
+                            exchangeFrequency: reward.exchangeFrequency,
+                            maxExchangeCount: reward.maxExchangeCount,
+                            onTap: () {
+                              _showRewardDetail(context, reward);
+                            },
+                          ),
+                          // 管理模式下显示操作按钮
+                          if (_isManagementMode)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // 编辑按钮
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons.edit, size: 18),
+                                      color: AppTheme.primaryColor,
+                                      padding: EdgeInsets.all(8),
+                                      constraints: BoxConstraints(),
+                                      onPressed: () {
+                                        context.push(
+                                          '${AppConstants.routeRewardEdit}?id=${reward.id}',
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  // 删除按钮
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons.delete, size: 18),
+                                      color: AppTheme.accentRed,
+                                      padding: EdgeInsets.all(8),
+                                      constraints: BoxConstraints(),
+                                      onPressed: () {
+                                        _deleteReward(reward.id!);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       );
                     },
                     childCount: rewardProvider.activeRewards.length,
@@ -200,6 +252,16 @@ class _ShopPageState extends State<ShopPage> {
           );
         },
       ),
+      floatingActionButton: _isManagementMode
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                context.push(AppConstants.routeRewardEdit);
+              },
+              icon: Icon(Icons.add),
+              label: Text('新建商品'),
+              backgroundColor: AppTheme.primaryColor,
+            )
+          : null,
     );
   }
 

@@ -24,14 +24,6 @@ class RewardProvider extends ChangeNotifier {
   List<Reward> get activeRewards =>
       _allRewards.where((r) => r.isAvailable).toList();
 
-  /// 获取热门商品
-  List<Reward> get hotRewards =>
-      _allRewards.where((r) => r.isHot && r.isAvailable).toList();
-
-  /// 获取特惠商品
-  List<Reward> get specialRewards =>
-      _allRewards.where((r) => r.isSpecial && r.isAvailable).toList();
-
   /// 加载所有奖励商品
   Future<void> loadAllRewards() async {
     _isLoading = true;

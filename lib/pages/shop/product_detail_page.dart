@@ -271,7 +271,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   SizedBox(height: AppTheme.spacingXSmall),
                   Text(
-                    _reward!.wordType == 'idiom' ? '成语' : '英文单词',
+                    _determineWordType(_reward!.wordCode) == 'idiom' ? '成语' : '英文单词',
                     style: TextStyle(
                       fontSize: AppTheme.fontSizeSmall,
                       color: AppTheme.textSecondaryColor,
@@ -328,6 +328,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
       ),
     );
+  }
+
+  /// 判断词汇类型（根据字符判断是成语还是英文）
+  String _determineWordType(String wordCode) {
+    // 检查是否包含中文字符
+    final chinesePattern = RegExp(r'[\u4e00-\u9fa5]');
+    return chinesePattern.hasMatch(wordCode) ? 'idiom' : 'english';
   }
 
   /// 获取类型图标
@@ -630,7 +637,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                             ),
                                           ),
                                           child: Text(
-                                            _reward!.wordType == 'idiom'
+                                            _determineWordType(_reward!.wordCode) == 'idiom'
                                                 ? '中文成语'
                                                 : '英文单词',
                                             style: TextStyle(
@@ -676,46 +683,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         height: 1.6,
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(height: AppTheme.spacingLarge),
-                                ],
-
-                                // 标签
-                                if (_reward!.isHot || _reward!.isSpecial) ...[
-                                  Wrap(
-                                    spacing: AppTheme.spacingSmall,
-                                    children: [
-                                      if (_reward!.isHot)
-                                        Chip(
-                                          label: Text('热门'),
-                                          backgroundColor: AppTheme.accentRed
-                                              .withValues(alpha: 0.2),
-                                          labelStyle: TextStyle(
-                                            color: AppTheme.accentRed,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          avatar: Icon(
-                                            Icons.local_fire_department,
-                                            size: 18,
-                                            color: AppTheme.accentRed,
-                                          ),
-                                        ),
-                                      if (_reward!.isSpecial)
-                                        Chip(
-                                          label: Text('特惠'),
-                                          backgroundColor: AppTheme.accentOrange
-                                              .withValues(alpha: 0.2),
-                                          labelStyle: TextStyle(
-                                            color: AppTheme.accentOrange,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          avatar: Icon(
-                                            Icons.percent,
-                                            size: 18,
-                                            color: AppTheme.accentOrange,
-                                          ),
-                                        ),
-                                    ],
                                   ),
                                   SizedBox(height: AppTheme.spacingLarge),
                                 ],

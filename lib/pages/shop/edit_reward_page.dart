@@ -21,15 +21,18 @@ class _EditRewardPageState extends State<EditRewardPage> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _pointsController = TextEditingController();
+  final _minPointsController = TextEditingController();
+  final _maxPointsController = TextEditingController();
   final _wordCodeController = TextEditingController();
   final _stockController = TextEditingController();
+  final _maxExchangeCountController = TextEditingController();
 
   String _selectedCategory = 'snack';
-  String _selectedWordType = 'idiom';
   String _selectedStatus = 'active';
-  bool _isHot = false;
-  bool _isSpecial = false;
+  String? _selectedExchangeFrequency; // null表示无限制
+  bool _isRangePoints = false; // 是否使用范围积分
   bool _isUnlimitedStock = false;
+  bool _hasMaxExchangeCount = false;
   bool _isLoading = false;
   bool _isLoadingData = false;
 
@@ -50,8 +53,11 @@ class _EditRewardPageState extends State<EditRewardPage> {
     _nameController.dispose();
     _descriptionController.dispose();
     _pointsController.dispose();
+    _minPointsController.dispose();
+    _maxPointsController.dispose();
     _wordCodeController.dispose();
     _stockController.dispose();
+    _maxExchangeCountController.dispose();
     super.dispose();
   }
 
@@ -69,13 +75,23 @@ class _EditRewardPageState extends State<EditRewardPage> {
         _existingReward = reward;
         _nameController.text = reward.name;
         _descriptionController.text = reward.description ?? '';
-        _pointsController.text = reward.points.toString();
         _wordCodeController.text = reward.wordCode;
         _selectedCategory = reward.category;
-        _selectedWordType = reward.wordType;
         _selectedStatus = reward.status;
-        _isHot = reward.isHot;
-        _isSpecial = reward.isSpecial;
+        _selectedExchangeFrequency = reward.exchangeFrequency;
+
+        // 设置积分（固定或范围）
+        if (reward.isRangePoints) {
+          _isRangePoints = true;
+          _minPointsController.text = reward.minPoints.toString();
+          _maxPointsController.text = reward.maxPoints.toString();
+          _pointsController.text = reward.points.toString(); // 保持兼容
+        } else {
+          _isRangePoints = false;
+          _pointsController.text = reward.points.toString();
+          _minPointsController.text = '';
+          _maxPointsController.text = '';
+        }
 
         if (reward.stock == -1) {
           _isUnlimitedStock = true;
@@ -83,6 +99,14 @@ class _EditRewardPageState extends State<EditRewardPage> {
         } else {
           _isUnlimitedStock = false;
           _stockController.text = reward.stock.toString();
+        }
+
+        if (reward.maxExchangeCount != null) {
+          _hasMaxExchangeCount = true;
+          _maxExchangeCountController.text = reward.maxExchangeCount.toString();
+        } else {
+          _hasMaxExchangeCount = false;
+          _maxExchangeCountController.text = '1';
         }
 
         setState(() {});
@@ -130,14 +154,19 @@ class _EditRewardPageState extends State<EditRewardPage> {
         id: _existingReward?.id,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        points: int.parse(_pointsController.text),
+        points: _isRangePoints
+            ? int.parse(_minPointsController.text) // 范围积分时使用最小值作为points
+            : int.parse(_pointsController.text),
+        minPoints: _isRangePoints ? int.parse(_minPointsController.text) : null,
+        maxPoints: _isRangePoints ? int.parse(_maxPointsController.text) : null,
         wordCode: _wordCodeController.text.trim(),
-        wordType: _selectedWordType,
         category: _selectedCategory,
         stock: _isUnlimitedStock ? -1 : int.parse(_stockController.text),
-        isHot: _isHot,
-        isSpecial: _isSpecial,
         status: _selectedStatus,
+        exchangeFrequency: _selectedExchangeFrequency,
+        maxExchangeCount: _hasMaxExchangeCount
+            ? int.parse(_maxExchangeCountController.text)
+            : null,
         createdAt: _existingReward?.createdAt,
         updatedAt: DateTime.now(),
       );
@@ -204,6 +233,25 @@ class _EditRewardPageState extends State<EditRewardPage> {
       case 'other':
       default:
         return '其他';
+    }
+  }
+
+  /// 获取兑换频率文本
+  String _getFrequencyText(String? frequency) {
+    switch (frequency) {
+      case 'daily':
+        return '每日';
+      case 'weekly':
+        return '每周';
+      case 'monthly':
+        return '每月';
+      case 'quarterly':
+        return '每季度';
+      case 'yearly':
+        return '每年';
+      case null:
+      default:
+        return '无限制';
     }
   }
 
@@ -290,34 +338,133 @@ class _EditRewardPageState extends State<EditRewardPage> {
                     ),
                   ),
                   SizedBox(height: AppTheme.spacingSmall),
-                  TextFormField(
-                    controller: _pointsController,
-                    decoration: InputDecoration(
-                      hintText: '请输入所需积分',
-                      prefixIcon: Icon(Icons.monetization_on),
-                      suffixText: '积分',
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusMedium),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return '请输入所需积分';
-                      }
-                      final points = int.tryParse(value);
-                      if (points == null || points <= 0) {
-                        return '积分必须大于0';
-                      }
-                      return null;
+                  CheckboxListTile(
+                    title: Text('使用范围积分'),
+                    subtitle: Text('设置随机积分范围，增加趣味性'),
+                    value: _isRangePoints,
+                    onChanged: (value) {
+                      setState(() {
+                        _isRangePoints = value!;
+                      });
                     },
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
                   ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  if (!_isRangePoints) ...[
+                    TextFormField(
+                      controller: _pointsController,
+                      decoration: InputDecoration(
+                        hintText: '请输入所需积分',
+                        prefixIcon: Icon(Icons.monetization_on),
+                        suffixText: '积分',
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusMedium),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      validator: (value) {
+                        if (!_isRangePoints) {
+                          if (value == null || value.trim().isEmpty) {
+                            return '请输入所需积分';
+                          }
+                          final points = int.tryParse(value);
+                          if (points == null || points <= 0) {
+                            return '积分必须大于0';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _minPointsController,
+                            decoration: InputDecoration(
+                              hintText: '最小积分',
+                              prefixIcon: Icon(Icons.monetization_on),
+                              suffixText: '积分',
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radiusMedium),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            validator: (value) {
+                              if (_isRangePoints) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return '请输入最小积分';
+                                }
+                                final minPoints = int.tryParse(value);
+                                if (minPoints == null || minPoints <= 0) {
+                                  return '最小积分必须大于0';
+                                }
+                                if (_maxPointsController.text.isNotEmpty) {
+                                  final maxPoints = int.tryParse(_maxPointsController.text);
+                                  if (maxPoints != null && minPoints >= maxPoints) {
+                                    return '最小积分必须小于最大积分';
+                                  }
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        SizedBox(width: AppTheme.spacingMedium),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _maxPointsController,
+                            decoration: InputDecoration(
+                              hintText: '最大积分',
+                              prefixIcon: Icon(Icons.monetization_on),
+                              suffixText: '积分',
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radiusMedium),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            validator: (value) {
+                              if (_isRangePoints) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return '请输入最大积分';
+                                }
+                                final maxPoints = int.tryParse(value);
+                                if (maxPoints == null || maxPoints <= 0) {
+                                  return '最大积分必须大于0';
+                                }
+                                if (_minPointsController.text.isNotEmpty) {
+                                  final minPoints = int.tryParse(_minPointsController.text);
+                                  if (minPoints != null && maxPoints <= minPoints) {
+                                    return '最大积分必须大于最小积分';
+                                  }
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
 
                   SizedBox(height: AppTheme.spacingLarge),
 
@@ -349,49 +496,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
                       }
                       return null;
                     },
-                  ),
-
-                  SizedBox(height: AppTheme.spacingLarge),
-
-                  // 词汇类型
-                  Text(
-                    '词汇类型 *',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: Text('成语'),
-                          value: 'idiom',
-                          groupValue: _selectedWordType,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedWordType = value!;
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: Text('英文'),
-                          value: 'english',
-                          groupValue: _selectedWordType,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedWordType = value!;
-                            });
-                          },
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
                   ),
 
                   SizedBox(height: AppTheme.spacingLarge),
@@ -496,6 +600,109 @@ class _EditRewardPageState extends State<EditRewardPage> {
 
                   SizedBox(height: AppTheme.spacingLarge),
 
+                  // 兑换频率
+                  Text(
+                    '兑换频率',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeMedium,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  Wrap(
+                    spacing: AppTheme.spacingSmall,
+                    runSpacing: AppTheme.spacingSmall,
+                    children: [
+                      {null: '无限制'},
+                      {'daily': '每日'},
+                      {'weekly': '每周'},
+                      {'monthly': '每月'},
+                      {'quarterly': '每季度'},
+                      {'yearly': '每年'},
+                    ].expand((map) {
+                      return map.entries.map((entry) {
+                        return ChoiceChip(
+                          label: Text(entry.value),
+                          selected: _selectedExchangeFrequency == entry.key,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedExchangeFrequency = entry.key;
+                            });
+                          },
+                          selectedColor: AppTheme.primaryColor,
+                          labelStyle: TextStyle(
+                            color: _selectedExchangeFrequency == entry.key
+                                ? Colors.white
+                                : AppTheme.textPrimaryColor,
+                          ),
+                        );
+                      });
+                    }).toList(),
+                  ),
+
+                  SizedBox(height: AppTheme.spacingLarge),
+
+                  // 最大兑换次数
+                  Text(
+                    '最大兑换次数',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeMedium,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  CheckboxListTile(
+                    title: Text('设置兑换次数限制'),
+                    subtitle: Text('限制用户可兑换该商品的总次数'),
+                    value: _hasMaxExchangeCount,
+                    onChanged: (value) {
+                      setState(() {
+                        _hasMaxExchangeCount = value!;
+                        if (!_hasMaxExchangeCount) {
+                          _maxExchangeCountController.text = '1';
+                        }
+                      });
+                    },
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  if (_hasMaxExchangeCount) ...[
+                    TextFormField(
+                      controller: _maxExchangeCountController,
+                      decoration: InputDecoration(
+                        hintText: '请输入最大兑换次数',
+                        prefixIcon: Icon(Icons.confirmation_number),
+                        suffixText: '次',
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusMedium),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      validator: (value) {
+                        if (_hasMaxExchangeCount) {
+                          if (value == null || value.trim().isEmpty) {
+                            return '请输入最大兑换次数';
+                          }
+                          final count = int.tryParse(value);
+                          if (count == null || count <= 0) {
+                            return '兑换次数必须大于0';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+
+                  SizedBox(height: AppTheme.spacingLarge),
+
                   // 商品状态
                   Text(
                     '商品状态 *',
@@ -529,43 +736,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
                         ),
                       );
                     }).toList(),
-                  ),
-
-                  SizedBox(height: AppTheme.spacingLarge),
-
-                  // 标签设置
-                  Text(
-                    '商品标签',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  CheckboxListTile(
-                    title: Text('热门商品'),
-                    subtitle: Text('在热门推荐中显示'),
-                    value: _isHot,
-                    onChanged: (value) {
-                      setState(() {
-                        _isHot = value!;
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  CheckboxListTile(
-                    title: Text('特惠商品'),
-                    subtitle: Text('在特惠区域中显示'),
-                    value: _isSpecial,
-                    onChanged: (value) {
-                      setState(() {
-                        _isSpecial = value!;
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
                   ),
 
                   SizedBox(height: AppTheme.spacingLarge),

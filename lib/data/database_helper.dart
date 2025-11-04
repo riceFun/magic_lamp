@@ -98,14 +98,15 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         description TEXT,
         points INTEGER NOT NULL,
+        min_points INTEGER,
+        max_points INTEGER,
         word_code TEXT NOT NULL,
-        word_type TEXT NOT NULL,
         image_url TEXT,
         category TEXT NOT NULL,
         stock INTEGER NOT NULL DEFAULT -1,
-        is_hot INTEGER NOT NULL DEFAULT 0,
-        is_special INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'active',
+        exchange_frequency TEXT,
+        max_exchange_count INTEGER,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -375,16 +376,13 @@ class DatabaseHelper {
         'description': '去电影院看一场喜欢的电影',
         'points': 500,
         'word_code': '一帆风顺',
-        'word_type': 'idiom',
         'category': 'entertainment',
-        'is_hot': 1,
       },
       {
         'name': '买玩具',
         'description': '购买一个心仪的玩具',
         'points': 1000,
         'word_code': '心想事成',
-        'word_type': 'idiom',
         'category': 'toy',
       },
       {
@@ -392,16 +390,13 @@ class DatabaseHelper {
         'description': '去游乐园玩一天',
         'points': 1500,
         'word_code': 'Achievement',
-        'word_type': 'english',
         'category': 'entertainment',
-        'is_special': 1,
       },
       {
         'name': '买书',
         'description': '购买喜欢的课外书',
         'points': 300,
         'word_code': '书香门第',
-        'word_type': 'idiom',
         'category': 'book',
       },
       {
@@ -409,7 +404,6 @@ class DatabaseHelper {
         'description': '额外30分钟游戏时间',
         'points': 200,
         'word_code': 'Freedom',
-        'word_type': 'english',
         'category': 'privilege',
       },
     ];
@@ -539,6 +533,76 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
 
       print('Database upgraded to version 6: added slot_game_records table');
+    }
+
+    // 从版本6升级到版本7：为rewards表添加新字段
+    if (oldVersion < 7) {
+      // 添加icon字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN icon TEXT
+      ''');
+
+      // 添加exchange_frequency字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN exchange_frequency TEXT
+      ''');
+
+      // 添加max_exchange_count字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN max_exchange_count INTEGER
+      ''');
+
+      print('Database upgraded to version 7: added icon, exchange_frequency, max_exchange_count columns to rewards table');
+    }
+
+    // 从版本7升级到版本8：重构rewards表，移除不需要的字段，添加积分范围字段
+    if (oldVersion < 8) {
+      // 创建新的rewards表
+      await db.execute('''
+        CREATE TABLE rewards_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          points INTEGER NOT NULL,
+          min_points INTEGER,
+          max_points INTEGER,
+          word_code TEXT NOT NULL,
+          image_url TEXT,
+          category TEXT NOT NULL,
+          stock INTEGER NOT NULL DEFAULT -1,
+          status TEXT NOT NULL DEFAULT 'active',
+          exchange_frequency TEXT,
+          max_exchange_count INTEGER,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      ''');
+
+      // 复制数据到新表（只复制需要的字段）
+      await db.execute('''
+        INSERT INTO rewards_new (
+          id, name, description, points, word_code, image_url,
+          category, stock, status, exchange_frequency, max_exchange_count,
+          created_at, updated_at
+        )
+        SELECT
+          id, name, description, points, word_code, image_url,
+          category, stock, status, exchange_frequency, max_exchange_count,
+          created_at, updated_at
+        FROM rewards
+      ''');
+
+      // 删除旧表
+      await db.execute('DROP TABLE rewards');
+
+      // 重命名新表
+      await db.execute('ALTER TABLE rewards_new RENAME TO rewards');
+
+      // 重建索引
+      await db.execute('CREATE INDEX idx_rewards_status ON rewards(status)');
+      await db.execute('CREATE INDEX idx_rewards_category ON rewards(category)');
+
+      print('Database upgraded to version 8: restructured rewards table, removed unused columns, added points range support');
     }
   }
 

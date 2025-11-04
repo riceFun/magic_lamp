@@ -114,7 +114,6 @@ class ExchangeProvider with ChangeNotifier {
         await _learnWord(
           userId: userId,
           wordCode: reward.wordCode,
-          wordType: reward.wordType,
           sourceType: 'exchange',
           sourceId: exchangeId,
         );
@@ -133,11 +132,17 @@ class ExchangeProvider with ChangeNotifier {
     }
   }
 
+  /// 判断词汇类型（根据字符判断是成语还是英文）
+  String _determineWordType(String wordCode) {
+    // 检查是否包含中文字符
+    final chinesePattern = RegExp(r'[\u4e00-\u9fa5]');
+    return chinesePattern.hasMatch(wordCode) ? 'idiom' : 'english';
+  }
+
   /// 学习词汇
   Future<void> _learnWord({
     required int userId,
     required String wordCode,
-    required String wordType,
     required String sourceType,
     required int sourceId,
   }) async {
@@ -148,6 +153,9 @@ class ExchangeProvider with ChangeNotifier {
         debugPrint('Word already learned: $wordCode');
         return;
       }
+
+      // 自动判断词汇类型
+      final wordType = _determineWordType(wordCode);
 
       // 创建学习记录
       final userWord = UserWord(

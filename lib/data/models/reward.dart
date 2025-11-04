@@ -3,15 +3,16 @@ class Reward {
   final int? id;
   final String name;
   final String? description;
-  final int points;
+  final int points; // 固定积分（当不使用范围积分时）
+  final int? minPoints; // 最小积分（范围积分）
+  final int? maxPoints; // 最大积分（范围积分）
   final String wordCode; // 成语或英文词汇
-  final String wordType; // 'idiom' 或 'english'
   final String? imageUrl;
   final String category; // 'toy', 'book', 'entertainment', 'privilege'
   final int stock; // -1 表示无限库存
-  final bool isHot; // 是否热门
-  final bool isSpecial; // 是否特惠
   final String status; // 'active', 'inactive', 'sold_out'
+  final String? exchangeFrequency; // 兑换频率: 'daily', 'weekly', 'monthly', 'quarterly', 'yearly', null表示无限制
+  final int? maxExchangeCount; // 最大兑换次数，null表示无限制
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -20,18 +21,30 @@ class Reward {
     required this.name,
     this.description,
     required this.points,
+    this.minPoints,
+    this.maxPoints,
     required this.wordCode,
-    required this.wordType,
     this.imageUrl,
     required this.category,
     this.stock = -1,
-    this.isHot = false,
-    this.isSpecial = false,
     this.status = 'active',
+    this.exchangeFrequency,
+    this.maxExchangeCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
+
+  /// 是否使用范围积分
+  bool get isRangePoints => minPoints != null && maxPoints != null;
+
+  /// 获取积分显示文本
+  String get pointsText {
+    if (isRangePoints) {
+      return '$minPoints-$maxPoints积分';
+    }
+    return '$points积分';
+  }
 
   /// 是否有库存
   bool get hasStock => stock == -1 || stock > 0;
@@ -52,14 +65,15 @@ class Reward {
       name: map['name'] as String,
       description: map['description'] as String?,
       points: map['points'] as int,
+      minPoints: map['min_points'] as int?,
+      maxPoints: map['max_points'] as int?,
       wordCode: map['word_code'] as String,
-      wordType: map['word_type'] as String,
       imageUrl: map['image_url'] as String?,
       category: map['category'] as String,
       stock: map['stock'] as int? ?? -1,
-      isHot: (map['is_hot'] as int? ?? 0) == 1,
-      isSpecial: (map['is_special'] as int? ?? 0) == 1,
       status: map['status'] as String? ?? 'active',
+      exchangeFrequency: map['exchange_frequency'] as String?,
+      maxExchangeCount: map['max_exchange_count'] as int?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -72,14 +86,15 @@ class Reward {
       'name': name,
       'description': description,
       'points': points,
+      'min_points': minPoints,
+      'max_points': maxPoints,
       'word_code': wordCode,
-      'word_type': wordType,
       'image_url': imageUrl,
       'category': category,
       'stock': stock,
-      'is_hot': isHot ? 1 : 0,
-      'is_special': isSpecial ? 1 : 0,
       'status': status,
+      'exchange_frequency': exchangeFrequency,
+      'max_exchange_count': maxExchangeCount,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -91,14 +106,15 @@ class Reward {
     String? name,
     String? description,
     int? points,
+    int? minPoints,
+    int? maxPoints,
     String? wordCode,
-    String? wordType,
     String? imageUrl,
     String? category,
     int? stock,
-    bool? isHot,
-    bool? isSpecial,
     String? status,
+    String? exchangeFrequency,
+    int? maxExchangeCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -107,14 +123,15 @@ class Reward {
       name: name ?? this.name,
       description: description ?? this.description,
       points: points ?? this.points,
+      minPoints: minPoints ?? this.minPoints,
+      maxPoints: maxPoints ?? this.maxPoints,
       wordCode: wordCode ?? this.wordCode,
-      wordType: wordType ?? this.wordType,
       imageUrl: imageUrl ?? this.imageUrl,
       category: category ?? this.category,
       stock: stock ?? this.stock,
-      isHot: isHot ?? this.isHot,
-      isSpecial: isSpecial ?? this.isSpecial,
       status: status ?? this.status,
+      exchangeFrequency: exchangeFrequency ?? this.exchangeFrequency,
+      maxExchangeCount: maxExchangeCount ?? this.maxExchangeCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
