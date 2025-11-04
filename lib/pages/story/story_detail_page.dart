@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:magic_lamp/config/router.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
@@ -38,13 +39,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
         backgroundColor: AppTheme.backgroundColor,
         appBar: AppBar(
           backgroundColor: AppTheme.primaryColor,
-          title: Row(
-            children: [
-              Icon(Icons.book, size: 24),
-              SizedBox(width: AppTheme.spacingSmall),
-              Text('故事 #${widget.storyId + 1}'),
-            ],
-          ),
+          title: Text('故事 #${widget.storyId + 1}'),
         ),
         body: Consumer2<UserProvider, StoryProvider>(
           builder: (context, userProvider, storyProvider, child) {
@@ -283,13 +278,6 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
         }
       }
     }
-
-    // 设置需要滚动到的故事ID
-    if (mounted) {
-      storyProvider.setScrollToStoryId(widget.storyId);
-
-      // 跳转到故事列表
-      context.push(AppConstants.routeStoryList);
-    }
+    AppRouter.router.pop();
   }
 }

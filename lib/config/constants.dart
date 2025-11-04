@@ -179,10 +179,10 @@ class AppConstants {
   static const String routeAdvanceList = '/advance/list';
 
   /// 故事列表
-  static const String routeStoryList = '/story/list';
+  static const String routeStoryList = '/story_list';
 
   /// 故事详情
-  static const String routeStoryDetail = '/story/detail';
+  static const String routeStoryDetail = '/story_list/story_detail';
 
   // ==================== 动画时长 ====================
 

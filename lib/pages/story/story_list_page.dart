@@ -18,9 +18,6 @@ class StoryListPage extends StatefulWidget {
 }
 
 class _StoryListPageState extends State<StoryListPage> {
-  final ScrollController _scrollController = ScrollController();
-  int? _highlightStoryId; // 需要高亮的故事ID
-
   @override
   void initState() {
     super.initState();
@@ -33,55 +30,7 @@ class _StoryListPageState extends State<StoryListPage> {
       if (user != null) {
         storyProvider.loadLearnedStories(user.id!);
       }
-
-      // 检查是否有需要滚动到的故事
-      if (storyProvider.scrollToStoryId != null) {
-        final targetId = storyProvider.scrollToStoryId!;
-        // 先滚动
-        _scrollToStory(targetId).then((_) {
-          // 滚动完成后再设置高亮
-          if (mounted) {
-            setState(() {
-              _highlightStoryId = targetId;
-            });
-            // 3秒后清除高亮
-            Future.delayed(Duration(seconds: 3), () {
-              if (mounted) {
-                setState(() {
-                  _highlightStoryId = null;
-                });
-              }
-            });
-          }
-        });
-        // 清除滚动标记
-        storyProvider.clearScrollToStoryId();
-      } else if (storyProvider.todayStory != null) {
-        // 如果没有指定滚动位置，默认滚动到今日故事
-        _scrollToStory(storyProvider.todayStory!.id);
-      }
     });
-  }
-
-  /// 滚动到指定故事
-  Future<void> _scrollToStory(int storyId) async {
-    await Future.delayed(Duration(milliseconds: 100)); // 等待列表渲染
-    if (_scrollController.hasClients) {
-      final index = storyId;
-      // 计算滚动位置（每个卡片约110高度 + 间距）
-      final offset = index * 110.0;
-      await _scrollController.animateTo(
-        offset,
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -90,13 +39,7 @@ class _StoryListPageState extends State<StoryListPage> {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryColor,
-        title: Row(
-          children: [
-            Icon(Icons.book, size: 24),
-            SizedBox(width: AppTheme.spacingSmall),
-            Text('故事列表'),
-          ],
-        ),
+        title: Text('故事列表'),
       ),
       body: Consumer2<UserProvider, StoryProvider>(
         builder: (context, userProvider, storyProvider, child) {
@@ -164,28 +107,118 @@ class _StoryListPageState extends State<StoryListPage> {
             );
           }
 
-          return ListView.builder(
-            controller: _scrollController,
-            padding: EdgeInsets.all(AppTheme.spacingLarge),
-            itemCount: storyProvider.stories.length,
-            itemBuilder: (context, index) {
-              final story = storyProvider.stories[index];
-              final isTodayStory = storyProvider.todayStory?.id == story.id;
-              final isLearned = storyProvider.learnedStoryIds.contains(story.id);
-              final shouldHighlight = _highlightStoryId == story.id;
+          return CustomScrollView(
+            slivers: [
+              // 今日故事卡片
+              if (storyProvider.todayStory != null)
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingLarge,
+                      AppTheme.spacingMedium,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(bottom: AppTheme.spacingSmall),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                color: AppTheme.accentYellow,
+                                size: 20,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                '今日故事',
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeMedium,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _StoryCard(
+                          story: storyProvider.todayStory!,
+                          isTodayStory: true,
+                          isLearned: storyProvider.learnedStoryIds.contains(storyProvider.todayStory!.id),
+                          shouldHighlight: false,
+                          onTap: () {
+                            context.push(
+                              '${AppConstants.routeStoryDetail}/${storyProvider.todayStory!.id}',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
-              return _StoryCard(
-                story: story,
-                isTodayStory: isTodayStory,
-                isLearned: isLearned,
-                shouldHighlight: shouldHighlight,
-                onTap: () {
-                  context.push(
-                    '${AppConstants.routeStoryDetail}/${story.id}',
-                  );
-                },
-              );
-            },
+              // 分隔线
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingLarge,
+                    vertical: AppTheme.spacingSmall,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.menu_book,
+                        color: AppTheme.textSecondaryColor,
+                        size: 20,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        '全部故事',
+                        style: TextStyle(
+                          fontSize: AppTheme.fontSizeMedium,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 所有故事列表
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  AppTheme.spacingLarge,
+                  0,
+                  AppTheme.spacingLarge,
+                  AppTheme.spacingLarge,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final story = storyProvider.stories[index];
+                      final isTodayStory = storyProvider.todayStory?.id == story.id;
+                      final isLearned = storyProvider.learnedStoryIds.contains(story.id);
+
+                      return _StoryCard(
+                        story: story,
+                        isTodayStory: isTodayStory,
+                        isLearned: isLearned,
+                        shouldHighlight: false,
+                        onTap: () {
+                          context.push(
+                            '${AppConstants.routeStoryDetail}/${story.id}',
+                          );
+                        },
+                      );
+                    },
+                    childCount: storyProvider.stories.length,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -194,7 +227,7 @@ class _StoryListPageState extends State<StoryListPage> {
 }
 
 /// 故事卡片
-class _StoryCard extends StatefulWidget {
+class _StoryCard extends StatelessWidget {
   final Story story;
   final bool isTodayStory;
   final bool isLearned;
@@ -210,81 +243,23 @@ class _StoryCard extends StatefulWidget {
   });
 
   @override
-  State<_StoryCard> createState() => _StoryCardState();
-}
-
-class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<Color?> _colorAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    _colorAnimation = ColorTween(
-      begin: AppTheme.accentYellow.withValues(alpha: 0.3),
-      end: Colors.transparent,
-    ).animate(_animationController);
-
-    if (widget.shouldHighlight) {
-      _startBlinking();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_StoryCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.shouldHighlight && !oldWidget.shouldHighlight) {
-      _startBlinking();
-    }
-  }
-
-  void _startBlinking() {
-    // 闪烁3次
-    _animationController.repeat(reverse: true);
-    Future.delayed(Duration(milliseconds: 1500), () {
-      if (mounted) {
-        _animationController.stop();
-        _animationController.value = 1.0;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _colorAnimation,
-      builder: (context, child) {
-        return Container(
-          margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
-          decoration: BoxDecoration(
-            color: widget.shouldHighlight ? _colorAnimation.value : null,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          ),
-          child: CustomCard(
-            child: InkWell(
-              onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              child: Container(
-                decoration: widget.isTodayStory
-                    ? BoxDecoration(
-                        border: Border.all(
-                          color: AppTheme.accentYellow,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                      )
-                    : null,
+    return Container(
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
+      child: CustomCard(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          child: Container(
+            decoration: isTodayStory
+                ? BoxDecoration(
+                    border: Border.all(
+                      color: AppTheme.accentYellow,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  )
+                : null,
             child: Padding(
               padding: EdgeInsets.all(AppTheme.spacingMedium),
               child: Row(
@@ -294,7 +269,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: widget.isTodayStory
+                      color: isTodayStory
                           ? AppTheme.accentYellow.withValues(alpha: 0.2)
                           : AppTheme.primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -326,7 +301,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '#${widget.story.id + 1}',
+                                '#${story.id + 1}',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -335,7 +310,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                               ),
                             ),
                             SizedBox(width: 6),
-                            if (widget.isTodayStory) ...[
+                            if (isTodayStory) ...[
                               Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 6,
@@ -358,7 +333,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                             ],
                             Expanded(
                               child: Text(
-                                widget.story.content,
+                                story.content,
                                 style: TextStyle(
                                   fontSize: AppTheme.fontSizeMedium,
                                   fontWeight: FontWeight.bold,
@@ -372,7 +347,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                         ),
                         SizedBox(height: 4),
                         Text(
-                          widget.story.source,
+                          story.source,
                           style: TextStyle(
                             fontSize: AppTheme.fontSizeSmall,
                             color: AppTheme.textSecondaryColor,
@@ -385,7 +360,7 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
                   ),
 
                   // 学习状态
-                  if (widget.isLearned)
+                  if (isLearned)
                     Container(
                       padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
@@ -404,8 +379,6 @@ class _StoryCardState extends State<_StoryCard> with SingleTickerProviderStateMi
           ),
         ),
       ),
-        );
-      },
     );
   }
 }

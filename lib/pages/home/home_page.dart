@@ -93,6 +93,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           // 直接跳转到今日故事详情
                           if (storyProvider.todayStory != null) {
+                            context.push(AppConstants.routeStoryList);
                             context.push(
                               '${AppConstants.routeStoryDetail}/${storyProvider.todayStory!.id}',
                             );
