@@ -192,279 +192,324 @@ class CustomCard extends StatelessWidget {
       onTap: onTap,
       padding: EdgeInsets.zero,
       borderRadius: AppTheme.radiusLarge,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 商品图片区域
-              Container(
-                height: 140,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppTheme.primaryLightColor.withValues(alpha: 0.3),
-                      AppTheme.primaryColor.withValues(alpha: 0.15),
-                    ],
+          // 商品图片区域
+          Expanded(
+            flex: 4,
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppTheme.primaryLightColor.withValues(alpha: 0.3),
+                        AppTheme.primaryColor.withValues(alpha: 0.15),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppTheme.radiusLarge),
+                    ),
                   ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppTheme.radiusLarge),
+                  child: Center(
+                    child: icon != null && icon.isNotEmpty
+                        ? Text(
+                            icon,
+                            style: const TextStyle(fontSize: 64),
+                          )
+                        : imageUrl != null
+                            ? ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(AppTheme.radiusLarge),
+                                ),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.card_giftcard,
+                                      size: 56,
+                                      color: AppTheme.primaryColor,
+                                    );
+                                  },
+                                ),
+                              )
+                            : const Icon(
+                                Icons.card_giftcard,
+                                size: 56,
+                                color: AppTheme.primaryColor,
+                              ),
                   ),
                 ),
-                child: Center(
-                  child: icon != null && icon.isNotEmpty
-                      ? Text(
-                          icon,
-                          style: const TextStyle(fontSize: 72),
-                        )
-                      : imageUrl != null
-                          ? ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(AppTheme.radiusLarge),
-                              ),
-                              child: Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.card_giftcard,
-                                    size: 64,
-                                    color: AppTheme.primaryColor,
-                                  );
-                                },
-                              ),
-                            )
-                          : const Icon(
-                              Icons.card_giftcard,
-                              size: 64,
-                              color: AppTheme.primaryColor,
+                // 积分范围角标
+                if (isRangeProduct)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.accentPurple.withValues(alpha: 0.95),
+                            AppTheme.primaryColor.withValues(alpha: 0.95),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 10,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 3),
+                          Text(
+                            '范围',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                ),
-              ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
 
-              // 商品信息区域
-              Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingMedium),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 商品名称
-                    Text(
+          // 商品信息区域
+          Expanded(
+            flex: 6,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 商品名称
+                  Flexible(
+                    child: Text(
                       name,
                       style: const TextStyle(
-                        fontSize: AppTheme.fontSizeMedium,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimaryColor,
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                  ),
+                  const SizedBox(height: 6),
 
-                    // 积分显示
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppTheme.spacingSmall,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppTheme.accentOrange.withValues(alpha: 0.2),
-                                AppTheme.accentYellow.withValues(alpha: 0.2),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.monetization_on,
-                                size: 14,
-                                color: AppTheme.accentOrange,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isRangeProduct
-                                    ? '$minPoints-$maxPoints'
-                                    : '$points',
-                                style: const TextStyle(
-                                  fontSize: AppTheme.fontSizeSmall,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.accentOrange,
-                                ),
-                              ),
+                  // 积分和词汇
+                  Row(
+                    children: [
+                      // 积分徽章
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.accentOrange.withValues(alpha: 0.2),
+                              AppTheme.accentYellow.withValues(alpha: 0.2),
                             ],
                           ),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        const SizedBox(width: 6),
-                        // 词汇代号
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingSmall,
-                              vertical: 4,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.monetization_on,
+                              size: 12,
+                              color: AppTheme.accentOrange,
                             ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentGreen.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                            ),
-                            child: Text(
-                              wordCode,
+                            const SizedBox(width: 3),
+                            Text(
+                              isRangeProduct ? '$minPoints-$maxPoints' : '$points',
                               style: const TextStyle(
-                                fontSize: AppTheme.fontSizeXSmall,
-                                color: AppTheme.accentGreen,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentOrange,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // 词汇徽章
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGreen.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            wordCode,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.accentGreen,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 兑换进度条
+                  if (currentUserPoints != null) ...[
+                    // 进度条
+                    Container(
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Stack(
+                          children: [
+                            // 进度填充
+                            FractionallySizedBox(
+                              widthFactor: progress,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: canAfford
+                                        ? [
+                                            AppTheme.accentGreen.withValues(alpha: 0.8),
+                                            AppTheme.accentGreen,
+                                          ]
+                                        : [
+                                            AppTheme.accentOrange.withValues(alpha: 0.6),
+                                            AppTheme.accentOrange.withValues(alpha: 0.8),
+                                          ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // 文字叠加层
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Text(
+                                      canAfford ? '✓ 可兑换' : '× 积分不足',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: canAfford && progress > 0.3
+                                            ? Colors.white
+                                            : AppTheme.textPrimaryColor,
+                                        shadows: canAfford && progress > 0.3
+                                            ? [
+                                                Shadow(
+                                                  color: Colors.black.withValues(alpha: 0.2),
+                                                  blurRadius: 2,
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Text(
+                                      '${(progress * 100).toInt()}%',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: progress > 0.7
+                                            ? Colors.white
+                                            : AppTheme.textPrimaryColor,
+                                        shadows: progress > 0.7
+                                            ? [
+                                                Shadow(
+                                                  color: Colors.black.withValues(alpha: 0.2),
+                                                  blurRadius: 2,
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // 兑换限制信息
+                  if (exchangeFrequency != null || maxExchangeCount != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 10,
+                          color: AppTheme.textSecondaryColor.withValues(alpha: 0.7),
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            _getExchangeLimitText(exchangeFrequency, maxExchangeCount),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: AppTheme.textSecondaryColor.withValues(alpha: 0.8),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 10),
-
-                    // 兑换进度条
-                    if (currentUserPoints != null) ...[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                canAfford ? '可兑换' : '不可兑换',
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeXSmall,
-                                  fontWeight: FontWeight.bold,
-                                  color: canAfford
-                                      ? AppTheme.accentGreen
-                                      : AppTheme.textSecondaryColor,
-                                ),
-                              ),
-                              Text(
-                                '${(progress * 100).toInt()}%',
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeXSmall,
-                                  fontWeight: FontWeight.bold,
-                                  color: canAfford
-                                      ? AppTheme.accentGreen
-                                      : AppTheme.textSecondaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          // 进度条
-                          Container(
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                backgroundColor: Colors.transparent,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  canAfford
-                                      ? AppTheme.accentGreen
-                                      : AppTheme.accentOrange,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-
-                    // 兑换限制信息
-                    if (exchangeFrequency != null || maxExchangeCount != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 12,
-                            color: AppTheme.textSecondaryColor.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              _getExchangeLimitText(exchangeFrequency, maxExchangeCount),
-                              style: TextStyle(
-                                fontSize: AppTheme.fontSizeXSmall,
-                                color: AppTheme.textSecondaryColor.withValues(alpha: 0.8),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
-                ),
-              ),
-            ],
-          ),
-
-          // 积分范围角标
-          if (isRangeProduct)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.accentPurple.withValues(alpha: 0.9),
-                      AppTheme.primaryColor.withValues(alpha: 0.9),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentPurple.withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 12,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      '范围',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );

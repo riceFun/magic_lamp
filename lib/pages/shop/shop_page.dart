@@ -19,6 +19,9 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
+  String _selectedCategory = 'all'; // 当前选中的分类
+  String _sortBy = 'none'; // 排序方式：none, asc, desc
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +29,71 @@ class _ShopPageState extends State<ShopPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RewardProvider>().loadAllRewards();
     });
+  }
+
+  /// 获取分类图标
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'all':
+        return Icons.apps;
+      case 'snack':
+        return Icons.fastfood;
+      case 'toy':
+        return Icons.toys;
+      case 'book':
+        return Icons.book;
+      case 'entertainment':
+        return Icons.movie;
+      case 'privilege':
+        return Icons.star;
+      default:
+        return Icons.card_giftcard;
+    }
+  }
+
+  /// 获取分类名称
+  String _getCategoryName(String category) {
+    switch (category) {
+      case 'all':
+        return '全部';
+      case 'snack':
+        return '零食';
+      case 'toy':
+        return '玩具';
+      case 'book':
+        return '图书';
+      case 'entertainment':
+        return '娱乐';
+      case 'privilege':
+        return '特权';
+      default:
+        return '其他';
+    }
+  }
+
+  /// 筛选和排序商品
+  List _filterAndSortRewards(List rewards) {
+    var filteredRewards = rewards.where((reward) {
+      if (_selectedCategory == 'all') return true;
+      return reward.category == _selectedCategory;
+    }).toList();
+
+    // 排序
+    if (_sortBy == 'asc') {
+      filteredRewards.sort((a, b) {
+        final aPoints = a.minPoints ?? a.points;
+        final bPoints = b.minPoints ?? b.points;
+        return aPoints.compareTo(bPoints);
+      });
+    } else if (_sortBy == 'desc') {
+      filteredRewards.sort((a, b) {
+        final aPoints = a.minPoints ?? a.points;
+        final bPoints = b.minPoints ?? b.points;
+        return bPoints.compareTo(aPoints);
+      });
+    }
+
+    return filteredRewards;
   }
 
   @override
@@ -94,62 +162,194 @@ class _ShopPageState extends State<ShopPage> {
             return EmptyWidget.noRewards();
           }
 
+          // 筛选和排序商品
+          final displayedRewards = _filterAndSortRewards(rewardProvider.activeRewards);
+
           return CustomScrollView(
             slivers: [
-              // 所有商品
+              // 分类筛选按钮
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingLarge),
-                  child: Text(
-                    '全部商品',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeLarge,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
+                child: Container(
+                  height: 60,
+                  padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLarge),
+                    children: [
+                      _buildCategoryChip('all'),
+                      SizedBox(width: 8),
+                      _buildCategoryChip('snack'),
+                      SizedBox(width: 8),
+                      _buildCategoryChip('toy'),
+                      SizedBox(width: 8),
+                      _buildCategoryChip('book'),
+                      SizedBox(width: 8),
+                      _buildCategoryChip('entertainment'),
+                      SizedBox(width: 8),
+                      _buildCategoryChip('privilege'),
+                    ],
                   ),
                 ),
               ),
-              Consumer<UserProvider>(
-                builder: (context, userProvider, child) {
-                  final currentUserPoints = userProvider.currentUser?.totalPoints ?? 0;
 
-                  return SliverPadding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacingLarge,
-                    ),
-                    sliver: SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: AppTheme.spacingMedium,
-                        mainAxisSpacing: AppTheme.spacingMedium,
+              // 标题栏和排序按钮
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppTheme.spacingLarge,
+                    AppTheme.spacingSmall,
+                    AppTheme.spacingLarge,
+                    AppTheme.spacingMedium,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${_getCategoryName(_selectedCategory)}商品 (${displayedRewards.length})',
+                        style: TextStyle(
+                          fontSize: AppTheme.fontSizeLarge,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimaryColor,
+                        ),
                       ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final reward = rewardProvider.activeRewards[index];
-                          return CustomCard.product(
-                            name: reward.name,
-                            points: reward.points,
-                            wordCode: reward.wordCode,
-                            icon: reward.icon,
-                            imageUrl: reward.imageUrl,
-                            exchangeFrequency: reward.exchangeFrequency,
-                            maxExchangeCount: reward.maxExchangeCount,
-                            minPoints: reward.minPoints,
-                            maxPoints: reward.maxPoints,
-                            currentUserPoints: currentUserPoints,
-                            onTap: () {
-                              _showRewardDetail(context, reward);
-                            },
-                          );
+                      // 排序按钮
+                      PopupMenuButton<String>(
+                        initialValue: _sortBy,
+                        icon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _sortBy == 'asc'
+                                  ? Icons.arrow_upward
+                                  : _sortBy == 'desc'
+                                      ? Icons.arrow_downward
+                                      : Icons.sort,
+                              size: 18,
+                              color: AppTheme.primaryColor,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              _sortBy == 'asc'
+                                  ? '低→高'
+                                  : _sortBy == 'desc'
+                                      ? '高→低'
+                                      : '排序',
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeSmall,
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        onSelected: (value) {
+                          setState(() {
+                            _sortBy = value;
+                          });
                         },
-                        childCount: rewardProvider.activeRewards.length,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'none',
+                            child: Row(
+                              children: [
+                                Icon(Icons.clear, size: 18),
+                                SizedBox(width: 8),
+                                Text('默认排序'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'asc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_upward, size: 18),
+                                SizedBox(width: 8),
+                                Text('积分从低到高'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'desc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_downward, size: 18),
+                                SizedBox(width: 8),
+                                Text('积分从高到低'),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
+
+              // 商品网格
+              if (displayedRewards.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inbox_outlined,
+                          size: 80,
+                          color: AppTheme.textSecondaryColor.withValues(alpha: 0.5),
+                        ),
+                        SizedBox(height: AppTheme.spacingMedium),
+                        Text(
+                          '该分类暂无商品',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeMedium,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    final currentUserPoints = userProvider.currentUser?.totalPoints ?? 0;
+
+                    return SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacingLarge,
+                      ),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.7,
+                          crossAxisSpacing: AppTheme.spacingMedium,
+                          mainAxisSpacing: AppTheme.spacingMedium,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final reward = displayedRewards[index];
+                            return CustomCard.product(
+                              name: reward.name,
+                              points: reward.points,
+                              wordCode: reward.wordCode,
+                              icon: reward.icon,
+                              imageUrl: reward.imageUrl,
+                              exchangeFrequency: reward.exchangeFrequency,
+                              maxExchangeCount: reward.maxExchangeCount,
+                              minPoints: reward.minPoints,
+                              maxPoints: reward.maxPoints,
+                              currentUserPoints: currentUserPoints,
+                              onTap: () {
+                                _showRewardDetail(context, reward);
+                              },
+                            );
+                          },
+                          childCount: displayedRewards.length,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               SliverToBoxAdapter(
                 child: SizedBox(height: AppTheme.spacingLarge),
               ),
@@ -163,5 +363,67 @@ class _ShopPageState extends State<ShopPage> {
   /// 跳转到商品详情页
   void _showRewardDetail(BuildContext context, reward) {
     context.push('${AppConstants.routeProductDetail}?id=${reward.id}');
+  }
+
+  /// 构建分类筛选按钮
+  Widget _buildCategoryChip(String category) {
+    final isSelected = _selectedCategory == category;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = category;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    AppTheme.primaryColor,
+                    AppTheme.primaryDarkColor,
+                  ],
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+            width: isSelected ? 0 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getCategoryIcon(category),
+              size: 18,
+              color: isSelected ? Colors.white : AppTheme.textSecondaryColor,
+            ),
+            SizedBox(width: 6),
+            Text(
+              _getCategoryName(category),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
