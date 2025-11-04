@@ -88,7 +88,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 1;
+  static const int databaseVersion = 2;
 
   // ==================== 本地存储 Key ====================
 

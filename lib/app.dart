@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RewardProvider()),
         ChangeNotifierProvider(create: (_) => PointRecordProvider()),
         ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => TaskTemplateProvider()),
         ChangeNotifierProvider(create: (_) => ExchangeProvider()),
         ChangeNotifierProvider(create: (_) => AdvanceProvider()),
       ],

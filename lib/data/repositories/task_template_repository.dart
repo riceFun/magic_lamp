@@ -4,7 +4,7 @@ import '../models/task_template.dart';
 
 /// 任务模板数据仓库
 class TaskTemplateRepository {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   /// 创建任务模板表
   static String get createTableSql => '''

@@ -432,7 +432,29 @@ class DatabaseHelper {
 
   /// 数据库升级
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 暂时不处理升级逻辑，后续根据需要添加
+    // 从版本1升级到版本2：添加任务模板表
+    if (oldVersion < 2) {
+      // 创建任务模板表
+      await db.execute('''
+        CREATE TABLE task_templates (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT,
+          points INTEGER NOT NULL,
+          type TEXT NOT NULL,
+          priority TEXT DEFAULT 'medium',
+          category TEXT,
+          created_at TEXT NOT NULL
+        )
+      ''');
+
+      // 创建索引
+      await db.execute('CREATE INDEX idx_task_templates_type ON task_templates(type)');
+      await db.execute('CREATE INDEX idx_task_templates_category ON task_templates(category)');
+
+      // 插入初始模板数据
+      await TaskTemplateRepository.insertInitialTemplates(db);
+    }
   }
 
   /// 关闭数据库

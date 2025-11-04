@@ -42,20 +42,47 @@ class _TaskListPageState extends State<TaskListPage> {
             builder: (context, userProvider, child) {
               final user = userProvider.currentUser;
               if (user != null && user.isAdmin) {
-                return IconButton(
+                return PopupMenuButton<String>(
                   icon: Icon(Icons.add),
-                  onPressed: () async {
-                    // 跳转到创建任务页面
-                    final result = await context.push(AppConstants.routeTaskCreate);
+                  tooltip: '添加任务',
+                  onSelected: (value) async {
+                    if (value == 'create') {
+                      // 跳转到创建任务页面
+                      final result = await context.push(AppConstants.routeTaskCreate);
 
-                    // 如果创建成功，刷新列表
-                    if (result == true && user.id != null) {
-                      if (context.mounted) {
-                        context.read<TaskProvider>().loadUserTasks(user.id!);
+                      // 如果创建成功，刷新列表
+                      if (result == true && user.id != null) {
+                        if (context.mounted) {
+                          context.read<TaskProvider>().loadUserTasks(user.id!);
+                        }
                       }
+                    } else if (value == 'marketplace') {
+                      // 跳转到任务超市
+                      context.push(AppConstants.routeTaskTemplateMarketplace);
                     }
                   },
-                  tooltip: '创建任务',
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'marketplace',
+                      child: Row(
+                        children: [
+                          Icon(Icons.store, size: 20, color: AppTheme.primaryColor),
+                          SizedBox(width: AppTheme.spacingSmall),
+                          Text('从任务超市选择'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'create',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 20, color: AppTheme.accentGreen),
+                          SizedBox(width: AppTheme.spacingSmall),
+                          Text('手动创建任务'),
+                        ],
+                      ),
+                    ),
+                  ],
                 );
               }
               return SizedBox.shrink();
