@@ -137,6 +137,7 @@ class _PenaltyPageState extends State<PenaltyPage> {
                       return _PenaltyCard(
                         penalty: penalty,
                         onTap: () => _showApplyPenaltyDialog(penalty),
+                        onLongPress: () => _showDeletePenaltyDialog(penalty),
                       );
                     },
                     childCount: penalties.length,
@@ -305,16 +306,78 @@ class _PenaltyPageState extends State<PenaltyPage> {
       }
     }
   }
+
+  /// 显示删除惩罚确认对话框
+  void _showDeletePenaltyDialog(Penalty penalty) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning, color: AppTheme.accentRed),
+            SizedBox(width: AppTheme.spacingSmall),
+            Text('删除惩罚'),
+          ],
+        ),
+        content: Text('确定要删除"${penalty.name}"吗？\n此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _deletePenalty(penalty);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentRed,
+            ),
+            child: Text('删除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 删除惩罚
+  Future<void> _deletePenalty(Penalty penalty) async {
+    final penaltyProvider = context.read<PenaltyProvider>();
+
+    final success = await penaltyProvider.deletePenalty(penalty.id!);
+
+    if (success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('惩罚删除成功'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(penaltyProvider.errorMessage ?? '删除失败'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+      }
+    }
+  }
 }
 
 /// 惩罚卡片
 class _PenaltyCard extends StatelessWidget {
   final Penalty penalty;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
   const _PenaltyCard({
     required this.penalty,
     required this.onTap,
+    required this.onLongPress,
   });
 
   @override
@@ -328,6 +391,7 @@ class _PenaltyCard extends StatelessWidget {
         shadowColor: Colors.black.withValues(alpha: 0.1),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Container(
             padding: EdgeInsets.all(AppTheme.spacingMedium),
