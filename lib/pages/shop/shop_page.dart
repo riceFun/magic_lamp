@@ -6,6 +6,7 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/exchange_provider.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
@@ -23,6 +24,8 @@ class _ShopPageState extends State<ShopPage> {
   String _selectedCategory = 'all'; // 当前选中的分类
   String _sortBy = 'none'; // 排序方式：none, asc, desc
   bool _showAffordableOnly = false; // 是否只显示可兑换的商品
+  Map<int, bool> _exchangeabilityMap = {}; // 存储每个商品的可兑换状态
+  bool _isCheckingExchangeability = false; // 是否正在检查可兑换状态
 
   @override
   void initState() {
@@ -110,6 +113,45 @@ class _ShopPageState extends State<ShopPage> {
     return filteredRewards;
   }
 
+  /// 检查所有商品的可兑换状态（考虑积分、频率、次数等所有限制）
+  Future<void> _checkAllRewardsExchangeability(
+    List rewards,
+    int userId,
+    int userPoints,
+  ) async {
+    if (_isCheckingExchangeability) return;
+
+    setState(() {
+      _isCheckingExchangeability = true;
+    });
+
+    final exchangeProvider = context.read<ExchangeProvider>();
+    final Map<int, bool> newMap = {};
+
+    // 并发检查所有商品的可兑换状态
+    await Future.wait(
+      rewards.map((reward) async {
+        final requiredPoints = reward.minPoints ?? reward.points;
+        final isExchangeable = await exchangeProvider.canUserExchangeReward(
+          userId: userId,
+          rewardId: reward.id!,
+          userPoints: userPoints,
+          requiredPoints: requiredPoints,
+          exchangeFrequency: reward.exchangeFrequency,
+          maxExchangeCount: reward.maxExchangeCount,
+        );
+        newMap[reward.id!] = isExchangeable;
+      }),
+    );
+
+    if (mounted) {
+      setState(() {
+        _exchangeabilityMap = newMap;
+        _isCheckingExchangeability = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,12 +221,24 @@ class _ShopPageState extends State<ShopPage> {
           return Consumer<UserProvider>(
             builder: (context, userProvider, child) {
               final currentUserPoints = userProvider.currentUser?.totalPoints ?? 0;
+              final currentUserId = userProvider.currentUser?.id;
 
               // 筛选和排序商品
               final displayedRewards = _filterAndSortRewards(
                 rewardProvider.activeRewards,
                 currentUserPoints,
               );
+
+              // 检查所有商品的可兑换状态
+              if (currentUserId != null && displayedRewards.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _checkAllRewardsExchangeability(
+                    displayedRewards,
+                    currentUserId,
+                    currentUserPoints,
+                  );
+                });
+              }
 
               return CustomScrollView(
             slivers: [
@@ -401,6 +455,8 @@ class _ShopPageState extends State<ShopPage> {
                     childCount: displayedRewards.length,
                     itemBuilder: (context, index) {
                       final reward = displayedRewards[index];
+                      final isExchangeable = _exchangeabilityMap[reward.id];
+
                       return ProductCard(
                         name: reward.name,
                         points: reward.points,
@@ -412,6 +468,7 @@ class _ShopPageState extends State<ShopPage> {
                         minPoints: reward.minPoints,
                         maxPoints: reward.maxPoints,
                         currentUserPoints: currentUserPoints,
+                        isExchangeable: isExchangeable,
                         onTap: () {
                           _showRewardDetail(context, reward);
                         },

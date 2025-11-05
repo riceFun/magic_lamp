@@ -13,6 +13,7 @@ class ProductCard extends StatelessWidget {
   final int? minPoints;
   final int? maxPoints;
   final int? currentUserPoints;
+  final bool? isExchangeable; // 是否可兑换（考虑所有限制）
   final VoidCallback? onTap;
 
   const ProductCard({
@@ -27,6 +28,7 @@ class ProductCard extends StatelessWidget {
     this.minPoints,
     this.maxPoints,
     this.currentUserPoints,
+    this.isExchangeable,
     this.onTap,
   });
 
@@ -38,10 +40,13 @@ class ProductCard extends StatelessWidget {
 
     // 计算兑换进度
     final userPoints = currentUserPoints ?? 0;
-    final canAfford = userPoints >= requiredPoints;
+    final canAffordPoints = userPoints >= requiredPoints;
     final progress = requiredPoints > 0
         ? (userPoints / requiredPoints).clamp(0.0, 1.0)
         : 0.0;
+
+    // 判断是否可兑换（如果提供了 isExchangeable 参数就用它，否则只检查积分）
+    final canExchange = isExchangeable ?? canAffordPoints;
 
     return InkWell(
       onTap: onTap,
@@ -69,14 +74,14 @@ class ProductCard extends StatelessWidget {
                   // 商品信息区域
                   _buildInfoSection(
                     isRangeProduct,
-                    canAfford,
+                    canAffordPoints,
                     progress,
                   ),
                 ],
               ),
 
               // 不可兑换时的半黑遮罩
-              if (!canAfford)
+              if (!canExchange)
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -103,7 +108,7 @@ class ProductCard extends StatelessWidget {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              '积分不足',
+                              '不可兑换',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,

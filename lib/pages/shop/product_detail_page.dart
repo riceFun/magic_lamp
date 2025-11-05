@@ -7,7 +7,6 @@ import '../../providers/reward_provider.dart';
 import '../../providers/exchange_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
-import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// 商品详情页面
@@ -24,6 +23,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Reward? _reward;
   bool _isLoading = true;
   bool _isExchanging = false;
+  bool? _isExchangeable; // 是否可兑换（考虑所有限制）
 
   @override
   void initState() {
@@ -43,6 +43,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _reward = reward;
         _isLoading = false;
       });
+
+      // 加载完成后检查可兑换状态
+      if (reward != null) {
+        _checkExchangeability();
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -55,6 +60,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
         );
       }
+    }
+  }
+
+  /// 检查商品是否可兑换（考虑积分、频率、次数等所有限制）
+  Future<void> _checkExchangeability() async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null || _reward == null) {
+      setState(() {
+        _isExchangeable = false;
+      });
+      return;
+    }
+
+    final exchangeProvider = context.read<ExchangeProvider>();
+    final requiredPoints = _reward!.minPoints ?? _reward!.points;
+
+    final isExchangeable = await exchangeProvider.canUserExchangeReward(
+      userId: user.id!,
+      rewardId: _reward!.id!,
+      userPoints: user.totalPoints,
+      requiredPoints: requiredPoints,
+      exchangeFrequency: _reward!.exchangeFrequency,
+      maxExchangeCount: _reward!.maxExchangeCount,
+    );
+
+    if (mounted) {
+      setState(() {
+        _isExchangeable = isExchangeable;
+      });
     }
   }
 
@@ -114,6 +150,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   /// 兑换商品
   Future<void> _exchangeReward() async {
+    // 如果正在兑换中，直接返回
+    if (_isExchanging) return;
+
     final userProvider = context.read<UserProvider>();
     final user = userProvider.currentUser;
 
@@ -128,6 +167,53 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
 
     if (_reward == null) return;
+
+    // 检查库存
+    if (!_reward!.hasStock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('该商品已售罄'),
+          backgroundColor: AppTheme.accentRed,
+        ),
+      );
+      return;
+    }
+
+    // 检查是否可兑换，如果不可兑换则显示具体原因
+    if (_isExchangeable == false) {
+      final exchangeProvider = context.read<ExchangeProvider>();
+      final requiredPoints = _reward!.minPoints ?? _reward!.points;
+
+      // 首先检查积分
+      if (user.totalPoints < requiredPoints) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('积分不足，还需 ${requiredPoints - user.totalPoints} 积分'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+        return;
+      }
+
+      // 如果积分足够，说明是频率或次数限制的问题
+      // 尝试执行兑换来获取具体的错误信息
+      final exchangeId = await exchangeProvider.exchangeReward(
+        userId: user.id!,
+        rewardId: _reward!.id!,
+      );
+
+      if (exchangeId == null) {
+        // 显示具体的错误信息
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(exchangeProvider.errorMessage ?? '无法兑换该商品'),
+            backgroundColor: AppTheme.accentRed,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
 
     // 显示确认对话框
     final confirmed = await showDialog<bool>(
@@ -352,6 +438,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
+        ///pppppp
         title: Text('商品详情'),
         actions: [
           IconButton(
@@ -402,28 +489,90 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 Center(
                                   child: Column(
                                     children: [
-                                      Container(
-                                        width: 120,
-                                        height: 120,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              AppTheme.primaryColor,
-                                              AppTheme.primaryDarkColor,
-                                            ],
+                                      // 图标容器（带类型角标）
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Container(
+                                            width: 120,
+                                            height: 120,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [
+                                                  AppTheme.primaryLightColor
+                                                      .withValues(alpha: 0.3),
+                                                  AppTheme.primaryColor
+                                                      .withValues(alpha: 0.15),
+                                                ],
+                                              ),
+                                              borderRadius: BorderRadius.circular(
+                                                AppTheme.radiusLarge,
+                                              ),
+                                              boxShadow: AppTheme.cardShadow,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                _reward!.icon != null &&
+                                                        _reward!.icon!.isNotEmpty
+                                                    ? _reward!.icon!
+                                                    : '🎁', // 默认礼物emoji
+                                                style: TextStyle(fontSize: 64),
+                                              ),
+                                            ),
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                            AppTheme.radiusLarge,
+                                          // 类型角标
+                                          Positioned(
+                                            top: -6,
+                                            right: -6,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    AppTheme.accentPurple,
+                                                    AppTheme.primaryColor,
+                                                  ],
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withValues(alpha: 0.2),
+                                                    blurRadius: 4,
+                                                    offset: Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    _getCategoryIcon(
+                                                        _reward!.category),
+                                                    size: 12,
+                                                    color: Colors.white,
+                                                  ),
+                                                  SizedBox(width: 4),
+                                                  Text(
+                                                    _getCategoryText(
+                                                        _reward!.category),
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ),
-                                          boxShadow: AppTheme.cardShadow,
-                                        ),
-                                        child: Icon(
-                                          _getCategoryIcon(_reward!.category),
-                                          size: 60,
-                                          color: Colors.white,
-                                        ),
+                                        ],
                                       ),
                                       SizedBox(height: AppTheme.spacingMedium),
                                       Text(
@@ -434,28 +583,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                           color: AppTheme.textPrimaryColor,
                                         ),
                                         textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: AppTheme.spacingXSmall),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: AppTheme.spacingSmall,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primaryColor
-                                              .withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(
-                                            AppTheme.radiusSmall,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          _getCategoryText(_reward!.category),
-                                          style: TextStyle(
-                                            fontSize: AppTheme.fontSizeSmall,
-                                            color: AppTheme.primaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -647,28 +774,118 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               children: [
                                 // 编辑按钮
                                 Expanded(
-                                  flex: 2,
-                                  child: CustomButton.secondary(
-                                    text: '编辑商品',
-                                    onPressed: () {
+                                  flex: 2,s
+                                  child: GestureDetector(
+                                    onTap: () {
                                       context.push(
                                         '${AppConstants.routeRewardEdit}?id=${_reward!.id}',
                                       );
                                     },
-                                    icon: Icons.edit,
+                                    child: Container(
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium,
+                                        ),
+                                        border: Border.all(
+                                          color: AppTheme.primaryColor,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.edit,
+                                            color: AppTheme.primaryColor,
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            '编辑商品',
+                                            style: TextStyle(
+                                              fontSize: AppTheme.fontSizeMedium,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: AppTheme.spacingMedium),
                                 // 兑换按钮
                                 Expanded(
                                   flex: 3,
-                                  child: CustomButton.primary(
-                                    text: _reward!.hasStock ? '立即兑换' : '已售罄',
-                                    onPressed: _reward!.hasStock && canAfford && !_isExchanging
-                                        ? _exchangeReward
-                                        : null,
-                                    isLoading: _isExchanging,
-                                    icon: Icons.redeem,
+                                  child: GestureDetector(
+                                    onTap: _exchangeReward, // 总是可以点击
+                                    child: Container(
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        gradient: (_reward!.hasStock &&
+                                                (_isExchangeable ?? false) &&
+                                                !_isExchanging)
+                                            ? LinearGradient(
+                                                colors: [
+                                                  AppTheme.primaryColor,
+                                                  AppTheme.primaryDarkColor,
+                                                ],
+                                              )
+                                            : null,
+                                        color: (_reward!.hasStock &&
+                                                (_isExchangeable ?? false) &&
+                                                !_isExchanging)
+                                            ? null
+                                            : Colors.grey.withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (_isExchanging)
+                                            SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(
+                                                  Colors.white,
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            Icon(
+                                              Icons.redeem,
+                                              color: (_reward!.hasStock &&
+                                                      (_isExchangeable ?? false))
+                                                  ? Colors.white
+                                                  : AppTheme.textSecondaryColor,
+                                              size: 20,
+                                            ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            _reward!.hasStock ? '立即兑换' : '已售罄',
+                                            style: TextStyle(
+                                              fontSize: AppTheme.fontSizeMedium,
+                                              fontWeight: FontWeight.bold,
+                                              color: (_reward!.hasStock &&
+                                                      (_isExchangeable ?? false) &&
+                                                      !_isExchanging)
+                                                  ? Colors.white
+                                                  : AppTheme.textSecondaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

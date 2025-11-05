@@ -278,6 +278,40 @@ class ExchangeProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 检查用户是否可以兑换指定奖励（考虑积分、频率、次数等所有限制）
+  /// 返回 true 表示可以兑换，false 表示不可以兑换
+  Future<bool> canUserExchangeReward({
+    required int userId,
+    required int rewardId,
+    required int userPoints,
+    required int requiredPoints,
+    String? exchangeFrequency,
+    int? maxExchangeCount,
+  }) async {
+    try {
+      // 首先检查积分是否足够
+      if (userPoints < requiredPoints) {
+        return false;
+      }
+
+      // 如果没有频率和次数限制，直接返回 true
+      if (exchangeFrequency == null && maxExchangeCount == null) {
+        return true;
+      }
+
+      // 检查频率和次数限制
+      return await _checkExchangeLimit(
+        userId: userId,
+        rewardId: rewardId,
+        frequency: exchangeFrequency,
+        maxCount: maxExchangeCount,
+      );
+    } catch (e) {
+      debugPrint('ExchangeProvider canUserExchangeReward error: $e');
+      return false;
+    }
+  }
+
   /// 检查兑换频率和次数限制
   /// 返回 true 表示允许兑换，false 表示不允许
   Future<bool> _checkExchangeLimit({
