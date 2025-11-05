@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
@@ -393,34 +394,29 @@ class _ShopPageState extends State<ShopPage> {
                   padding: EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingLarge,
                   ),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.65,
-                      crossAxisSpacing: AppTheme.spacingMedium,
-                      mainAxisSpacing: AppTheme.spacingMedium,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final reward = displayedRewards[index];
-                        return ProductCard(
-                          name: reward.name,
-                          points: reward.points,
-                          wordCode: reward.wordCode,
-                          icon: reward.icon,
-                          imageUrl: reward.imageUrl,
-                          exchangeFrequency: reward.exchangeFrequency,
-                          maxExchangeCount: reward.maxExchangeCount,
-                          minPoints: reward.minPoints,
-                          maxPoints: reward.maxPoints,
-                          currentUserPoints: currentUserPoints,
-                          onTap: () {
-                            _showRewardDetail(context, reward);
-                          },
-                        );
-                      },
-                      childCount: displayedRewards.length,
-                    ),
+                  sliver: SliverMasonryGrid.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: AppTheme.spacingMedium,
+                    crossAxisSpacing: AppTheme.spacingMedium,
+                    childCount: displayedRewards.length,
+                    itemBuilder: (context, index) {
+                      final reward = displayedRewards[index];
+                      return ProductCard(
+                        name: reward.name,
+                        points: reward.points,
+                        wordCode: reward.wordCode,
+                        icon: reward.icon,
+                        imageUrl: reward.imageUrl,
+                        exchangeFrequency: reward.exchangeFrequency,
+                        maxExchangeCount: reward.maxExchangeCount,
+                        minPoints: reward.minPoints,
+                        maxPoints: reward.maxPoints,
+                        currentUserPoints: currentUserPoints,
+                        onTap: () {
+                          _showRewardDetail(context, reward);
+                        },
+                      );
+                    },
                   ),
                 ),
               SliverToBoxAdapter(

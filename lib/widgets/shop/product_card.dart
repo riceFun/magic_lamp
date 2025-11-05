@@ -43,39 +43,80 @@ class ProductCard extends StatelessWidget {
         ? (userPoints / requiredPoints).clamp(0.0, 1.0)
         : 0.0;
 
-    return Opacity(
-      opacity: canAfford ? 1.0 : 0.6,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.cardColor,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            boxShadow: AppTheme.cardShadow,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 商品图片区域 - 使用 Expanded 防止溢出
-                Expanded(
-                  flex: 5,
-                  child: _buildImageSection(isRangeProduct),
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardColor,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 商品图片区域
+                  AspectRatio(
+                    aspectRatio: 1.0,
+                    child: _buildImageSection(isRangeProduct),
+                  ),
 
-                // 商品信息区域
-                Flexible(
-                  flex: 6,
-                  child: _buildInfoSection(
+                  // 商品信息区域
+                  _buildInfoSection(
                     isRangeProduct,
                     canAfford,
                     progress,
                   ),
+                ],
+              ),
+
+              // 不可兑换时的半黑遮罩
+              if (!canAfford)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.lock,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              '积分不足',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
