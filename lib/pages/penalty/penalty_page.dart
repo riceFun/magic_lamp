@@ -87,27 +87,6 @@ class _PenaltyPageState extends State<PenaltyPage> {
           ],
         ),
         actions: [
-          // 管理按钮
-          Consumer<UserProvider>(
-            builder: (context, userProvider, child) {
-              final user = userProvider.currentUser;
-              // 只有管理员才能看到管理按钮
-              if (user?.role == 'admin') {
-                return IconButton(
-                  icon: Icon(Icons.settings),
-                  onPressed: () async {
-                    await context.push(AppConstants.routePenaltyManagement);
-                    // 返回时刷新列表
-                    if (mounted) {
-                      context.read<PenaltyProvider>().loadActivePenalties();
-                    }
-                  },
-                  tooltip: '惩罚管理',
-                );
-              }
-              return SizedBox.shrink();
-            },
-          ),
           // 显示当前积分
           Consumer<UserProvider>(
             builder: (context, userProvider, child) {
@@ -116,6 +95,19 @@ class _PenaltyPageState extends State<PenaltyPage> {
               return PointsBadge(points: user.totalPoints);
             },
           ),
+          // 管理按钮
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () async {
+              await context.push(AppConstants.routePenaltyManagement);
+              // 返回时刷新列表
+              if (mounted) {
+                context.read<PenaltyProvider>().loadActivePenalties();
+              }
+            },
+            tooltip: '惩罚管理',
+          ),
+
         ],
       ),
       body: Consumer<PenaltyProvider>(
@@ -151,7 +143,7 @@ class _PenaltyPageState extends State<PenaltyPage> {
             return EmptyWidget(
               icon: Icons.check_circle,
               message: '暂无惩罚项目',
-              subtitle: '管理员可以添加惩罚项目',
+              subtitle: '点击右上角菜单按钮进行添加',
             );
           }
 

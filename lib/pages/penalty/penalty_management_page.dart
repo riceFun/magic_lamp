@@ -21,7 +21,10 @@ class _PenaltyManagementPageState extends State<PenaltyManagementPage> {
   @override
   void initState() {
     super.initState();
-    _loadPenalties();
+    // 延迟到构建完成后再加载，避免在构建期间调用 notifyListeners
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPenalties();
+    });
   }
 
   Future<void> _loadPenalties() async {
