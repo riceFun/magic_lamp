@@ -34,12 +34,12 @@ class PenaltyProvider extends ChangeNotifier {
       _allPenalties.where((p) => p.isActive).toList();
 
   /// 加载所有激活的惩罚项目
-  Future<void> loadActivePenalties() async {
+  Future<void> loadActivePenalties(int userId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _allPenalties = await _penaltyRepository.getActivePenalties();
+      _allPenalties = await _penaltyRepository.getActivePenalties(userId);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = '加载惩罚项目失败: $e';
@@ -51,12 +51,12 @@ class PenaltyProvider extends ChangeNotifier {
   }
 
   /// 加载所有惩罚项目（包括未激活）
-  Future<void> loadAllPenalties() async {
+  Future<void> loadAllPenalties(int userId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _allPenalties = await _penaltyRepository.getAllPenalties();
+      _allPenalties = await _penaltyRepository.getAllPenalties(userId);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = '加载惩罚项目失败: $e';
@@ -90,7 +90,7 @@ class PenaltyProvider extends ChangeNotifier {
       final id = await _penaltyRepository.createPenalty(penalty);
 
       // 刷新列表
-      await loadAllPenalties();
+      await loadAllPenalties(penalty.userId);
 
       _errorMessage = null;
       return id;
@@ -108,7 +108,7 @@ class PenaltyProvider extends ChangeNotifier {
       final count = await _penaltyRepository.updatePenalty(penalty);
 
       // 刷新列表
-      await loadAllPenalties();
+      await loadAllPenalties(penalty.userId);
 
       _errorMessage = null;
       return count > 0;
@@ -121,12 +121,12 @@ class PenaltyProvider extends ChangeNotifier {
   }
 
   /// 删除惩罚项目
-  Future<bool> deletePenalty(int id) async {
+  Future<bool> deletePenalty(int id, int userId) async {
     try {
       final count = await _penaltyRepository.deletePenalty(id);
 
       // 刷新列表
-      await loadAllPenalties();
+      await loadAllPenalties(userId);
 
       _errorMessage = null;
       return count > 0;
@@ -247,9 +247,9 @@ class PenaltyProvider extends ChangeNotifier {
   }
 
   /// 搜索惩罚项目
-  Future<List<Penalty>> searchPenalties(String keyword) async {
+  Future<List<Penalty>> searchPenalties(int userId, String keyword) async {
     try {
-      return await _penaltyRepository.searchPenalties(keyword);
+      return await _penaltyRepository.searchPenalties(userId, keyword);
     } catch (e) {
       debugPrint('PenaltyProvider searchPenalties error: $e');
       return [];

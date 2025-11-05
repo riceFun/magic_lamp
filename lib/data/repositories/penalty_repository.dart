@@ -7,34 +7,36 @@ class PenaltyRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   /// 获取所有惩罚项目
-  Future<List<Penalty>> getAllPenalties() async {
+  Future<List<Penalty>> getAllPenalties(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'penalties',
+      where: 'user_id = ?',
+      whereArgs: [userId],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Penalty.fromMap(maps[i]));
   }
 
   /// 获取激活的惩罚项目
-  Future<List<Penalty>> getActivePenalties() async {
+  Future<List<Penalty>> getActivePenalties(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'penalties',
-      where: 'status = ?',
-      whereArgs: ['active'],
+      where: 'user_id = ? AND status = ?',
+      whereArgs: [userId, 'active'],
       orderBy: 'points DESC, created_at DESC',
     );
     return List.generate(maps.length, (i) => Penalty.fromMap(maps[i]));
   }
 
   /// 根据分类获取惩罚项目
-  Future<List<Penalty>> getPenaltiesByCategory(String category) async {
+  Future<List<Penalty>> getPenaltiesByCategory(int userId, String category) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'penalties',
-      where: 'category = ? AND status = ?',
-      whereArgs: [category, 'active'],
+      where: 'user_id = ? AND category = ? AND status = ?',
+      whereArgs: [userId, category, 'active'],
       orderBy: 'points DESC, created_at DESC',
     );
     return List.generate(maps.length, (i) => Penalty.fromMap(maps[i]));
@@ -53,12 +55,13 @@ class PenaltyRepository {
   }
 
   /// 搜索惩罚项目
-  Future<List<Penalty>> searchPenalties(String keyword) async {
+  Future<List<Penalty>> searchPenalties(int userId, String keyword) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'penalties',
-      where: 'status = ? AND (name LIKE ? OR description LIKE ?)',
+      where: 'user_id = ? AND status = ? AND (name LIKE ? OR description LIKE ?)',
       whereArgs: [
+        userId,
         'active',
         '%$keyword%',
         '%$keyword%',

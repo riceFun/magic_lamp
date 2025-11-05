@@ -25,12 +25,12 @@ class RewardProvider extends ChangeNotifier {
       _allRewards.where((r) => r.isAvailable).toList();
 
   /// 加载所有奖励商品
-  Future<void> loadAllRewards() async {
+  Future<void> loadAllRewards(int userId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _allRewards = await _rewardRepository.getActiveRewards();
+      _allRewards = await _rewardRepository.getActiveRewards(userId);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = '加载奖励商品失败: $e';
@@ -49,9 +49,9 @@ class RewardProvider extends ChangeNotifier {
   }
 
   /// 搜索奖励商品
-  Future<List<Reward>> searchRewards(String keyword) async {
+  Future<List<Reward>> searchRewards(int userId, String keyword) async {
     try {
-      return await _rewardRepository.searchRewards(keyword);
+      return await _rewardRepository.searchRewards(userId, keyword);
     } catch (e) {
       debugPrint('RewardProvider searchRewards error: $e');
       return [];
@@ -72,12 +72,12 @@ class RewardProvider extends ChangeNotifier {
   List<Reward> get rewards => _allRewards;
 
   /// 加载所有商品（包括未激活）
-  Future<void> loadAllRewardsIncludingInactive() async {
+  Future<void> loadAllRewardsIncludingInactive(int userId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _allRewards = await _rewardRepository.getAllRewards();
+      _allRewards = await _rewardRepository.getAllRewards(userId);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = '加载商品失败: $e';
@@ -94,7 +94,7 @@ class RewardProvider extends ChangeNotifier {
       final id = await _rewardRepository.createReward(reward);
 
       // 刷新列表
-      await loadAllRewardsIncludingInactive();
+      await loadAllRewardsIncludingInactive(reward.userId);
 
       _errorMessage = null;
       return id;
@@ -112,7 +112,7 @@ class RewardProvider extends ChangeNotifier {
       await _rewardRepository.updateReward(reward);
 
       // 刷新列表
-      await loadAllRewardsIncludingInactive();
+      await loadAllRewardsIncludingInactive(reward.userId);
 
       _errorMessage = null;
       return true;

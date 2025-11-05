@@ -24,7 +24,11 @@ class _PenaltyPageState extends State<PenaltyPage> {
     super.initState();
     // 加载惩罚项目列表
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PenaltyProvider>().loadActivePenalties();
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.currentUser?.id;
+      if (userId != null) {
+        context.read<PenaltyProvider>().loadActivePenalties(userId);
+      }
     });
   }
 
@@ -56,7 +60,11 @@ class _PenaltyPageState extends State<PenaltyPage> {
               final result = await context.push(AppConstants.routePenaltyEdit);
               // 返回时刷新列表
               if (result == true && mounted) {
-                context.read<PenaltyProvider>().loadActivePenalties();
+                final userProvider = context.read<UserProvider>();
+                final userId = userProvider.currentUser?.id;
+                if (userId != null) {
+                  context.read<PenaltyProvider>().loadActivePenalties(userId);
+                }
               }
             },
             tooltip: '添加惩罚',
@@ -343,8 +351,12 @@ class _PenaltyPageState extends State<PenaltyPage> {
   /// 删除惩罚
   Future<void> _deletePenalty(Penalty penalty) async {
     final penaltyProvider = context.read<PenaltyProvider>();
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.currentUser?.id;
 
-    final success = await penaltyProvider.deletePenalty(penalty.id!);
+    if (userId == null) return;
+
+    final success = await penaltyProvider.deletePenalty(penalty.id!, userId);
 
     if (success) {
       if (mounted) {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/reward_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/custom_button.dart';
 
@@ -145,9 +146,24 @@ class _EditRewardPageState extends State<EditRewardPage> {
 
     try {
       final rewardProvider = context.read<RewardProvider>();
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.currentUser?.id;
+
+      if (userId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('请先登录'),
+              backgroundColor: AppTheme.accentRed,
+            ),
+          );
+        }
+        return;
+      }
 
       final reward = Reward(
         id: _existingReward?.id,
+        userId: userId,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         points: _isRangePoints

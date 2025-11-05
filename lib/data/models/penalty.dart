@@ -1,6 +1,7 @@
 /// 惩罚项目模型
 class Penalty {
   final int? id;
+  final int userId; // 所属用户ID
   final String name;
   final String? description;
   final int points; // 扣除的积分数（正数表示扣除）
@@ -13,6 +14,7 @@ class Penalty {
 
   Penalty({
     this.id,
+    required this.userId,
     required this.name,
     this.description,
     required this.points,
@@ -32,6 +34,7 @@ class Penalty {
   factory Penalty.fromMap(Map<String, dynamic> map) {
     return Penalty(
       id: map['id'] as int?,
+      userId: map['user_id'] as int,
       name: map['name'] as String,
       description: map['description'] as String?,
       points: map['points'] as int,
@@ -48,6 +51,7 @@ class Penalty {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
+      'user_id': userId,
       'name': name,
       'description': description,
       'points': points,
@@ -63,6 +67,7 @@ class Penalty {
   /// 复制并修改部分字段
   Penalty copyWith({
     int? id,
+    int? userId,
     String? name,
     String? description,
     int? points,
@@ -75,6 +80,7 @@ class Penalty {
   }) {
     return Penalty(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
       points: points ?? this.points,

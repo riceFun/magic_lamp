@@ -32,7 +32,11 @@ class _ShopPageState extends State<ShopPage> {
     super.initState();
     // 加载奖励商品列表
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RewardProvider>().loadAllRewards();
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.currentUser?.id;
+      if (userId != null) {
+        context.read<RewardProvider>().loadAllRewards(userId);
+      }
     });
   }
 

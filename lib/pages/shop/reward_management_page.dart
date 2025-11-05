@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -25,7 +26,11 @@ class _RewardManagementPageState extends State<RewardManagementPage> {
   }
 
   Future<void> _loadRewards() async {
-    await context.read<RewardProvider>().loadAllRewardsIncludingInactive();
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.currentUser?.id;
+    if (userId != null) {
+      await context.read<RewardProvider>().loadAllRewardsIncludingInactive(userId);
+    }
   }
 
   /// 显示删除确认对话框

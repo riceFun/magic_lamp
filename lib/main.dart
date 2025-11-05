@@ -10,13 +10,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 初始化数据库
-  await DatabaseHelper.instance.database;
+  final db = await DatabaseHelper.instance.database;
 
-  // 导入商品数据
+  // 导入商品数据（获取第一个用户的ID）
   try {
-    final importService = ProductImportService();
-    final result = await importService.importProducts();
-    debugPrint('商品导入完成: $result');
+    final users = await db.query('users', orderBy: 'id ASC', limit: 1);
+    if (users.isNotEmpty) {
+      final userId = users.first['id'] as int;
+      final importService = ProductImportService();
+      final result = await importService.importProducts(userId);
+      debugPrint('商品导入完成: $result');
+    } else {
+      debugPrint('跳过商品导入: 暂无用户');
+    }
   } catch (e) {
     debugPrint('商品导入失败: $e');
   }

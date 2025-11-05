@@ -31,7 +31,7 @@ class ProductImportService {
   final RewardRepository _rewardRepository = RewardRepository();
 
   /// 从 assets/products.json 导入商品
-  Future<ImportResult> importProducts() async {
+  Future<ImportResult> importProducts(int userId) async {
     int successCount = 0;
     int skippedCount = 0;
     int failedCount = 0;
@@ -52,13 +52,13 @@ class ProductImportService {
           final String name = productMap['name'] as String;
 
           // 4. 检查商品是否已存在（通过名称）
-          if (await _isProductExists(name)) {
+          if (await _isProductExists(name, userId)) {
             skippedCount++;
             continue;
           }
 
           // 5. 映射并创建 Reward 对象
-          final Reward reward = _mapJsonToReward(productMap);
+          final Reward reward = _mapJsonToReward(productMap, userId);
 
           // 6. 添加到数据库
           await _rewardRepository.createReward(reward);
@@ -81,13 +81,13 @@ class ProductImportService {
   }
 
   /// 检查商品是否已存在（通过名称）
-  Future<bool> _isProductExists(String name) async {
-    final rewards = await _rewardRepository.getAllRewards();
+  Future<bool> _isProductExists(String name, int userId) async {
+    final rewards = await _rewardRepository.getAllRewards(userId);
     return rewards.any((reward) => reward.name == name);
   }
 
   /// 将 JSON 数据映射到 Reward 对象
-  Reward _mapJsonToReward(Map<String, dynamic> json) {
+  Reward _mapJsonToReward(Map<String, dynamic> json, int userId) {
     // 解析积分：固定积分 vs 范围积分
     int points = 0;
     int? minPoints;
@@ -128,6 +128,7 @@ class ProductImportService {
 
     // 构建 Reward 对象
     return Reward(
+      userId: userId,
       name: json['name'] as String,
       description: json['description'] as String?,
       points: points,
@@ -229,8 +230,8 @@ class ProductImportService {
   }
 
   /// 清空所有商品（危险操作，仅用于测试）
-  Future<void> clearAllProducts() async {
-    final rewards = await _rewardRepository.getAllRewards();
+  Future<void> clearAllProducts(int userId) async {
+    final rewards = await _rewardRepository.getAllRewards(userId);
     for (var reward in rewards) {
       if (reward.id != null) {
         await _rewardRepository.deleteReward(reward.id!);
@@ -239,8 +240,8 @@ class ProductImportService {
   }
 
   /// 重新导入所有商品（清空后重新导入）
-  Future<ImportResult> reimportProducts() async {
-    await clearAllProducts();
-    return await importProducts();
+  Future<ImportResult> reimportProducts(int userId) async {
+    await clearAllProducts(userId);
+    return await importProducts(userId);
   }
 }

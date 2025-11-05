@@ -22,25 +22,10 @@ class AppConstants {
   /// 积分与人民币换算比例（10积分 = 1元）
   static const double pointsToRmb = 0.1;
 
-  /// 每日推荐积分目标（最小值）
-  static const int dailyPointsMin = 200;
-
-  /// 每日推荐积分目标（最大值）
-  static const int dailyPointsMax = 400;
-
   /// 预支积分月利率（10%）
   static const double advanceInterestRate = 0.1;
 
   // ==================== 任务奖励积分建议 ====================
-
-  /// 简单任务积分范围（5-15分钟）
-  static const int taskPointsSimpleMin = 10;
-  static const int taskPointsSimpleMax = 30;
-
-  /// 中等任务积分范围（15-30分钟）
-  static const int taskPointsMediumMin = 30;
-  static const int taskPointsMediumMax = 80;
-
   /// 复杂任务积分范围（30-60分钟）
   static const int taskPointsComplexMin = 80;
   static const int taskPointsComplexMax = 150;
@@ -88,7 +73,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 10;
+  static const int databaseVersion = 11;
 
   // ==================== 本地存储 Key ====================
 

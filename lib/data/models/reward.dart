@@ -1,6 +1,7 @@
 /// 奖励商品模型
 class Reward {
   final int? id;
+  final int userId; // 所属用户ID
   final String name;
   final String? description;
   final int points; // 固定积分（当不使用范围积分时）
@@ -21,6 +22,7 @@ class Reward {
 
   Reward({
     this.id,
+    required this.userId,
     required this.name,
     this.description,
     required this.points,
@@ -68,6 +70,7 @@ class Reward {
   factory Reward.fromMap(Map<String, dynamic> map) {
     return Reward(
       id: map['id'] as int?,
+      userId: map['user_id'] as int,
       name: map['name'] as String,
       description: map['description'] as String?,
       points: map['points'] as int,
@@ -92,6 +95,7 @@ class Reward {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
+      'user_id': userId,
       'name': name,
       'description': description,
       'points': points,
@@ -115,6 +119,7 @@ class Reward {
   /// 复制并修改部分属性
   Reward copyWith({
     int? id,
+    int? userId,
     String? name,
     String? description,
     int? points,
@@ -135,6 +140,7 @@ class Reward {
   }) {
     return Reward(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
       points: points ?? this.points,

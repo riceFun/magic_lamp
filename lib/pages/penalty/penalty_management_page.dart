@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/penalty_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../data/models/penalty.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -28,7 +29,11 @@ class _PenaltyManagementPageState extends State<PenaltyManagementPage> {
   }
 
   Future<void> _loadPenalties() async {
-    await context.read<PenaltyProvider>().loadAllPenalties();
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.currentUser?.id;
+    if (userId != null) {
+      await context.read<PenaltyProvider>().loadAllPenalties(userId);
+    }
   }
 
   /// 显示删除确认对话框
@@ -62,7 +67,12 @@ class _PenaltyManagementPageState extends State<PenaltyManagementPage> {
   Future<void> _deletePenalty(Penalty penalty) async {
     try {
       final penaltyProvider = context.read<PenaltyProvider>();
-      final success = await penaltyProvider.deletePenalty(penalty.id!);
+      final userProvider = context.read<UserProvider>();
+      final userId = userProvider.currentUser?.id;
+
+      if (userId == null) return;
+
+      final success = await penaltyProvider.deletePenalty(penalty.id!, userId);
 
       if (success) {
         if (mounted) {

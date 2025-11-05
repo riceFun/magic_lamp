@@ -7,58 +7,60 @@ class RewardRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   /// 获取所有奖励商品
-  Future<List<Reward>> getAllRewards() async {
+  Future<List<Reward>> getAllRewards(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
+      where: 'user_id = ?',
+      whereArgs: [userId],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Reward.fromMap(maps[i]));
   }
 
   /// 获取激活的奖励商品
-  Future<List<Reward>> getActiveRewards() async {
+  Future<List<Reward>> getActiveRewards(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
-      where: 'status = ?',
-      whereArgs: ['active'],
+      where: 'user_id = ? AND status = ?',
+      whereArgs: [userId, 'active'],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Reward.fromMap(maps[i]));
   }
 
   /// 根据分类获取奖励商品
-  Future<List<Reward>> getRewardsByCategory(String category) async {
+  Future<List<Reward>> getRewardsByCategory(int userId, String category) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
-      where: 'category = ? AND status = ?',
-      whereArgs: [category, 'active'],
+      where: 'user_id = ? AND category = ? AND status = ?',
+      whereArgs: [userId, category, 'active'],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Reward.fromMap(maps[i]));
   }
 
   /// 获取热门商品
-  Future<List<Reward>> getHotRewards() async {
+  Future<List<Reward>> getHotRewards(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
-      where: 'is_hot = ? AND status = ?',
-      whereArgs: [1, 'active'],
+      where: 'user_id = ? AND is_hot = ? AND status = ?',
+      whereArgs: [userId, 1, 'active'],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Reward.fromMap(maps[i]));
   }
 
   /// 获取特惠商品
-  Future<List<Reward>> getSpecialRewards() async {
+  Future<List<Reward>> getSpecialRewards(int userId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
-      where: 'is_special = ? AND status = ?',
-      whereArgs: [1, 'active'],
+      where: 'user_id = ? AND is_special = ? AND status = ?',
+      whereArgs: [userId, 1, 'active'],
       orderBy: 'created_at DESC',
     );
     return List.generate(maps.length, (i) => Reward.fromMap(maps[i]));
@@ -77,12 +79,13 @@ class RewardRepository {
   }
 
   /// 搜索奖励商品
-  Future<List<Reward>> searchRewards(String keyword) async {
+  Future<List<Reward>> searchRewards(int userId, String keyword) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'rewards',
-      where: 'status = ? AND (name LIKE ? OR description LIKE ? OR word_code LIKE ?)',
+      where: 'user_id = ? AND status = ? AND (name LIKE ? OR description LIKE ? OR word_code LIKE ?)',
       whereArgs: [
+        userId,
         'active',
         '%$keyword%',
         '%$keyword%',
@@ -178,11 +181,11 @@ class RewardRepository {
   }
 
   /// 获取某个分类的商品数量
-  Future<int> getRewardCountByCategory(String category) async {
+  Future<int> getRewardCountByCategory(int userId, String category) async {
     final db = await _dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM rewards WHERE category = ? AND status = ?',
-      [category, 'active'],
+      'SELECT COUNT(*) as count FROM rewards WHERE user_id = ? AND category = ? AND status = ?',
+      [userId, category, 'active'],
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
@@ -198,11 +201,11 @@ class RewardRepository {
   }
 
   /// 获取所有词汇类型
-  Future<List<String>> getAllWordTypes() async {
+  Future<List<String>> getAllWordTypes(int userId) async {
     final db = await _dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT DISTINCT word_type FROM rewards WHERE status = ?',
-      ['active'],
+      'SELECT DISTINCT word_type FROM rewards WHERE user_id = ? AND status = ?',
+      [userId, 'active'],
     );
     return result
         .map((row) => row['word_type'] as String)
@@ -210,11 +213,11 @@ class RewardRepository {
   }
 
   /// 获取所有分类
-  Future<List<String>> getAllCategories() async {
+  Future<List<String>> getAllCategories(int userId) async {
     final db = await _dbHelper.database;
     final result = await db.rawQuery(
-      'SELECT DISTINCT category FROM rewards WHERE status = ?',
-      ['active'],
+      'SELECT DISTINCT category FROM rewards WHERE user_id = ? AND status = ?',
+      [userId, 'active'],
     );
     return result
         .map((row) => row['category'] as String)

@@ -95,6 +95,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE rewards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         description TEXT,
         points INTEGER NOT NULL,
@@ -111,7 +112,8 @@ class DatabaseHelper {
         max_exchange_count INTEGER,
         note TEXT,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id)
       )
     ''');
 
@@ -295,6 +297,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE penalties (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         description TEXT,
         points INTEGER NOT NULL,
@@ -303,7 +306,8 @@ class DatabaseHelper {
         status TEXT NOT NULL DEFAULT 'active',
         note TEXT,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id)
       )
     ''');
 
@@ -342,6 +346,7 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_task_records_completed_at ON task_records(completed_at)');
 
     // 奖励表索引
+    await db.execute('CREATE INDEX idx_rewards_user_id ON rewards(user_id)');
     await db.execute('CREATE INDEX idx_rewards_status ON rewards(status)');
     await db.execute('CREATE INDEX idx_rewards_category ON rewards(category)');
 
@@ -370,6 +375,7 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
 
     // 惩罚项目表索引
+    await db.execute('CREATE INDEX idx_penalties_user_id ON penalties(user_id)');
     await db.execute('CREATE INDEX idx_penalties_status ON penalties(status)');
     await db.execute('CREATE INDEX idx_penalties_category ON penalties(category)');
 
@@ -435,8 +441,9 @@ class DatabaseHelper {
     // 插入任务模板
     await TaskTemplateRepository.insertInitialTemplates(db);
 
-    // 插入示例惩罚项目
+    // 插入示例惩罚项目（使用第一个用户的ID）
     await db.insert('penalties', {
+      'user_id': 1,
       'name': '说谎',
       'description': '不诚实，说谎话',
       'points': 100,
@@ -448,6 +455,7 @@ class DatabaseHelper {
     });
 
     await db.insert('penalties', {
+      'user_id': 1,
       'name': '说脏话',
       'description': '使用不文明语言',
       'points': 100,
@@ -459,6 +467,7 @@ class DatabaseHelper {
     });
 
     await db.insert('penalties', {
+      'user_id': 1,
       'name': '不洗手',
       'description': '饭前便后不洗手',
       'points': 30,
@@ -470,6 +479,7 @@ class DatabaseHelper {
     });
 
     await db.insert('penalties', {
+      'user_id': 1,
       'name': '不收拾玩具',
       'description': '玩完玩具不整理',
       'points': 50,
@@ -481,6 +491,7 @@ class DatabaseHelper {
     });
 
     await db.insert('penalties', {
+      'user_id': 1,
       'name': '作业马虎',
       'description': '作业不认真完成',
       'points': 80,
@@ -714,6 +725,29 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_penalty_records_created_at ON penalty_records(created_at)');
 
       print('Database upgraded to version 10: added penalties and penalty_records tables');
+    }
+
+    // 从版本10升级到版本11：为rewards和penalties表添加user_id字段
+    if (oldVersion < 11) {
+      // 获取第一个用户的ID作为默认值
+      final firstUserResult = await db.rawQuery('SELECT id FROM users ORDER BY id ASC LIMIT 1');
+      final defaultUserId = firstUserResult.isNotEmpty ? firstUserResult.first['id'] as int : 1;
+
+      // 为rewards表添加user_id字段
+      await db.execute('''
+        ALTER TABLE rewards ADD COLUMN user_id INTEGER NOT NULL DEFAULT $defaultUserId
+      ''');
+
+      // 为penalties表添加user_id字段
+      await db.execute('''
+        ALTER TABLE penalties ADD COLUMN user_id INTEGER NOT NULL DEFAULT $defaultUserId
+      ''');
+
+      // 创建索引
+      await db.execute('CREATE INDEX idx_rewards_user_id ON rewards(user_id)');
+      await db.execute('CREATE INDEX idx_penalties_user_id ON penalties(user_id)');
+
+      print('Database upgraded to version 11: added user_id column to rewards and penalties tables');
     }
   }
 
