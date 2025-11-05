@@ -5,10 +5,10 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/reward_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
+import '../../widgets/shop/product_card.dart';
 
 /// 商城页面 - 积分兑换奖励
 class ShopPage extends StatefulWidget {
@@ -328,7 +328,7 @@ class _ShopPageState extends State<ShopPage> {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final reward = displayedRewards[index];
-                            return CustomCard.product(
+                            return ProductCard(
                               name: reward.name,
                               points: reward.points,
                               wordCode: reward.wordCode,
