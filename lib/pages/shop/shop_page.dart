@@ -21,6 +21,7 @@ class ShopPage extends StatefulWidget {
 class _ShopPageState extends State<ShopPage> {
   String _selectedCategory = 'all'; // 当前选中的分类
   String _sortBy = 'none'; // 排序方式：none, asc, desc
+  bool _showAffordableOnly = false; // 是否只显示可兑换的商品
 
   @override
   void initState() {
@@ -72,10 +73,22 @@ class _ShopPageState extends State<ShopPage> {
   }
 
   /// 筛选和排序商品
-  List _filterAndSortRewards(List rewards) {
+  List _filterAndSortRewards(List rewards, int userPoints) {
     var filteredRewards = rewards.where((reward) {
-      if (_selectedCategory == 'all') return true;
-      return reward.category == _selectedCategory;
+      // 按分类筛选
+      if (_selectedCategory != 'all' && reward.category != _selectedCategory) {
+        return false;
+      }
+
+      // 按可兑换筛选
+      if (_showAffordableOnly) {
+        final requiredPoints = reward.minPoints ?? reward.points;
+        if (userPoints < requiredPoints) {
+          return false;
+        }
+      }
+
+      return true;
     }).toList();
 
     // 排序
@@ -162,10 +175,17 @@ class _ShopPageState extends State<ShopPage> {
             return EmptyWidget.noRewards();
           }
 
-          // 筛选和排序商品
-          final displayedRewards = _filterAndSortRewards(rewardProvider.activeRewards);
+          return Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              final currentUserPoints = userProvider.currentUser?.totalPoints ?? 0;
 
-          return CustomScrollView(
+              // 筛选和排序商品
+              final displayedRewards = _filterAndSortRewards(
+                rewardProvider.activeRewards,
+                currentUserPoints,
+              );
+
+              return CustomScrollView(
             slivers: [
               // 分类筛选按钮
               SliverToBoxAdapter(
@@ -212,8 +232,65 @@ class _ShopPageState extends State<ShopPage> {
                           color: AppTheme.textPrimaryColor,
                         ),
                       ),
-                      // 排序按钮
-                      PopupMenuButton<String>(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 可兑换筛选按钮
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showAffordableOnly = !_showAffordableOnly;
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _showAffordableOnly
+                                    ? AppTheme.accentGreen.withValues(alpha: 0.2)
+                                    : Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _showAffordableOnly
+                                      ? AppTheme.accentGreen
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _showAffordableOnly
+                                        ? Icons.check_circle
+                                        : Icons.check_circle_outline,
+                                    size: 16,
+                                    color: _showAffordableOnly
+                                        ? AppTheme.accentGreen
+                                        : AppTheme.textSecondaryColor,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '可兑换',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: _showAffordableOnly
+                                          ? AppTheme.accentGreen
+                                          : AppTheme.textSecondaryColor,
+                                      fontWeight: _showAffordableOnly
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          // 排序按钮
+                          PopupMenuButton<String>(
                         initialValue: _sortBy,
                         icon: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -280,6 +357,8 @@ class _ShopPageState extends State<ShopPage> {
                           ),
                         ],
                       ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -310,50 +389,46 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                 )
               else
-                Consumer<UserProvider>(
-                  builder: (context, userProvider, child) {
-                    final currentUserPoints = userProvider.currentUser?.totalPoints ?? 0;
-
-                    return SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingLarge,
-                      ),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: AppTheme.spacingMedium,
-                          mainAxisSpacing: AppTheme.spacingMedium,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final reward = displayedRewards[index];
-                            return ProductCard(
-                              name: reward.name,
-                              points: reward.points,
-                              wordCode: reward.wordCode,
-                              icon: reward.icon,
-                              imageUrl: reward.imageUrl,
-                              exchangeFrequency: reward.exchangeFrequency,
-                              maxExchangeCount: reward.maxExchangeCount,
-                              minPoints: reward.minPoints,
-                              maxPoints: reward.maxPoints,
-                              currentUserPoints: currentUserPoints,
-                              onTap: () {
-                                _showRewardDetail(context, reward);
-                              },
-                            );
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingLarge,
+                  ),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.65,
+                      crossAxisSpacing: AppTheme.spacingMedium,
+                      mainAxisSpacing: AppTheme.spacingMedium,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final reward = displayedRewards[index];
+                        return ProductCard(
+                          name: reward.name,
+                          points: reward.points,
+                          wordCode: reward.wordCode,
+                          icon: reward.icon,
+                          imageUrl: reward.imageUrl,
+                          exchangeFrequency: reward.exchangeFrequency,
+                          maxExchangeCount: reward.maxExchangeCount,
+                          minPoints: reward.minPoints,
+                          maxPoints: reward.maxPoints,
+                          currentUserPoints: currentUserPoints,
+                          onTap: () {
+                            _showRewardDetail(context, reward);
                           },
-                          childCount: displayedRewards.length,
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      },
+                      childCount: displayedRewards.length,
+                    ),
+                  ),
                 ),
               SliverToBoxAdapter(
                 child: SizedBox(height: AppTheme.spacingLarge),
               ),
             ],
+          );
+            },
           );
         },
       ),

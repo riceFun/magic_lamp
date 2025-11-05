@@ -43,36 +43,39 @@ class ProductCard extends StatelessWidget {
         ? (userPoints / requiredPoints).clamp(0.0, 1.0)
         : 0.0;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          boxShadow: AppTheme.cardShadow,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 商品图片区域
-              Expanded(
-                flex: 4,
-                child: _buildImageSection(isRangeProduct),
-              ),
-
-              // 商品信息区域
-              Expanded(
-                flex: 6,
-                child: _buildInfoSection(
-                  isRangeProduct,
-                  canAfford,
-                  progress,
+    return Opacity(
+      opacity: canAfford ? 1.0 : 0.6,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardColor,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            boxShadow: AppTheme.cardShadow,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 商品图片区域 - 使用 Expanded 防止溢出
+                Expanded(
+                  flex: 5,
+                  child: _buildImageSection(isRangeProduct),
                 ),
-              ),
-            ],
+
+                // 商品信息区域
+                Flexible(
+                  flex: 6,
+                  child: _buildInfoSection(
+                    isRangeProduct,
+                    canAfford,
+                    progress,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
