@@ -96,119 +96,159 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
 
-              // 每日故事卡片
+              // 每日故事卡片 - 重新设计
               if (storyProvider.todayStory != null)
                 SliverToBoxAdapter(
-                  child: Container(
-                    margin: EdgeInsets.fromLTRB(
-                      AppTheme.spacingLarge,
-                      AppTheme.spacingLarge,
-                      AppTheme.spacingLarge,
-                      0,
-                    ),
-                    child: CustomCard(
-                      child: InkWell(
-                        onTap: () {
-                          // 直接跳转到今日故事详情
-                          if (storyProvider.todayStory != null) {
-                            context.push(AppConstants.routeStoryList);
-                            context.push(
-                              '${AppConstants.routeStoryDetail}/${storyProvider.todayStory!.id}',
-                            );
-                          }
-                        },
+                  child: InkWell(
+                    onTap: () {
+                      // 直接跳转到今日故事详情
+                      if (storyProvider.todayStory != null) {
+                        context.push(AppConstants.routeStoryList);
+                        context.push(
+                          '${AppConstants.routeStoryDetail}/${storyProvider.todayStory!.id}',
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppTheme.accentYellow.withValues(alpha: 0.15),
+                            AppTheme.accentOrange.withValues(alpha: 0.08),
+                          ],
+                        ),
                         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                        child: Padding(
-                          padding: EdgeInsets.all(AppTheme.spacingMedium),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.accentYellow.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                                    ),
-                                    child: Text(
-                                      '📖',
-                                      style: TextStyle(fontSize: 24),
-                                    ),
+                              // 图标 - 更大更突出
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      AppTheme.accentYellow,
+                                      AppTheme.accentOrange,
+                                    ],
                                   ),
-                                  SizedBox(width: AppTheme.spacingSmall),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.accentYellow.withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '📖',
+                                    style: TextStyle(fontSize: 32),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: AppTheme.spacingMedium),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '每日故事',
+                                      style: TextStyle(
+                                        fontSize: AppTheme.fontSizeLarge,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimaryColor,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              '每日故事',
-                                              style: TextStyle(
-                                                fontSize: AppTheme.fontSizeMedium,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.textPrimaryColor,
-                                              ),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppTheme.accentGreen,
+                                                AppTheme.accentGreen.withValues(alpha: 0.8),
+                                              ],
                                             ),
-                                            SizedBox(width: 6),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 2,
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppTheme.accentGreen.withValues(alpha: 0.3),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
                                               ),
-                                              decoration: BoxDecoration(
-                                                color: AppTheme.accentYellow,
-                                                borderRadius: BorderRadius.circular(4),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.stars,
+                                                size: 14,
+                                                color: Colors.white,
                                               ),
-                                              child: Text(
-                                                '+10',
+                                              SizedBox(width: 4),
+                                              Text(
+                                                '+10积分',
                                                 style: TextStyle(
-                                                  fontSize: 10,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          '点击阅读今日故事',
-                                          style: TextStyle(
-                                            fontSize: AppTheme.fontSizeSmall,
-                                            color: AppTheme.textSecondaryColor,
+                                            ],
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right,
-                                    color: AppTheme.textHintColor,
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                              SizedBox(height: AppTheme.spacingSmall),
-                              Container(
-                                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.backgroundColor,
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                                ),
-                                child: Text(
-                                  storyProvider.todayStory!.content,
-                                  style: TextStyle(
-                                    fontSize: AppTheme.fontSizeSmall,
-                                    color: AppTheme.textPrimaryColor,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 20,
+                                color: AppTheme.primaryColor,
                               ),
                             ],
                           ),
-                        ),
+                          SizedBox(height: AppTheme.spacingMedium),
+                          Container(
+                            padding: EdgeInsets.all(AppTheme.spacingSmall),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                              border: Border.all(
+                                color: AppTheme.accentYellow.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              storyProvider.todayStory!.content,
+                              style: TextStyle(
+                                fontSize: AppTheme.fontSizeSmall,
+                                color: AppTheme.textPrimaryColor,
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -683,68 +723,102 @@ class _TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
-      decoration: BoxDecoration(
-        color: isCompleted
-            ? AppTheme.accentGreen.withValues(alpha: 0.05)
-            : AppTheme.accentOrange.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      ),
       child: CustomCard(
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          child: Padding(
-            padding: EdgeInsets.all(AppTheme.spacingSmall),
+          child: Container(
+            padding: EdgeInsets.all(AppTheme.spacingMedium),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 顶部行：任务信息和编辑按钮
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 任务图标（无背景）
-                    if (task.icon != null)
-                      Text(
-                        task.icon!,
-                        style: TextStyle(fontSize: 32),
-                      )
-                    else
-                      Icon(
-                        _getTypeIcon(task.type),
-                        color: _getTypeColor(task.type),
-                        size: 32,
+                    // 任务图标 - 更大更突出
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            _getTypeColor(task.type).withValues(alpha: 0.8),
+                            _getTypeColor(task.type),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getTypeColor(task.type).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    SizedBox(width: AppTheme.spacingSmall),
+                      child: Center(
+                        child: task.icon != null
+                            ? Text(
+                                task.icon!,
+                                style: TextStyle(fontSize: 36),
+                              )
+                            : Icon(
+                                _getTypeIcon(task.type),
+                                color: Colors.white,
+                                size: 36,
+                              ),
+                      ),
+                    ),
+                    SizedBox(width: AppTheme.spacingMedium),
 
-                    // 任务标题和类型
+                    // 任务信息
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // 任务标题
                           Text(
                             task.title,
                             style: TextStyle(
-                              fontSize: AppTheme.fontSizeMedium,
+                              fontSize: AppTheme.fontSizeLarge,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textPrimaryColor,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.repeat,
-                                size: 14,
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                _getTaskTypeText(task.type),
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeSmall,
-                                  color: AppTheme.textSecondaryColor,
+                          SizedBox(height: 6),
+
+                          // 任务类型
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getTypeColor(task.type).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.repeat,
+                                  size: 12,
+                                  color: _getTypeColor(task.type),
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Text(
+                                  _getTaskTypeText(task.type),
+                                  style: TextStyle(
+                                    fontSize: AppTheme.fontSizeSmall,
+                                    color: _getTypeColor(task.type),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -768,66 +842,110 @@ class _TaskCard extends StatelessWidget {
                           }
                         }
                       },
-                      child: Icon(
-                        Icons.edit_outlined,
-                        size: 20,
-                        color: AppTheme.textSecondaryColor,
+                      child: Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.backgroundColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: AppTheme.textSecondaryColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: AppTheme.spacingSmall),
+                SizedBox(height: AppTheme.spacingMedium),
 
-                // 底部行：积分和完成状态
+                // 底部：积分和完成状态
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 完成状态 - 更低调的显示
-                    Row(
-                      children: [
-                        Icon(
-                          isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                          size: 16, // 从20减小到16
-                          color: isCompleted
-                              ? AppTheme.textSecondaryColor // 使用更低调的颜色
-                              : AppTheme.textHintColor,
+                    // 积分显示 - 更大更醒目
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFFFFD700), // 金色
+                            Color(0xFFFFA500), // 橙金色
+                          ],
                         ),
-                        SizedBox(width: 4),
-                        Text(
-                          isCompleted ? '已完成' : '待完成',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeXSmall, // 使用更小的字体
-                            color: AppTheme.textHintColor, // 使用更低调的颜色
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFFFFD700).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.monetization_on,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '${task.points}',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
-                    // 积分（大而显眼）
+                    // 完成状态 - 更突出
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentYellow.withValues(alpha: 0.15),
+                        gradient: isCompleted
+                            ? LinearGradient(
+                                colors: [
+                                  AppTheme.accentGreen,
+                                  AppTheme.accentGreen.withValues(alpha: 0.8),
+                                ],
+                              )
+                            : null,
+                        color: isCompleted ? null : AppTheme.backgroundColor,
                         borderRadius: BorderRadius.circular(20),
+                        border: isCompleted
+                            ? null
+                            : Border.all(
+                                color: AppTheme.textHintColor,
+                                width: 1.5,
+                              ),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.monetization_on,
+                            isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                             size: 18,
-                            color: AppTheme.accentYellow,
+                            color: isCompleted ? Colors.white : AppTheme.textSecondaryColor,
                           ),
-                          SizedBox(width: 4),
+                          SizedBox(width: 6),
                           Text(
-                            '${task.points}',
+                            isCompleted ? '已完成' : '待完成',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.accentYellow,
+                              fontSize: AppTheme.fontSizeSmall,
+                              fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
+                              color: isCompleted ? Colors.white : AppTheme.textSecondaryColor,
                             ),
                           ),
                         ],

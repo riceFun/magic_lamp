@@ -5,7 +5,6 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_card.dart';
-import '../../widgets/common/custom_button.dart';
 
 /// 设置页面 - 个人信息、系统设置
 class SettingsPage extends StatelessWidget {
@@ -230,56 +229,10 @@ class SettingsPage extends StatelessWidget {
                 ),
 
                 SizedBox(height: AppTheme.spacingLarge),
-
-                // 退出登录按钮
-                CustomButton.warning(
-                  text: '退出登录',
-                  onPressed: () {
-                    _showLogoutDialog(context, userProvider);
-                  },
-                  icon: Icons.logout,
-                  width: double.infinity,
-                ),
-
-                SizedBox(height: AppTheme.spacingLarge),
               ],
             ),
           );
         },
-      ),
-    );
-  }
-
-  /// 显示退出登录确认对话框
-  void _showLogoutDialog(BuildContext context, UserProvider userProvider) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('退出登录'),
-        content: Text('确定要退出当前账号吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-
-              // 执行退出登录
-              await userProvider.logout();
-
-              // 返回登录页面
-              if (context.mounted) {
-                context.go(AppConstants.routeLogin);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentOrange,
-            ),
-            child: Text('确定'),
-          ),
-        ],
       ),
     );
   }
