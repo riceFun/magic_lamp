@@ -8,6 +8,7 @@ import '../../data/models/user.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 用户列表页面（管理员功能）
 class UserListPage extends StatefulWidget {
@@ -149,28 +150,15 @@ class _UserListPageState extends State<UserListPage> {
       return;
     }
 
-    showDialog(
+    // 使用超级密码验证
+    showPasswordVerificationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('删除用户'),
-        content: Text('确定要删除用户"${user.name}"吗？此操作无法撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await _deleteUser(user);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentRed,
-            ),
-            child: Text('删除'),
-          ),
-        ],
-      ),
+      mode: PasswordMode.super_,
+      title: '危险操作',
+      message: '删除用户需要超级密码',
+      onVerified: () {
+        _deleteUser(user);
+      },
     );
   }
 

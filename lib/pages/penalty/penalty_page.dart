@@ -9,6 +9,7 @@ import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
 import '../../data/models/penalty.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 惩罚页面 - 扣除积分
 class PenaltyPage extends StatefulWidget {
@@ -268,7 +269,16 @@ class _PenaltyPageState extends State<PenaltyPage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              await _applyPenalty(penalty, user.id!, reasonController.text.trim());
+              // 密码验证
+              await showPasswordVerificationDialog(
+                context: context,
+                mode: PasswordMode.user,
+                title: '确认扣分',
+                message: '请输入操作密码以确认扣除惩罚积分',
+                onVerified: () {
+                  _applyPenalty(penalty, user.id!, reasonController.text.trim());
+                },
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentRed,

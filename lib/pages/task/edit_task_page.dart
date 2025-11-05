@@ -7,6 +7,7 @@ import '../../providers/user_provider.dart';
 import '../../data/models/task.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/emoji_picker.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 编辑任务页面
 class EditTaskPage extends StatefulWidget {
@@ -80,6 +81,20 @@ class _EditTaskPageState extends State<EditTaskPage> {
       return;
     }
 
+    // 密码验证
+    await showPasswordVerificationDialog(
+      context: context,
+      mode: PasswordMode.user,
+      title: '确认操作',
+      message: '请输入操作密码以保存任务',
+      onVerified: () {
+        _actualUpdateTask();
+      },
+    );
+  }
+
+  /// 实际执行更新任务操作
+  Future<void> _actualUpdateTask() async {
     setState(() {
       _isLoading = true;
     });
@@ -146,30 +161,20 @@ class _EditTaskPageState extends State<EditTaskPage> {
 
   /// 删除任务
   Future<void> _deleteTask() async {
-    // 显示确认对话框
-    final confirmed = await showDialog<bool>(
+    // 密码验证
+    await showPasswordVerificationDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('确认删除'),
-        content: Text('确定要删除任务"${widget.task.title}"吗？此操作无法撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentRed,
-            ),
-            child: Text('删除'),
-          ),
-        ],
-      ),
+      mode: PasswordMode.user,
+      title: '确认删除',
+      message: '请输入操作密码以删除任务',
+      onVerified: () {
+        _actualDeleteTask();
+      },
     );
+  }
 
-    if (confirmed != true) return;
-
+  /// 实际执行删除任务操作
+  Future<void> _actualDeleteTask() async {
     setState(() {
       _isLoading = true;
     });

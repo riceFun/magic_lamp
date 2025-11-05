@@ -4,6 +4,7 @@ import '../../config/theme.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/user.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 编辑个人资料页面
 class EditProfilePage extends StatefulWidget {
@@ -63,6 +64,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
       );
       return;
     }
+
+    // 密码验证
+    await showPasswordVerificationDialog(
+      context: context,
+      mode: PasswordMode.user,
+      title: '确认保存',
+      message: '请输入操作密码以保存个人资料',
+      onVerified: () {
+        _actualSaveProfile();
+      },
+    );
+  }
+
+  /// 实际执行保存个人资料操作
+  Future<void> _actualSaveProfile() async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null) return;
 
     setState(() {
       _isLoading = true;

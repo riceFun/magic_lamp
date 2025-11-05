@@ -9,6 +9,7 @@ import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/points/points_badge.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
@@ -99,25 +100,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Future<void> _deleteReward() async {
     if (_reward == null) return;
 
-    final confirmed = await showDialog<bool>(
+    // 密码验证
+    await showPasswordVerificationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('确认删除'),
-        content: Text('确定要删除商品 "${_reward!.name}" 吗？此操作不可撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('删除', style: TextStyle(color: AppTheme.accentRed)),
-          ),
-        ],
-      ),
+      mode: PasswordMode.user,
+      title: '确认删除',
+      message: '请输入操作密码以删除商品',
+      onVerified: () {
+        _actualDeleteReward();
+      },
     );
+  }
 
-    if (confirmed != true) return;
+  /// 实际执行删除商品操作
+  Future<void> _actualDeleteReward() async {
+    if (_reward == null) return;
 
     try {
       final rewardProvider = context.read<RewardProvider>();

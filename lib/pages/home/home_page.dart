@@ -12,6 +12,7 @@ import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
 import '../../data/models/task.dart';
 import 'package:magic_lamp/pages/task/edit_task_page.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 首页 - 显示激励任务列表
 class HomePage extends StatefulWidget {
@@ -458,7 +459,16 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
-                await _completeTask(context, task, userId);
+                // 密码验证
+                await showPasswordVerificationDialog(
+                  context: context,
+                  mode: PasswordMode.user,
+                  title: '确认完成任务',
+                  message: '请输入操作密码以完成任务',
+                  onVerified: () {
+                    _actualCompleteTask(context, task, userId);
+                  },
+                );
               },
               child: Text('完成任务'),
             ),
@@ -469,6 +479,11 @@ class _HomePageState extends State<HomePage> {
 
   /// 完成任务
   Future<void> _completeTask(BuildContext context, Task task, int userId) async {
+    // 此方法已被移除，使用密码验证后调用 _actualCompleteTask
+  }
+
+  /// 实际执行完成任务操作
+  Future<void> _actualCompleteTask(BuildContext context, Task task, int userId) async {
     final taskProvider = context.read<TaskProvider>();
     final userProvider = context.read<UserProvider>();
 

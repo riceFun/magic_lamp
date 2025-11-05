@@ -7,6 +7,7 @@ import '../../config/constants.dart';
 import '../../providers/advance_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 预支申请页面
 class AdvanceApplyPage extends StatefulWidget {
@@ -47,6 +48,25 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
       );
       return;
     }
+
+    // 密码验证
+    await showPasswordVerificationDialog(
+      context: context,
+      mode: PasswordMode.user,
+      title: '确认预支',
+      message: '请输入操作密码以申请预支积分',
+      onVerified: () {
+        _actualApplyAdvance();
+      },
+    );
+  }
+
+  /// 实际执行预支申请操作
+  Future<void> _actualApplyAdvance() async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null) return;
 
     setState(() {
       _isLoading = true;

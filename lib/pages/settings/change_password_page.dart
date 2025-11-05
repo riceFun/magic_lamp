@@ -143,7 +143,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   SizedBox(width: AppTheme.spacingSmall),
                   Expanded(
                     child: Text(
-                      '请先输入超级密码（2333）以验证身份，然后设置新的4位数字操作密码',
+                      '请先输入超级密码，以验证身份，然后设置新的4位数字操作密码，提示(159****2333)',
                       style: TextStyle(
                         fontSize: AppTheme.fontSizeSmall,
                         color: AppTheme.textPrimaryColor,

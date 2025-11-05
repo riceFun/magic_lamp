@@ -6,6 +6,7 @@ import '../../providers/reward_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/password_verification_dialog.dart';
 
 /// 商品编辑页面（管理员功能）
 class EditRewardPage extends StatefulWidget {
@@ -140,6 +141,20 @@ class _EditRewardPageState extends State<EditRewardPage> {
       return;
     }
 
+    // 密码验证
+    await showPasswordVerificationDialog(
+      context: context,
+      mode: PasswordMode.user,
+      title: '确认保存',
+      message: '请输入操作密码以保存商品',
+      onVerified: () {
+        _actualSaveReward();
+      },
+    );
+  }
+
+  /// 实际执行保存商品操作
+  Future<void> _actualSaveReward() async {
     setState(() {
       _isLoading = true;
     });
