@@ -263,20 +263,6 @@ class _RewardManagementPageState extends State<RewardManagementPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  SizedBox(width: AppTheme.spacingMedium),
-                                  Icon(
-                                    Icons.inventory,
-                                    size: 16,
-                                    color: AppTheme.textSecondaryColor,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    '库存 ${reward.stock}',
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeSmall,
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                  ),
                                 ],
                               ),
                               if (reward.description != null &&

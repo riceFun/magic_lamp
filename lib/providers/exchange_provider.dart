@@ -48,13 +48,6 @@ class ExchangeProvider with ChangeNotifier {
         return null;
       }
 
-      // 检查库存
-      if (reward.stock != -1 && reward.stock <= 0) {
-        _errorMessage = '该奖励已售罄';
-        notifyListeners();
-        return null;
-      }
-
       // 获取用户信息
       final user = await _userRepository.getUserById(userId);
       if (user == null) {
@@ -116,13 +109,6 @@ class ExchangeProvider with ChangeNotifier {
           description: '兑换：${reward.name}',
         );
         await _pointRecordRepository.createPointRecord(pointRecord);
-      }
-
-      // 减少库存（如果有库存限制）
-      if (reward.stock != -1) {
-        await _rewardRepository.updateReward(
-          reward.copyWith(stock: reward.stock - 1),
-        );
       }
 
       // 学习词汇

@@ -24,7 +24,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
   final _minPointsController = TextEditingController();
   final _maxPointsController = TextEditingController();
   final _wordCodeController = TextEditingController();
-  final _stockController = TextEditingController();
   final _maxExchangeCountController = TextEditingController();
   final _iconController = TextEditingController();
   final _typeController = TextEditingController();
@@ -34,7 +33,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
   String _selectedStatus = 'active';
   String? _selectedExchangeFrequency; // null表示无限制
   bool _isRangePoints = false; // 是否使用范围积分
-  bool _isUnlimitedStock = false;
   bool _hasMaxExchangeCount = false;
   bool _isLoading = false;
   bool _isLoadingData = false;
@@ -46,8 +44,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
     super.initState();
     if (widget.rewardId != null) {
       _loadReward();
-    } else {
-      _stockController.text = '10';
     }
   }
 
@@ -59,7 +55,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
     _minPointsController.dispose();
     _maxPointsController.dispose();
     _wordCodeController.dispose();
-    _stockController.dispose();
     _maxExchangeCountController.dispose();
     _iconController.dispose();
     _typeController.dispose();
@@ -100,14 +95,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
           _pointsController.text = reward.points.toString();
           _minPointsController.text = '';
           _maxPointsController.text = '';
-        }
-
-        if (reward.stock == -1) {
-          _isUnlimitedStock = true;
-          _stockController.text = '0';
-        } else {
-          _isUnlimitedStock = false;
-          _stockController.text = reward.stock.toString();
         }
 
         if (reward.maxExchangeCount != null) {
@@ -170,7 +157,7 @@ class _EditRewardPageState extends State<EditRewardPage> {
         maxPoints: _isRangePoints ? int.parse(_maxPointsController.text) : null,
         wordCode: _wordCodeController.text.trim(),
         category: _selectedCategory,
-        stock: _isUnlimitedStock ? -1 : int.parse(_stockController.text),
+        stock: -1,
         status: _selectedStatus,
         exchangeFrequency: _selectedExchangeFrequency,
         maxExchangeCount: _hasMaxExchangeCount
@@ -602,65 +589,6 @@ class _EditRewardPageState extends State<EditRewardPage> {
                       fillColor: Colors.white,
                     ),
                   ),
-
-                  SizedBox(height: AppTheme.spacingLarge),
-
-                  // 库存
-                  Text(
-                    '库存数量',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  CheckboxListTile(
-                    title: Text('无限库存'),
-                    value: _isUnlimitedStock,
-                    onChanged: (value) {
-                      setState(() {
-                        _isUnlimitedStock = value!;
-                        if (_isUnlimitedStock) {
-                          _stockController.text = '0';
-                        }
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  if (!_isUnlimitedStock) ...[
-                    TextFormField(
-                      controller: _stockController,
-                      decoration: InputDecoration(
-                        hintText: '请输入库存数量',
-                        prefixIcon: Icon(Icons.inventory),
-                        suffixText: '件',
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusMedium),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      validator: (value) {
-                        if (!_isUnlimitedStock) {
-                          if (value == null || value.trim().isEmpty) {
-                            return '请输入库存数量';
-                          }
-                          final stock = int.tryParse(value);
-                          if (stock == null || stock < 0) {
-                            return '库存必须大于等于0';
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
 
                   SizedBox(height: AppTheme.spacingLarge),
 

@@ -163,14 +163,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (_reward == null) return;
 
-    // 检查库存
-    if (!_reward!.hasStock) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('该商品已售罄'), backgroundColor: AppTheme.accentRed),
-      );
-      return;
-    }
-
     // 检查是否可兑换，如果不可兑换则显示具体原因
     if (_isExchangeable == false) {
       final exchangeProvider = context.read<ExchangeProvider>();
@@ -610,21 +602,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                 ),
                                               ),
                                             ],),
-                                            Text(
-                                              '库存：${_reward!.stock == -1 ? '∞' : '${_reward!.stock}'}',
-                                              style: TextStyle(
-                                                fontSize:
-                                                    AppTheme.fontSizeMedium,
-                                                fontWeight: FontWeight.bold,
-                                                color:
-                                                    _reward!.stock == -1 ||
-                                                        _reward!.stock > 10
-                                                    ? AppTheme.accentGreen
-                                                    : _reward!.stock > 0
-                                                    ? AppTheme.accentOrange
-                                                    : AppTheme.accentRed,
-                                              ),
-                                            ),
                                           ],
                                         ),
                                       ),
@@ -730,10 +707,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             Expanded(
                               flex: 2,
                               child: GestureDetector(
-                                onTap: () {
-                                  context.push(
+                                onTap: () async {
+                                  final result = await context.push(
                                     '${AppConstants.routeRewardEdit}?id=${_reward!.id}',
                                   );
+
+                                  // 如果编辑成功，重新加载商品数据
+                                  if (result == true && mounted) {
+                                    await _loadReward();
+                                  }
                                 },
                                 child: Container(
                                   height: 50,
@@ -779,8 +761,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   height: 50,
                                   decoration: BoxDecoration(
                                     gradient:
-                                        (_reward!.hasStock &&
-                                            (_isExchangeable ?? false) &&
+                                        ((_isExchangeable ?? false) &&
                                             !_isExchanging)
                                         ? LinearGradient(
                                             colors: [
@@ -790,8 +771,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                           )
                                         : null,
                                     color:
-                                        (_reward!.hasStock &&
-                                            (_isExchangeable ?? false) &&
+                                        ((_isExchangeable ?? false) &&
                                             !_isExchanging)
                                         ? null
                                         : Colors.grey.withValues(alpha: 0.3),
@@ -818,21 +798,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         Icon(
                                           Icons.redeem,
                                           color:
-                                              (_reward!.hasStock &&
-                                                  (_isExchangeable ?? false))
+                                              (_isExchangeable ?? false)
                                               ? Colors.white
                                               : AppTheme.textSecondaryColor,
                                           size: 20,
                                         ),
                                       SizedBox(width: 8),
                                       Text(
-                                        _reward!.hasStock ? '立即兑换' : '已售罄',
+                                        '立即兑换',
                                         style: TextStyle(
                                           fontSize: AppTheme.fontSizeMedium,
                                           fontWeight: FontWeight.bold,
                                           color:
-                                              (_reward!.hasStock &&
-                                                  (_isExchangeable ?? false) &&
+                                              ((_isExchangeable ?? false) &&
                                                   !_isExchanging)
                                               ? Colors.white
                                               : AppTheme.textSecondaryColor,
