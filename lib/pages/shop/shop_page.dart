@@ -84,10 +84,11 @@ class _ShopPageState extends State<ShopPage> {
         return false;
       }
 
-      // 按可兑换筛选
+      // 按可兑换筛选（考虑积分、周期、次数等所有限制）
       if (_showAffordableOnly) {
-        final requiredPoints = reward.minPoints ?? reward.points;
-        if (userPoints < requiredPoints) {
+        final isExchangeable = _exchangeabilityMap[reward.id];
+        // 如果还没有检查过可兑换状态，或者不可兑换，则过滤掉
+        if (isExchangeable != true) {
           return false;
         }
       }
