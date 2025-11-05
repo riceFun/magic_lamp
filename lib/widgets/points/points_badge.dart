@@ -21,13 +21,13 @@ class PointsBadge extends StatelessWidget {
       },
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingMedium,
-          vertical: AppTheme.spacingSmall,
+          horizontal: AppTheme.spacingXSmall,
+          vertical: AppTheme.spacingXSmall,
         ),
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMedium,
-            vertical: AppTheme.spacingSmall,
+            horizontal: AppTheme.spacingXSmall,
+            vertical: AppTheme.spacingXSmall,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
@@ -37,7 +37,8 @@ class PointsBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.monetization_on,
+                Icons.attach_money,
+                // Icons.monetization_on,
                 size: 20,
                 color: AppTheme.accentYellow,
               ),

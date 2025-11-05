@@ -8,6 +8,7 @@ import '../../providers/exchange_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/reward.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../../widgets/points/points_badge.dart';
 
 /// 商品详情页面
 class ProductDetailPage extends StatefulWidget {
@@ -46,7 +47,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       // 加载完成后检查可兑换状态
       if (reward != null) {
-        _checkExchangeability();
+        _checkExchangeAbility();
       }
     } catch (e) {
       setState(() {
@@ -64,7 +65,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   /// 检查商品是否可兑换（考虑积分、频率、次数等所有限制）
-  Future<void> _checkExchangeability() async {
+  Future<void> _checkExchangeAbility() async {
     final userProvider = context.read<UserProvider>();
     final user = userProvider.currentUser;
 
@@ -123,17 +124,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final success = await rewardProvider.deleteReward(_reward!.id!);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('商品已删除')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('商品已删除')));
         // 返回到商城页面
         Navigator.of(context).pop();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('删除失败'),
-            backgroundColor: AppTheme.accentRed,
-          ),
+          SnackBar(content: Text('删除失败'), backgroundColor: AppTheme.accentRed),
         );
       }
     } catch (e) {
@@ -158,10 +156,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('请先登录'),
-          backgroundColor: AppTheme.accentRed,
-        ),
+        SnackBar(content: Text('请先登录'), backgroundColor: AppTheme.accentRed),
       );
       return;
     }
@@ -171,10 +166,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     // 检查库存
     if (!_reward!.hasStock) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('该商品已售罄'),
-          backgroundColor: AppTheme.accentRed,
-        ),
+        SnackBar(content: Text('该商品已售罄'), backgroundColor: AppTheme.accentRed),
       );
       return;
     }
@@ -285,6 +277,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         // 刷新用户积分
         await userProvider.refreshCurrentUser();
 
+        // 重新检查可兑换状态
+        await _checkExchangeAbility();
+
         if (mounted) {
           // 显示成功对话框
           _showSuccessDialog();
@@ -325,11 +320,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: AppTheme.accentGreen,
-              size: 28,
-            ),
+            Icon(Icons.check_circle, color: AppTheme.accentGreen, size: 28),
             SizedBox(width: AppTheme.spacingSmall),
             Text('兑换成功！'),
           ],
@@ -438,9 +429,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        ///pppppp
         title: Text('商品详情'),
         actions: [
+          // 显示当前积分
+          Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              final user = userProvider.currentUser;
+              if (user == null) return SizedBox.shrink();
+              return PointsBadge(points: user.totalPoints);
+            },
+          ),
+          SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.delete_outline),
             onPressed: _deleteReward,
@@ -451,43 +450,45 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       body: _isLoading
           ? LoadingWidget(message: '加载商品信息...')
           : _reward == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 80,
-                        color: AppTheme.textSecondaryColor.withValues(alpha: 0.5),
-                      ),
-                      SizedBox(height: AppTheme.spacingLarge),
-                      Text(
-                        '商品不存在',
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeLarge,
-                          color: AppTheme.textSecondaryColor,
-                        ),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 80,
+                    color: AppTheme.textSecondaryColor.withValues(alpha: 0.5),
                   ),
-                )
-              : Consumer<UserProvider>(
-                  builder: (context, userProvider, child) {
-                    final user = userProvider.currentUser;
-                    final userPoints = user?.totalPoints ?? 0;
-                    final canAfford = userPoints >= _reward!.points;
+                  SizedBox(height: AppTheme.spacingLarge),
+                  Text(
+                    '商品不存在',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSizeLarge,
+                      color: AppTheme.textSecondaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Consumer<UserProvider>(
+              builder: (context, userProvider, child) {
+                final user = userProvider.currentUser;
+                final userPoints = user?.totalPoints ?? 0;
+                final canAfford = userPoints >= _reward!.points;
 
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.all(AppTheme.spacingLarge),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // 商品图标和名称
-                                Center(
-                                  child: Column(
+                return Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.all(AppTheme.spacingLarge),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 商品图标和名称
+                            Center(
+                              child: Column(
+                                children: [
+                                  Row(
                                     children: [
                                       // 图标容器（带类型角标）
                                       Stack(
@@ -507,15 +508,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                       .withValues(alpha: 0.15),
                                                 ],
                                               ),
-                                              borderRadius: BorderRadius.circular(
-                                                AppTheme.radiusLarge,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusLarge,
+                                                  ),
                                               boxShadow: AppTheme.cardShadow,
                                             ),
                                             child: Center(
                                               child: Text(
                                                 _reward!.icon != null &&
-                                                        _reward!.icon!.isNotEmpty
+                                                        _reward!
+                                                            .icon!
+                                                            .isNotEmpty
                                                     ? _reward!.icon!
                                                     : '🎁', // 默认礼物emoji
                                                 style: TextStyle(fontSize: 64),
@@ -554,17 +558,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                 children: [
                                                   Icon(
                                                     _getCategoryIcon(
-                                                        _reward!.category),
+                                                      _reward!.category,
+                                                    ),
                                                     size: 12,
                                                     color: Colors.white,
                                                   ),
                                                   SizedBox(width: 4),
                                                   Text(
                                                     _getCategoryText(
-                                                        _reward!.category),
+                                                      _reward!.category,
+                                                    ),
                                                     style: TextStyle(
                                                       fontSize: 10,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -574,328 +581,276 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: AppTheme.spacingMedium),
-                                      Text(
-                                        _reward!.name,
-                                        style: TextStyle(
-                                          fontSize: AppTheme.fontSizeXLarge,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.textPrimaryColor,
+                                      SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _reward!.name,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTheme.fontSizeXLarge,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    AppTheme.textPrimaryColor,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            Row(children: [
+                                              Icon(Icons.attach_money, size: AppTheme.fontSizeXLarge, color: AppTheme.accentOrange,),
+                                              Text(
+                                                '${_reward!.points}',
+                                                style: TextStyle(
+                                                  fontSize:
+                                                  AppTheme.fontSizeXLarge,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppTheme.accentOrange,
+                                                ),
+                                              ),
+                                            ],),
+                                            Text(
+                                              '库存：${_reward!.stock == -1 ? '∞' : '${_reward!.stock}'}',
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTheme.fontSizeMedium,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    _reward!.stock == -1 ||
+                                                        _reward!.stock > 10
+                                                    ? AppTheme.accentGreen
+                                                    : _reward!.stock > 0
+                                                    ? AppTheme.accentOrange
+                                                    : AppTheme.accentRed,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
+
+                                  SizedBox(height: AppTheme.spacingMedium),
+                                ],
+                              ),
+                            ),
+
+                            SizedBox(height: AppTheme.spacingLarge),
+
+                            // 商品描述
+                            if (_reward!.description != null &&
+                                _reward!.description!.isNotEmpty) ...[
+                              Text(
+                                '商品描述',
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeLarge,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
                                 ),
+                              ),
+                              SizedBox(height: AppTheme.spacingSmall),
+                              Text(
+                                _reward!.description!,
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeMedium,
+                                  color: AppTheme.textPrimaryColor,
+                                  height: 1.6,
+                                ),
+                              ),
+                              SizedBox(height: AppTheme.spacingLarge),
+                            ],
 
-                                SizedBox(height: AppTheme.spacingLarge),
+                            // 用户积分提示
+                            Visibility(
+                              visible: canAfford == false,
+                              child: Container(
+                                padding: EdgeInsets.all(AppTheme.spacingMedium),
+                                decoration: BoxDecoration(
+                                  color: canAfford
+                                      ? AppTheme.accentGreen.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : AppTheme.accentRed.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusSmall,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      canAfford
+                                          ? Icons.check_circle
+                                          : Icons.warning,
+                                      color: canAfford
+                                          ? AppTheme.accentGreen
+                                          : AppTheme.accentRed,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: AppTheme.spacingSmall),
+                                    Expanded(
+                                      child: Text(
+                                        canAfford
+                                            ? '你的积分充足，可以兑换此商品'
+                                            : '积分不足，还需 ${_reward!.points - userPoints} 积分',
+                                        style: TextStyle(
+                                          fontSize: AppTheme.fontSizeSmall,
+                                          color: canAfford
+                                              ? AppTheme.accentGreen
+                                              : AppTheme.accentRed,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
 
-                                // 积分信息
-                                Container(
-                                  padding: EdgeInsets.all(AppTheme.spacingMedium),
+                    // 底部按钮区域
+                    Container(
+                      padding: EdgeInsets.all(AppTheme.spacingMedium),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            offset: Offset(0, -2),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: Row(
+                          children: [
+                            // 编辑按钮
+                            Expanded(
+                              flex: 2,
+                              child: GestureDetector(
+                                onTap: () {
+                                  context.push(
+                                    '${AppConstants.routeRewardEdit}?id=${_reward!.id}',
+                                  );
+                                },
+                                child: Container(
+                                  height: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(
                                       AppTheme.radiusMedium,
                                     ),
-                                    boxShadow: AppTheme.cardShadow,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Icon(
-                                            Icons.monetization_on,
-                                            size: 32,
-                                            color: AppTheme.accentOrange,
-                                          ),
-                                          SizedBox(height: AppTheme.spacingXSmall),
-                                          Text(
-                                            '${_reward!.points}',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeXLarge,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppTheme.accentOrange,
-                                            ),
-                                          ),
-                                          Text(
-                                            '所需积分',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeSmall,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Container(
-                                        width: 1,
-                                        height: 60,
-                                        color: AppTheme.dividerColor,
-                                      ),
-                                      Column(
-                                        children: [
-                                          Icon(
-                                            Icons.inventory,
-                                            size: 32,
-                                            color: _reward!.stock == -1 ||
-                                                    _reward!.stock > 10
-                                                ? AppTheme.accentGreen
-                                                : _reward!.stock > 0
-                                                    ? AppTheme.accentOrange
-                                                    : AppTheme.accentRed,
-                                          ),
-                                          SizedBox(height: AppTheme.spacingXSmall),
-                                          Text(
-                                            _reward!.stock == -1
-                                                ? '∞'
-                                                : '${_reward!.stock}',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeXLarge,
-                                              fontWeight: FontWeight.bold,
-                                              color: _reward!.stock == -1 ||
-                                                      _reward!.stock > 10
-                                                  ? AppTheme.accentGreen
-                                                  : _reward!.stock > 0
-                                                      ? AppTheme.accentOrange
-                                                      : AppTheme.accentRed,
-                                            ),
-                                          ),
-                                          Text(
-                                            _reward!.stock == -1
-                                                ? '无限库存'
-                                                : '剩余库存',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeSmall,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                SizedBox(height: AppTheme.spacingLarge),
-
-                                // 商品描述
-                                if (_reward!.description != null &&
-                                    _reward!.description!.isNotEmpty) ...[
-                                  Text(
-                                    '商品描述',
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeLarge,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimaryColor,
-                                    ),
-                                  ),
-                                  SizedBox(height: AppTheme.spacingSmall),
-                                  Container(
-                                    padding: EdgeInsets.all(AppTheme.spacingMedium),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.radiusMedium,
-                                      ),
-                                      boxShadow: AppTheme.cardShadow,
-                                    ),
-                                    child: Text(
-                                      _reward!.description!,
-                                      style: TextStyle(
-                                        fontSize: AppTheme.fontSizeMedium,
-                                        color: AppTheme.textPrimaryColor,
-                                        height: 1.6,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: AppTheme.spacingLarge),
-                                ],
-
-                                // 用户积分提示
-                                Container(
-                                  padding: EdgeInsets.all(AppTheme.spacingMedium),
-                                  decoration: BoxDecoration(
-                                    color: canAfford
-                                        ? AppTheme.accentGreen.withValues(alpha: 0.1)
-                                        : AppTheme.accentRed.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusSmall,
+                                    border: Border.all(
+                                      color: AppTheme.primaryColor,
+                                      width: 2,
                                     ),
                                   ),
                                   child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        canAfford
-                                            ? Icons.check_circle
-                                            : Icons.warning,
-                                        color: canAfford
-                                            ? AppTheme.accentGreen
-                                            : AppTheme.accentRed,
+                                        Icons.edit,
+                                        color: AppTheme.primaryColor,
                                         size: 20,
                                       ),
-                                      SizedBox(width: AppTheme.spacingSmall),
-                                      Expanded(
-                                        child: Text(
-                                          canAfford
-                                              ? '你的积分充足，可以兑换此商品'
-                                              : '积分不足，还需 ${_reward!.points - userPoints} 积分',
-                                          style: TextStyle(
-                                            fontSize: AppTheme.fontSizeSmall,
-                                            color: canAfford
-                                                ? AppTheme.accentGreen
-                                                : AppTheme.accentRed,
-                                          ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '编辑商品',
+                                        style: TextStyle(
+                                          fontSize: AppTheme.fontSizeMedium,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryColor,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // 底部按钮区域
-                        Container(
-                          padding: EdgeInsets.all(AppTheme.spacingMedium),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                offset: Offset(0, -2),
-                                blurRadius: 8,
                               ),
-                            ],
-                          ),
-                          child: SafeArea(
-                            child: Row(
-                              children: [
-                                // 编辑按钮
-                                Expanded(
-                                  flex: 2,s
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      context.push(
-                                        '${AppConstants.routeRewardEdit}?id=${_reward!.id}',
-                                      );
-                                    },
-                                    child: Container(
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
-                                        ),
-                                        border: Border.all(
-                                          color: AppTheme.primaryColor,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.edit,
-                                            color: AppTheme.primaryColor,
-                                            size: 20,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            '编辑商品',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeMedium,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppTheme.primaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                            ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            // 兑换按钮
+                            Expanded(
+                              flex: 3,
+                              child: GestureDetector(
+                                onTap: _exchangeReward, // 总是可以点击
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    gradient:
+                                        (_reward!.hasStock &&
+                                            (_isExchangeable ?? false) &&
+                                            !_isExchanging)
+                                        ? LinearGradient(
+                                            colors: [
+                                              AppTheme.primaryColor,
+                                              AppTheme.primaryDarkColor,
+                                            ],
+                                          )
+                                        : null,
+                                    color:
+                                        (_reward!.hasStock &&
+                                            (_isExchangeable ?? false) &&
+                                            !_isExchanging)
+                                        ? null
+                                        : Colors.grey.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusMedium,
                                     ),
                                   ),
-                                ),
-                                SizedBox(width: AppTheme.spacingMedium),
-                                // 兑换按钮
-                                Expanded(
-                                  flex: 3,
-                                  child: GestureDetector(
-                                    onTap: _exchangeReward, // 总是可以点击
-                                    child: Container(
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        gradient: (_reward!.hasStock &&
-                                                (_isExchangeable ?? false) &&
-                                                !_isExchanging)
-                                            ? LinearGradient(
-                                                colors: [
-                                                  AppTheme.primaryColor,
-                                                  AppTheme.primaryDarkColor,
-                                                ],
-                                              )
-                                            : null,
-                                        color: (_reward!.hasStock &&
-                                                (_isExchangeable ?? false) &&
-                                                !_isExchanging)
-                                            ? null
-                                            : Colors.grey.withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusMedium,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (_isExchanging)
-                                            SizedBox(
-                                              width: 20,
-                                              height: 20,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (_isExchanging)
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
                                                   Colors.white,
                                                 ),
-                                              ),
-                                            )
-                                          else
-                                            Icon(
-                                              Icons.redeem,
-                                              color: (_reward!.hasStock &&
-                                                      (_isExchangeable ?? false))
-                                                  ? Colors.white
-                                                  : AppTheme.textSecondaryColor,
-                                              size: 20,
-                                            ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            _reward!.hasStock ? '立即兑换' : '已售罄',
-                                            style: TextStyle(
-                                              fontSize: AppTheme.fontSizeMedium,
-                                              fontWeight: FontWeight.bold,
-                                              color: (_reward!.hasStock &&
-                                                      (_isExchangeable ?? false) &&
-                                                      !_isExchanging)
-                                                  ? Colors.white
-                                                  : AppTheme.textSecondaryColor,
-                                            ),
                                           ),
-                                        ],
+                                        )
+                                      else
+                                        Icon(
+                                          Icons.redeem,
+                                          color:
+                                              (_reward!.hasStock &&
+                                                  (_isExchangeable ?? false))
+                                              ? Colors.white
+                                              : AppTheme.textSecondaryColor,
+                                          size: 20,
+                                        ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        _reward!.hasStock ? '立即兑换' : '已售罄',
+                                        style: TextStyle(
+                                          fontSize: AppTheme.fontSizeMedium,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              (_reward!.hasStock &&
+                                                  (_isExchangeable ?? false) &&
+                                                  !_isExchanging)
+                                              ? Colors.white
+                                              : AppTheme.textSecondaryColor,
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
     );
   }
 }
