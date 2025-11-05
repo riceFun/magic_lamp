@@ -291,6 +291,37 @@ class DatabaseHelper {
       )
     ''');
 
+    // 17. 惩罚项目表
+    await db.execute('''
+      CREATE TABLE penalties (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        points INTEGER NOT NULL,
+        icon TEXT,
+        category TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        note TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
+    // 18. 惩罚记录表
+    await db.execute('''
+      CREATE TABLE penalty_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        penalty_id INTEGER NOT NULL,
+        penalty_name TEXT NOT NULL,
+        points_deducted INTEGER NOT NULL,
+        reason TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id),
+        FOREIGN KEY (penalty_id) REFERENCES penalties (id)
+      )
+    ''');
+
     // 创建索引以提高查询性能
     await _createIndexes(db);
 
@@ -337,6 +368,14 @@ class DatabaseHelper {
     // 老虎机游戏记录表索引
     await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
     await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
+
+    // 惩罚项目表索引
+    await db.execute('CREATE INDEX idx_penalties_status ON penalties(status)');
+    await db.execute('CREATE INDEX idx_penalties_category ON penalties(category)');
+
+    // 惩罚记录表索引
+    await db.execute('CREATE INDEX idx_penalty_records_user_id ON penalty_records(user_id)');
+    await db.execute('CREATE INDEX idx_penalty_records_created_at ON penalty_records(created_at)');
   }
 
   /// 插入初始数据
@@ -395,6 +434,62 @@ class DatabaseHelper {
 
     // 插入任务模板
     await TaskTemplateRepository.insertInitialTemplates(db);
+
+    // 插入示例惩罚项目
+    await db.insert('penalties', {
+      'name': '说谎',
+      'description': '不诚实，说谎话',
+      'points': 100,
+      'icon': '🤥',
+      'category': 'behavior',
+      'status': 'active',
+      'created_at': now,
+      'updated_at': now,
+    });
+
+    await db.insert('penalties', {
+      'name': '说脏话',
+      'description': '使用不文明语言',
+      'points': 100,
+      'icon': '🤬',
+      'category': 'language',
+      'status': 'active',
+      'created_at': now,
+      'updated_at': now,
+    });
+
+    await db.insert('penalties', {
+      'name': '不洗手',
+      'description': '饭前便后不洗手',
+      'points': 30,
+      'icon': '🧼',
+      'category': 'hygiene',
+      'status': 'active',
+      'created_at': now,
+      'updated_at': now,
+    });
+
+    await db.insert('penalties', {
+      'name': '不收拾玩具',
+      'description': '玩完玩具不整理',
+      'points': 50,
+      'icon': '🧸',
+      'category': 'behavior',
+      'status': 'active',
+      'created_at': now,
+      'updated_at': now,
+    });
+
+    await db.insert('penalties', {
+      'name': '作业马虎',
+      'description': '作业不认真完成',
+      'points': 80,
+      'icon': '✏️',
+      'category': 'study',
+      'status': 'active',
+      'created_at': now,
+      'updated_at': now,
+    });
   }
 
   /// 数据库升级
@@ -577,6 +672,48 @@ class DatabaseHelper {
       ''');
 
       print('Database upgraded to version 9: added icon, type, note columns to rewards table');
+    }
+
+    // 从版本9升级到版本10：添加惩罚功能表
+    if (oldVersion < 10) {
+      // 创建惩罚项目表
+      await db.execute('''
+        CREATE TABLE penalties (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          points INTEGER NOT NULL,
+          icon TEXT,
+          category TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
+          note TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      ''');
+
+      // 创建惩罚记录表
+      await db.execute('''
+        CREATE TABLE penalty_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          penalty_id INTEGER NOT NULL,
+          penalty_name TEXT NOT NULL,
+          points_deducted INTEGER NOT NULL,
+          reason TEXT,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id),
+          FOREIGN KEY (penalty_id) REFERENCES penalties (id)
+        )
+      ''');
+
+      // 创建索引
+      await db.execute('CREATE INDEX idx_penalties_status ON penalties(status)');
+      await db.execute('CREATE INDEX idx_penalties_category ON penalties(category)');
+      await db.execute('CREATE INDEX idx_penalty_records_user_id ON penalty_records(user_id)');
+      await db.execute('CREATE INDEX idx_penalty_records_created_at ON penalty_records(created_at)');
+
+      print('Database upgraded to version 10: added penalties and penalty_records tables');
     }
   }
 

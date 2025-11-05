@@ -18,6 +18,8 @@ import '../pages/shop/product_detail_page.dart';
 import '../pages/shop/exchange_history_page.dart';
 import '../pages/points/points_detail_page.dart';
 import '../pages/game/slot_machine_game_page.dart';
+import '../pages/penalty/penalty_management_page.dart';
+import '../pages/penalty/edit_penalty_page.dart';
 import 'constants.dart';
 
 /// 应用路由配置
@@ -155,6 +157,22 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeSlotGame,
         builder: (context, state) => SlotMachineGamePage(),
+      ),
+
+      // 惩罚管理
+      GoRoute(
+        path: AppConstants.routePenaltyManagement,
+        builder: (context, state) => PenaltyManagementPage(),
+      ),
+
+      // 编辑惩罚
+      GoRoute(
+        path: AppConstants.routePenaltyEdit,
+        builder: (context, state) {
+          final idParam = state.uri.queryParameters['id'];
+          final penaltyId = idParam != null ? int.tryParse(idParam) : null;
+          return EditPenaltyPage(penaltyId: penaltyId);
+        },
       ),
     ],
 

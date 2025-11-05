@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import 'home/home_page.dart';
+import 'penalty/penalty_page.dart';
 import 'shop/shop_page.dart';
 import 'statistics/statistics_page.dart';
 import 'settings/settings_page.dart';
@@ -24,6 +25,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   /// 页面列表
   final List<Widget> _pages = [
     HomePage(),
+    PenaltyPage(),
     PointsDetailPage(),
     ShopPage(),
     StatisticsPage(),
@@ -36,6 +38,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       icon: Icon(Icons.home_outlined),
       activeIcon: Icon(Icons.home),
       label: '首页',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.warning_amber_outlined),
+      activeIcon: Icon(Icons.warning_amber),
+      label: '惩罚',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.account_balance_wallet_outlined),

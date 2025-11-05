@@ -88,7 +88,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 9;
+  static const int databaseVersion = 10;
 
   // ==================== 本地存储 Key ====================
 
@@ -183,6 +183,12 @@ class AppConstants {
 
   /// 积分大富翁游戏
   static const String routeSlotGame = '/game/slot-machine';
+
+  /// 惩罚管理
+  static const String routePenaltyManagement = '/penalty/management';
+
+  /// 编辑惩罚
+  static const String routePenaltyEdit = '/penalty/edit';
 
   // ==================== 动画时长 ====================
 
