@@ -126,6 +126,8 @@ class _ShopPageState extends State<ShopPage> {
   ) async {
     if (_isCheckingExchangeability) return;
 
+    if (!mounted) return; // 添加 mounted 检查
+
     setState(() {
       _isCheckingExchangeability = true;
     });

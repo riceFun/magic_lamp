@@ -212,10 +212,7 @@ class SettingsPage extends StatelessWidget {
                         title: '数据备份',
                         subtitle: '备份和恢复数据',
                         onTap: () {
-                          // TODO: 跳转到数据备份页面
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('数据备份功能开发中...')),
-                          );
+                          context.push(AppConstants.routeBackup);
                         },
                       ),
                       Divider(height: 1),
