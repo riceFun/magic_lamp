@@ -25,7 +25,10 @@ class _UserListPageState extends State<UserListPage> {
   @override
   void initState() {
     super.initState();
-    _loadUsers();
+    // 延迟到构建完成后再加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUsers();
+    });
   }
 
   Future<void> _loadUsers() async {
