@@ -749,6 +749,63 @@ class DatabaseHelper {
 
       print('Database upgraded to version 11: added user_id column to rewards and penalties tables');
     }
+
+    // 从版本11升级到版本12：检查并修复缺失的表
+    if (oldVersion < 12) {
+      await _checkAndCreateMissingTables(db);
+      print('Database upgraded to version 12: checked and created missing tables');
+    }
+  }
+
+  /// 检查并创建缺失的表
+  Future<void> _checkAndCreateMissingTables(Database db) async {
+    // 检查 story_records 表是否存在
+    final storyRecordsCheck = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='story_records'"
+    );
+
+    if (storyRecordsCheck.isEmpty) {
+      print('Creating missing story_records table...');
+      await db.execute('''
+        CREATE TABLE story_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          story_id INTEGER NOT NULL,
+          learned_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id),
+          UNIQUE(user_id, story_id, learned_at)
+        )
+      ''');
+      await db.execute('CREATE INDEX idx_story_records_user_id ON story_records(user_id)');
+      await db.execute('CREATE INDEX idx_story_records_learned_at ON story_records(learned_at)');
+      print('story_records table created');
+    }
+
+    // 检查 slot_game_records 表是否存在
+    final slotGameCheck = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='slot_game_records'"
+    );
+
+    if (slotGameCheck.isEmpty) {
+      print('Creating missing slot_game_records table...');
+      await db.execute('''
+        CREATE TABLE slot_game_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          result1 TEXT NOT NULL,
+          result2 TEXT NOT NULL,
+          result3 TEXT NOT NULL,
+          reward INTEGER NOT NULL DEFAULT 0,
+          prize_type TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+      ''');
+      await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
+      await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
+      print('slot_game_records table created');
+    }
   }
 
   /// 关闭数据库

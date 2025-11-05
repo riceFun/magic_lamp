@@ -14,6 +14,9 @@ class AppConstants {
   /// 应用版本
   static const String appVersion = '1.0.0';
 
+  /// 超级密码（用于修改操作密码）
+  static const String superPassword = '2333';
+
   // ==================== 积分规则 ====================
 
   /// 初始积分
@@ -73,7 +76,7 @@ class AppConstants {
   static const String databaseName = 'magic_lamp.db';
 
   /// 数据库版本
-  static const int databaseVersion = 11;
+  static const int databaseVersion = 12;
 
   // ==================== 本地存储 Key ====================
 
@@ -150,6 +153,9 @@ class AppConstants {
 
   /// 个人资料
   static const String routeProfile = '/settings/profile';
+
+  /// 修改密码
+  static const String routeChangePassword = '/settings/change-password';
 
   /// 预支申请
   static const String routeAdvanceApply = '/advance/apply';

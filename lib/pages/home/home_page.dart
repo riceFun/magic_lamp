@@ -75,10 +75,19 @@ class _HomePageState extends State<HomePage> {
                 ),
                 actions: [
                   PointsBadge(points: user.totalPoints),
+                  SizedBox(width: 10),
+                  IconButton(
+                    padding: EdgeInsets.all(0),
+                    icon: Icon(Icons.store),
+                    onPressed: () {
+                      context.push(AppConstants.routeTaskTemplateMarketplace);
+                    },
+                    tooltip: '添加任务',
+                  ),
                   IconButton(
                     icon: Icon(Icons.add_circle_outline),
                     onPressed: () {
-                      context.push(AppConstants.routeTaskTemplateMarketplace);
+                      context.push(AppConstants.routeTaskCreate);
                     },
                     tooltip: '添加任务',
                   ),
