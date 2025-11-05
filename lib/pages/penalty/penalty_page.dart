@@ -19,8 +19,6 @@ class PenaltyPage extends StatefulWidget {
 }
 
 class _PenaltyPageState extends State<PenaltyPage> {
-  String _selectedCategory = 'all'; // 当前选中的分类
-
   @override
   void initState() {
     super.initState();
@@ -28,50 +26,6 @@ class _PenaltyPageState extends State<PenaltyPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PenaltyProvider>().loadActivePenalties();
     });
-  }
-
-  /// 获取分类图标
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'all':
-        return Icons.apps;
-      case 'behavior':
-        return Icons.psychology;
-      case 'hygiene':
-        return Icons.cleaning_services;
-      case 'study':
-        return Icons.school;
-      case 'language':
-        return Icons.record_voice_over;
-      default:
-        return Icons.warning;
-    }
-  }
-
-  /// 获取分类名称
-  String _getCategoryName(String category) {
-    switch (category) {
-      case 'all':
-        return '全部';
-      case 'behavior':
-        return '行为';
-      case 'hygiene':
-        return '卫生';
-      case 'study':
-        return '学习';
-      case 'language':
-        return '语言';
-      default:
-        return '其他';
-    }
-  }
-
-  /// 筛选惩罚项目
-  List<Penalty> _filterPenalties(List<Penalty> penalties) {
-    if (_selectedCategory == 'all') {
-      return penalties;
-    }
-    return penalties.where((p) => p.category == _selectedCategory).toList();
   }
 
   @override
@@ -147,35 +101,10 @@ class _PenaltyPageState extends State<PenaltyPage> {
             );
           }
 
-          final filteredPenalties = _filterPenalties(penaltyProvider.activePenalties);
+          final penalties = penaltyProvider.activePenalties;
 
           return CustomScrollView(
             slivers: [
-              // 分类筛选按钮
-              SliverToBoxAdapter(
-                child: Container(
-                  height: 60,
-                  padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSmall),
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLarge),
-                    children: [
-                      _buildCategoryChip('all'),
-                      SizedBox(width: 8),
-                      _buildCategoryChip('behavior'),
-                      SizedBox(width: 8),
-                      _buildCategoryChip('hygiene'),
-                      SizedBox(width: 8),
-                      _buildCategoryChip('study'),
-                      SizedBox(width: 8),
-                      _buildCategoryChip('language'),
-                      SizedBox(width: 8),
-                      _buildCategoryChip('other'),
-                    ],
-                  ),
-                ),
-              ),
-
               // 标题栏
               SliverToBoxAdapter(
                 child: Padding(
@@ -186,7 +115,7 @@ class _PenaltyPageState extends State<PenaltyPage> {
                     AppTheme.spacingMedium,
                   ),
                   child: Text(
-                    '${_getCategoryName(_selectedCategory)}惩罚 (${filteredPenalties.length})',
+                    '惩罚列表 (${penalties.length})',
                     style: TextStyle(
                       fontSize: AppTheme.fontSizeLarge,
                       fontWeight: FontWeight.bold,
@@ -197,47 +126,23 @@ class _PenaltyPageState extends State<PenaltyPage> {
               ),
 
               // 惩罚项目列表
-              if (filteredPenalties.isEmpty)
-                SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 80,
-                          color: AppTheme.textSecondaryColor.withValues(alpha: 0.5),
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        Text(
-                          '该分类暂无惩罚项目',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeMedium,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingLarge,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final penalty = filteredPenalties[index];
-                        return _PenaltyCard(
-                          penalty: penalty,
-                          onTap: () => _showApplyPenaltyDialog(penalty),
-                        );
-                      },
-                      childCount: filteredPenalties.length,
-                    ),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingLarge,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final penalty = penalties[index];
+                      return _PenaltyCard(
+                        penalty: penalty,
+                        onTap: () => _showApplyPenaltyDialog(penalty),
+                      );
+                    },
+                    childCount: penalties.length,
                   ),
                 ),
+              ),
               SliverToBoxAdapter(
                 child: SizedBox(height: AppTheme.spacingLarge),
               ),
@@ -399,68 +304,6 @@ class _PenaltyPageState extends State<PenaltyPage> {
         );
       }
     }
-  }
-
-  /// 构建分类筛选按钮
-  Widget _buildCategoryChip(String category) {
-    final isSelected = _selectedCategory == category;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCategory = category;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [
-                    AppTheme.accentRed,
-                    AppTheme.accentOrange,
-                  ],
-                )
-              : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppTheme.accentRed : AppTheme.dividerColor,
-            width: isSelected ? 0 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppTheme.accentRed.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _getCategoryIcon(category),
-              size: 18,
-              color: isSelected ? Colors.white : AppTheme.textSecondaryColor,
-            ),
-            SizedBox(width: 6),
-            Text(
-              _getCategoryName(category),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

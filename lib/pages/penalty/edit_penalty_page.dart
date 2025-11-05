@@ -24,7 +24,6 @@ class _EditPenaltyPageState extends State<EditPenaltyPage> {
   final _iconController = TextEditingController();
   final _noteController = TextEditingController();
 
-  String _selectedCategory = 'behavior';
   String _selectedStatus = 'active';
   bool _isLoading = false;
   bool _isLoadingData = false;
@@ -68,7 +67,6 @@ class _EditPenaltyPageState extends State<EditPenaltyPage> {
         _descriptionController.text = penalty.description ?? '';
         _pointsController.text = penalty.points.toString();
         _iconController.text = penalty.icon ?? '⚠️';
-        _selectedCategory = penalty.category;
         _selectedStatus = penalty.status;
         _noteController.text = penalty.note ?? '';
 
@@ -121,7 +119,7 @@ class _EditPenaltyPageState extends State<EditPenaltyPage> {
             : _descriptionController.text.trim(),
         points: int.parse(_pointsController.text),
         icon: _iconController.text.trim().isEmpty ? null : _iconController.text.trim(),
-        category: _selectedCategory,
+        category: 'other', // 固定分类
         status: _selectedStatus,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
         createdAt: _existingPenalty?.createdAt,
@@ -171,23 +169,6 @@ class _EditPenaltyPageState extends State<EditPenaltyPage> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  /// 获取分类文本
-  String _getCategoryText(String category) {
-    switch (category) {
-      case 'behavior':
-        return '行为';
-      case 'hygiene':
-        return '卫生';
-      case 'study':
-        return '学习';
-      case 'language':
-        return '语言';
-      case 'other':
-      default:
-        return '其他';
     }
   }
 
@@ -327,46 +308,6 @@ class _EditPenaltyPageState extends State<EditPenaltyPage> {
                       }
                       return null;
                     },
-                  ),
-
-                  SizedBox(height: AppTheme.spacingLarge),
-
-                  // 惩罚分类
-                  Text(
-                    '惩罚分类 *',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  Wrap(
-                    spacing: AppTheme.spacingSmall,
-                    runSpacing: AppTheme.spacingSmall,
-                    children: [
-                      'behavior',
-                      'hygiene',
-                      'study',
-                      'language',
-                      'other'
-                    ].map((category) {
-                      return ChoiceChip(
-                        label: Text(_getCategoryText(category)),
-                        selected: _selectedCategory == category,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                        },
-                        selectedColor: AppTheme.accentRed,
-                        labelStyle: TextStyle(
-                          color: _selectedCategory == category
-                              ? Colors.white
-                              : AppTheme.textPrimaryColor,
-                        ),
-                      );
-                    }).toList(),
                   ),
 
                   SizedBox(height: AppTheme.spacingLarge),
