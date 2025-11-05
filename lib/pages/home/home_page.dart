@@ -312,23 +312,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               else
-                SliverPadding(
-                  padding: EdgeInsets.all(AppTheme.spacingLarge),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final task = taskProvider.activeTasks[index];
-                        return _TaskCard(
-                          task: task,
-                          userId: user.id!,
-                          onTap: () {
-                            _showTaskDetail(context, task, user.id!);
-                          },
-                        );
-                      },
-                      childCount: taskProvider.activeTasks.length,
-                    ),
-                  ),
+                _SortedTaskList(
+                  tasks: taskProvider.activeTasks,
+                  userId: user.id!,
+                  onTaskTap: (task) => _showTaskDetail(context, task, user.id!),
                 ),
             ],
           );
@@ -566,6 +553,80 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+/// 排序后的任务列表
+class _SortedTaskList extends StatelessWidget {
+  final List<Task> tasks;
+  final int userId;
+  final Function(Task) onTaskTap;
+
+  const _SortedTaskList({
+    required this.tasks,
+    required this.userId,
+    required this.onTaskTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final taskProvider = context.watch<TaskProvider>();
+
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _getSortedTasks(taskProvider),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return SliverToBoxAdapter(
+            child: LoadingWidget.medium(message: '加载任务中...'),
+          );
+        }
+
+        final sortedTasks = snapshot.data!;
+
+        return SliverPadding(
+          padding: EdgeInsets.all(AppTheme.spacingLarge),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final taskData = sortedTasks[index];
+                final task = taskData['task'] as Task;
+                final isCompleted = taskData['isCompleted'] as bool;
+
+                return _TaskCard(
+                  task: task,
+                  userId: userId,
+                  isCompleted: isCompleted,
+                  onTap: () => onTaskTap(task),
+                );
+              },
+              childCount: sortedTasks.length,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _getSortedTasks(TaskProvider taskProvider) async {
+    final tasksWithStatus = <Map<String, dynamic>>[];
+
+    for (final task in tasks) {
+      final isCompleted = await taskProvider.isTaskCompletedToday(task.id!, userId);
+      tasksWithStatus.add({
+        'task': task,
+        'isCompleted': isCompleted,
+      });
+    }
+
+    // 排序：未完成的在前，已完成的在后
+    tasksWithStatus.sort((a, b) {
+      final aCompleted = a['isCompleted'] as bool;
+      final bCompleted = b['isCompleted'] as bool;
+      if (aCompleted == bCompleted) return 0;
+      return aCompleted ? 1 : -1;
+    });
+
+    return tasksWithStatus;
+  }
+}
+
 /// 信息行组件
 class _InfoRow extends StatelessWidget {
   final IconData icon;
@@ -608,183 +669,177 @@ class _InfoRow extends StatelessWidget {
 class _TaskCard extends StatelessWidget {
   final Task task;
   final int userId;
+  final bool isCompleted;
   final VoidCallback onTap;
 
   const _TaskCard({
     required this.task,
     required this.userId,
+    required this.isCompleted,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = context.watch<TaskProvider>();
-
-    return FutureBuilder<bool>(
-      future: taskProvider.isTaskCompletedToday(task.id!, userId),
-      builder: (context, snapshot) {
-        final isCompleted = snapshot.data ?? false;
-
-        return Container(
-          margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? AppTheme.accentGreen.withValues(alpha: 0.05)
-                : AppTheme.accentOrange.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          ),
-          child: CustomCard(
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              child: Padding(
-                padding: EdgeInsets.all(AppTheme.spacingSmall),
-                child: Column(
+    return Container(
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMedium),
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? AppTheme.accentGreen.withValues(alpha: 0.05)
+            : AppTheme.accentOrange.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+      child: CustomCard(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          child: Padding(
+            padding: EdgeInsets.all(AppTheme.spacingSmall),
+            child: Column(
+              children: [
+                // 顶部行：任务信息和编辑按钮
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 顶部行：任务信息和编辑按钮
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 任务图标（无背景）
-                        if (task.icon != null)
+                    // 任务图标（无背景）
+                    if (task.icon != null)
+                      Text(
+                        task.icon!,
+                        style: TextStyle(fontSize: 32),
+                      )
+                    else
+                      Icon(
+                        _getTypeIcon(task.type),
+                        color: _getTypeColor(task.type),
+                        size: 32,
+                      ),
+                    SizedBox(width: AppTheme.spacingSmall),
+
+                    // 任务标题和类型
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            task.icon!,
-                            style: TextStyle(fontSize: 32),
-                          )
-                        else
-                          Icon(
-                            _getTypeIcon(task.type),
-                            color: _getTypeColor(task.type),
-                            size: 32,
-                          ),
-                        SizedBox(width: AppTheme.spacingSmall),
-
-                        // 任务标题和类型
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                task.title,
-                                style: TextStyle(
-                                  fontSize: AppTheme.fontSizeMedium,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimaryColor,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.repeat,
-                                    size: 14,
-                                    color: AppTheme.textSecondaryColor,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    _getTaskTypeText(task.type),
-                                    style: TextStyle(
-                                      fontSize: AppTheme.fontSizeSmall,
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // 编辑按钮
-                        GestureDetector(
-                          onTap: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditTaskPage(task: task),
-                              ),
-                            );
-
-                            if (result == true) {
-                              final userProvider = context.read<UserProvider>();
-                              final user = userProvider.currentUser;
-                              if (user != null) {
-                                context.read<TaskProvider>().loadUserTasks(user.id!);
-                              }
-                            }
-                          },
-                          child: Icon(
-                            Icons.edit_outlined,
-                            size: 20,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: AppTheme.spacingSmall),
-
-                    // 底部行：积分和完成状态
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // 完成状态
-                        Row(
-                          children: [
-                            Icon(
-                              isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                              size: 20,
-                              color: isCompleted ? AppTheme.accentGreen : AppTheme.textHintColor,
+                            task.title,
+                            style: TextStyle(
+                              fontSize: AppTheme.fontSizeMedium,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimaryColor,
                             ),
-                            SizedBox(width: 4),
-                            Text(
-                              isCompleted ? '已完成' : '待完成',
-                              style: TextStyle(
-                                fontSize: AppTheme.fontSizeSmall,
-                                color: isCompleted ? AppTheme.accentGreen : AppTheme.textSecondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // 积分（大而显眼）
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
                           ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentYellow.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
+                          SizedBox(height: 2),
+                          Row(
                             children: [
                               Icon(
-                                Icons.monetization_on,
-                                size: 18,
-                                color: AppTheme.accentYellow,
+                                Icons.repeat,
+                                size: 14,
+                                color: AppTheme.textSecondaryColor,
                               ),
                               SizedBox(width: 4),
                               Text(
-                                '${task.points}',
+                                _getTaskTypeText(task.type),
                                 style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.accentYellow,
+                                  fontSize: AppTheme.fontSizeSmall,
+                                  color: AppTheme.textSecondaryColor,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+
+                    // 编辑按钮
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditTaskPage(task: task),
+                          ),
+                        );
+
+                        if (result == true) {
+                          final userProvider = context.read<UserProvider>();
+                          final user = userProvider.currentUser;
+                          if (user != null) {
+                            context.read<TaskProvider>().loadUserTasks(user.id!);
+                          }
+                        }
+                      },
+                      child: Icon(
+                        Icons.edit_outlined,
+                        size: 20,
+                        color: AppTheme.textSecondaryColor,
+                      ),
                     ),
                   ],
                 ),
-              ),
+
+                SizedBox(height: AppTheme.spacingSmall),
+
+                // 底部行：积分和完成状态
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 完成状态 - 更低调的显示
+                    Row(
+                      children: [
+                        Icon(
+                          isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                          size: 16, // 从20减小到16
+                          color: isCompleted
+                              ? AppTheme.textSecondaryColor // 使用更低调的颜色
+                              : AppTheme.textHintColor,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          isCompleted ? '已完成' : '待完成',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSizeXSmall, // 使用更小的字体
+                            color: AppTheme.textHintColor, // 使用更低调的颜色
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // 积分（大而显眼）
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentYellow.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.monetization_on,
+                            size: 18,
+                            color: AppTheme.accentYellow,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '${task.points}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.accentYellow,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

@@ -17,7 +17,7 @@ class PointsBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(AppConstants.routePointsDetail);
+        // context.push(AppConstants.routePointsDetail);
       },
       child: Container(
         padding: EdgeInsets.symmetric(

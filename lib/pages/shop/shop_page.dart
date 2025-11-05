@@ -170,14 +170,6 @@ class _ShopPageState extends State<ShopPage> {
           ],
         ),
         actions: [
-          // 添加商品按钮
-          IconButton(
-            icon: Icon(Icons.add_circle_outline),
-            onPressed: () {
-              context.push(AppConstants.routeRewardEdit);
-            },
-            tooltip: '添加商品',
-          ),
           // 显示当前积分
           Consumer<UserProvider>(
             builder: (context, userProvider, child) {
@@ -185,6 +177,14 @@ class _ShopPageState extends State<ShopPage> {
               if (user == null) return SizedBox.shrink();
               return PointsBadge(points: user.totalPoints);
             },
+          ),
+          // 添加商品按钮
+          IconButton(
+            icon: Icon(Icons.add_circle_outline),
+            onPressed: () {
+              context.push(AppConstants.routeRewardEdit);
+            },
+            tooltip: '添加商品',
           ),
         ],
       ),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
-import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../services/password_storage_service.dart';
 
 /// 修改密码页面
 class ChangePasswordPage extends StatefulWidget {
@@ -66,30 +65,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     });
 
     try {
-      final userProvider = context.read<UserProvider>();
-      final success = await userProvider.updateCurrentUser(
-        password: _newPasswordController.text,
-      );
+      // 保存密码到本地存储
+      await PasswordStorageService.setOperationPassword(_newPasswordController.text);
 
-      if (success) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('密码修改成功'),
-              backgroundColor: AppTheme.accentGreen,
-            ),
-          );
-          Navigator.of(context).pop();
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(userProvider.errorMessage ?? '修改失败'),
-              backgroundColor: AppTheme.accentRed,
-            ),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('密码修改成功'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
+        );
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {

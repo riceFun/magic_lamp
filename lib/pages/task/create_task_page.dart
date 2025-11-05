@@ -6,7 +6,6 @@ import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../data/models/task.dart';
 import '../../data/models/task_template.dart';
-import '../../data/models/user.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/emoji_picker.dart';
@@ -27,7 +26,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _descriptionController = TextEditingController();
   final _pointsController = TextEditingController();
 
-  int? _selectedUserId;
   String _selectedType = 'daily';
   String _selectedPriority = 'normal';
   String? _selectedIcon;
@@ -35,12 +33,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   DateTime? _endDate;
   bool _isLoading = false;
 
-  List<User> _users = [];
-
   @override
   void initState() {
     super.initState();
-    _loadUsers();
     _initializeFromTemplate();
   }
 
@@ -61,14 +56,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     _descriptionController.dispose();
     _pointsController.dispose();
     super.dispose();
-  }
-
-  /// 加载用户列表
-  Future<void> _loadUsers() async {
-    final userProvider = context.read<UserProvider>();
-    _users = await userProvider.getAllUsers();
-
-    setState(() {});
   }
 
   /// 选择日期
@@ -98,10 +85,14 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       return;
     }
 
-    if (_selectedUserId == null) {
+    // 获取当前用户
+    final userProvider = context.read<UserProvider>();
+    final currentUser = userProvider.currentUser;
+
+    if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('请选择任务对象'),
+          content: Text('获取当前用户信息失败'),
           backgroundColor: AppTheme.accentRed,
         ),
       );
@@ -114,7 +105,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
     try {
       final task = Task(
-        userId: _selectedUserId!,
+        userId: currentUser.id!,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -209,47 +200,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               ),
             ),
 
-            SizedBox(height: AppTheme.spacingLarge),
-
-            // 选择用户
-            Text(
-              '任务对象',
-              style: TextStyle(
-                fontSize: AppTheme.fontSizeMedium,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
-              ),
-            ),
-            SizedBox(height: AppTheme.spacingSmall),
-            DropdownButtonFormField<int>(
-              value: _selectedUserId,
-              decoration: InputDecoration(
-                hintText: '请选择任务对象',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              items: _users.map((user) {
-                return DropdownMenuItem<int>(
-                  value: user.id,
-                  child: Text(user.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedUserId = value;
-                });
-              },
-              validator: (value) {
-                if (value == null) {
-                  return '请选择任务对象';
-                }
-                return null;
-              },
-            ),
             SizedBox(height: AppTheme.spacingLarge),
 
             // 任务图标

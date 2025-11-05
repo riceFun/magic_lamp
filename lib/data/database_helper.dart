@@ -67,6 +67,8 @@ class DatabaseHelper {
         status TEXT NOT NULL DEFAULT 'active',
         project_id INTEGER,
         tags TEXT,
+        replaced_by_task_id INTEGER,
+        icon TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id),
@@ -755,6 +757,12 @@ class DatabaseHelper {
       await _checkAndCreateMissingTables(db);
       print('Database upgraded to version 12: checked and created missing tables');
     }
+
+    // 从版本12升级到版本13：检查并添加tasks表缺失的列
+    if (oldVersion < 13) {
+      await _checkAndAddMissingTasksColumns(db);
+      print('Database upgraded to version 13: checked and added missing columns to tasks table');
+    }
   }
 
   /// 检查并创建缺失的表
@@ -805,6 +813,27 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
       await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
       print('slot_game_records table created');
+    }
+  }
+
+  /// 检查并添加tasks表缺失的列
+  Future<void> _checkAndAddMissingTasksColumns(Database db) async {
+    // 获取tasks表的列信息
+    final columns = await db.rawQuery('PRAGMA table_info(tasks)');
+    final columnNames = columns.map((col) => col['name'] as String).toList();
+
+    // 检查并添加 replaced_by_task_id 列
+    if (!columnNames.contains('replaced_by_task_id')) {
+      print('Adding missing replaced_by_task_id column to tasks table...');
+      await db.execute('ALTER TABLE tasks ADD COLUMN replaced_by_task_id INTEGER');
+      print('replaced_by_task_id column added');
+    }
+
+    // 检查并添加 icon 列
+    if (!columnNames.contains('icon')) {
+      print('Adding missing icon column to tasks table...');
+      await db.execute('ALTER TABLE tasks ADD COLUMN icon TEXT');
+      print('icon column added');
     }
   }
 
