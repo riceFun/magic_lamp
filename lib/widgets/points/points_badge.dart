@@ -19,40 +19,34 @@ class PointsBadge extends StatelessWidget {
       onTap: () {
         context.push(AppConstants.routePointsDetail);
       },
-      child: Padding(
+      child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: AppTheme.spacingXSmall,
           vertical: AppTheme.spacingXSmall,
         ),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingXSmall,
-            vertical: AppTheme.spacingXSmall,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.attach_money,
-                // Icons.monetization_on,
-                size: 20,
-                color: AppTheme.accentYellow,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.attach_money,
+              // Icons.monetization_on,
+              size: 20,
+              color: AppTheme.accentYellow,
+            ),
+            SizedBox(width: 0),
+            Text(
+              '$points',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeMedium,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              SizedBox(width: 4),
-              Text(
-                '$points',
-                style: TextStyle(
-                  fontSize: AppTheme.fontSizeMedium,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -95,17 +95,17 @@ class _PenaltyPageState extends State<PenaltyPage> {
               return PointsBadge(points: user.totalPoints);
             },
           ),
-          // 管理按钮
+          // 添加惩罚按钮
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
-              await context.push(AppConstants.routePenaltyManagement);
+              final result = await context.push(AppConstants.routePenaltyEdit);
               // 返回时刷新列表
-              if (mounted) {
+              if (result == true && mounted) {
                 context.read<PenaltyProvider>().loadActivePenalties();
               }
             },
-            tooltip: '惩罚管理',
+            tooltip: '添加惩罚',
           ),
 
         ],

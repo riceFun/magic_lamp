@@ -74,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 actions: [
+                  PointsBadge(points: user.totalPoints),
                   IconButton(
                     icon: Icon(Icons.add_circle_outline),
                     onPressed: () {
@@ -81,7 +82,7 @@ class _HomePageState extends State<HomePage> {
                     },
                     tooltip: '添加任务',
                   ),
-                  PointsBadge(points: user.totalPoints),
+
                 ],
               ),
 
