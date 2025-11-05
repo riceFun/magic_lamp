@@ -12,7 +12,6 @@ import '../pages/advance/advance_apply_page.dart';
 import '../pages/advance/advance_list_page.dart';
 import '../pages/story/story_list_page.dart';
 import '../pages/story/story_detail_page.dart';
-import '../pages/shop/reward_management_page.dart';
 import '../pages/shop/edit_reward_page.dart';
 import '../pages/shop/product_detail_page.dart';
 import '../pages/shop/exchange_history_page.dart';
@@ -109,12 +108,6 @@ class AppRouter {
           }
           return StoryDetailPage(storyId: storyId);
         },
-      ),
-
-      // 商品管理
-      GoRoute(
-        path: AppConstants.routeRewardManagement,
-        builder: (context, state) => RewardManagementPage(),
       ),
 
       // 编辑商品

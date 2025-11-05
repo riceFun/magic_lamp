@@ -74,117 +74,98 @@ class SettingsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 用户信息卡片
+                // 用户信息卡片 - ListView Cell 形式
                 CustomCard(
-                  child: Column(
-                    children: [
-                      // 头像
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppTheme.primaryColor,
-                              AppTheme.primaryDarkColor,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                        ),
-                        child: Icon(
-                          _getAvatarIcon(user.avatar),
-                          size: 50,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: AppTheme.spacingMedium),
-
-                      // 用户名和角色
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            user.name,
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeXLarge,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimaryColor,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        context.push(AppConstants.routeProfile);
+                      },
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      child: Padding(
+                        padding: EdgeInsets.all(AppTheme.spacingMedium),
+                        child: Row(
+                          children: [
+                            // 头像
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppTheme.primaryColor,
+                                    AppTheme.primaryDarkColor,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                              ),
+                              child: Icon(
+                                _getAvatarIcon(user.avatar),
+                                size: 30,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppTheme.spacingSmall),
+                            SizedBox(width: AppTheme.spacingMedium),
 
-                      // 角色说明
-                      Text(
-                        '神灯积分管理系统用户',
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeMedium,
-                          color: AppTheme.textSecondaryColor,
-                        ),
-                      ),
-
-                      SizedBox(height: AppTheme.spacingMedium),
-                      Divider(),
-                      SizedBox(height: AppTheme.spacingSmall),
-
-                      // 积分信息
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.monetization_on,
-                            size: 24,
-                            color: AppTheme.accentYellow,
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          Text(
-                            '${user.totalPoints}',
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeXLarge,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
+                            // 用户信息
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 用户名
+                                  Text(
+                                    user.name,
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeLarge,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimaryColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  // 积分信息
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.monetization_on,
+                                        size: 16,
+                                        color: AppTheme.accentYellow,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        '${user.totalPoints} 积分',
+                                        style: TextStyle(
+                                          fontSize: AppTheme.fontSizeMedium,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
+                                      SizedBox(width: AppTheme.spacingSmall),
+                                      Text(
+                                        '≈ ${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)} 元',
+                                        style: TextStyle(
+                                          fontSize: AppTheme.fontSizeSmall,
+                                          color: AppTheme.textHintColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(width: AppTheme.spacingXSmall),
-                          Text(
-                            '积分',
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeMedium,
-                              color: AppTheme.textSecondaryColor,
+
+                            // 右箭头
+                            Icon(
+                              Icons.chevron_right,
+                              color: AppTheme.textHintColor,
+                              size: 24,
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppTheme.spacingXSmall),
-                      Text(
-                        '约等于 ${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)} 元',
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSizeSmall,
-                          color: AppTheme.textHintColor,
+                          ],
                         ),
                       ),
-
-                      SizedBox(height: AppTheme.spacingMedium),
-
-                      // 编辑资料按钮
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            context.push(AppConstants.routeProfile);
-                          },
-                          icon: Icon(Icons.edit),
-                          label: Text('编辑资料'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
 
@@ -212,16 +193,6 @@ class SettingsPage extends StatelessWidget {
                         subtitle: '管理所有用户信息',
                         onTap: () {
                           context.push(AppConstants.routeUserManagement);
-                        },
-                      ),
-                      Divider(height: 1),
-                      _SettingItem(
-                        icon: Icons.card_giftcard,
-                        iconColor: AppTheme.accentYellow,
-                        title: '商品管理',
-                        subtitle: '管理商城奖励商品',
-                        onTap: () {
-                          context.push(AppConstants.routeRewardManagement);
                         },
                       ),
                       Divider(height: 1),

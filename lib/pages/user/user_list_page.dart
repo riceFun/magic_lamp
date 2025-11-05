@@ -69,6 +69,72 @@ class _UserListPageState extends State<UserListPage> {
     }
   }
 
+  /// 显示切换用户确认对话框
+  void _showSwitchUserDialog(User user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('切换用户'),
+        content: Text('确定要切换到用户"${user.name}"吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _switchUser(user);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+            ),
+            child: Text('切换'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 切换用户
+  Future<void> _switchUser(User user) async {
+    try {
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.login(user.id!);
+
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('已切换到用户：${user.name}'),
+              backgroundColor: AppTheme.accentGreen,
+            ),
+          );
+          // 导航回主页
+          context.go(AppConstants.routeMain);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(userProvider.errorMessage ?? '切换失败'),
+              backgroundColor: AppTheme.accentRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('切换失败：$e'),
+            backgroundColor: AppTheme.accentRed,
+          ),
+        );
+      }
+    }
+  }
+
   /// 显示删除用户确认对话框
   void _showDeleteDialog(User user) {
     // 不能删除当前登录用户
