@@ -355,16 +355,32 @@ class _UserListPageState extends State<UserListPage> {
                                 ),
                               ),
 
-                              // 删除按钮
-                              if (!isCurrentUser)
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: AppTheme.accentRed,
-                                  ),
-                                  onPressed: () => _showDeleteDialog(user),
-                                  tooltip: '删除用户',
-                                ),
+                              // 操作按钮
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // 切换用户按钮（非当前用户才显示）
+                                  if (!isCurrentUser)
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.swap_horiz,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                      onPressed: () => _showSwitchUserDialog(user),
+                                      tooltip: '切换到此用户',
+                                    ),
+                                  // 删除按钮（非当前用户才显示）
+                                  if (!isCurrentUser)
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: AppTheme.accentRed,
+                                      ),
+                                      onPressed: () => _showDeleteDialog(user),
+                                      tooltip: '删除用户',
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

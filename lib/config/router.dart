@@ -8,6 +8,7 @@ import '../pages/task/task_template_marketplace_page.dart';
 import '../pages/user/create_user_page.dart';
 import '../pages/user/user_list_page.dart';
 import '../pages/settings/edit_profile_page.dart';
+import '../pages/settings/change_password_page.dart';
 import '../pages/advance/advance_apply_page.dart';
 import '../pages/advance/advance_list_page.dart';
 import '../pages/story/story_list_page.dart';
@@ -75,6 +76,12 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeProfile,
         builder: (context, state) => EditProfilePage(),
+      ),
+
+      // 修改密码
+      GoRoute(
+        path: AppConstants.routeChangePassword,
+        builder: (context, state) => ChangePasswordPage(),
       ),
 
       // 预支申请

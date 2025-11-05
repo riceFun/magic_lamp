@@ -202,10 +202,7 @@ class SettingsPage extends StatelessWidget {
                         title: '修改密码',
                         subtitle: '修改登录密码',
                         onTap: () {
-                          // TODO: 跳转到修改密码页面
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('修改密码功能开发中...')),
-                          );
+                          context.push(AppConstants.routeChangePassword);
                         },
                       ),
                       Divider(height: 1),
