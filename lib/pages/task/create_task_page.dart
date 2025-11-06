@@ -8,7 +8,6 @@ import '../../data/models/task.dart';
 import '../../data/models/task_template.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
-import '../../widgets/common/emoji_picker.dart';
 
 /// 创建任务页面
 class CreateTaskPage extends StatefulWidget {
@@ -25,10 +24,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _pointsController = TextEditingController();
+  final _iconController = TextEditingController();
 
   String _selectedType = 'daily';
   String _selectedPriority = 'normal';
-  String? _selectedIcon;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
@@ -55,6 +54,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     _titleController.dispose();
     _descriptionController.dispose();
     _pointsController.dispose();
+    _iconController.dispose();
     super.dispose();
   }
 
@@ -113,7 +113,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         points: int.parse(_pointsController.text),
         type: _selectedType,
         priority: _selectedPriority,
-        icon: _selectedIcon,
+        icon: _iconController.text.trim().isEmpty
+            ? null
+            : _iconController.text.trim(),
         startDate: _startDate,
         endDate: _endDate,
         status: 'active',
@@ -204,7 +206,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
             // 任务图标
             Text(
-              '任务图标',
+              '任务图标（可选）',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeMedium,
                 fontWeight: FontWeight.bold,
@@ -212,75 +214,53 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               ),
             ),
             SizedBox(height: AppTheme.spacingSmall),
-            InkWell(
-              onTap: () async {
-                final emoji = await EmojiPicker.show(
-                  context,
-                  initialEmoji: _selectedIcon,
-                );
-                if (emoji != null || emoji == null) {
-                  setState(() {
-                    _selectedIcon = emoji;
-                  });
-                }
-              },
-              child: Container(
-                padding: EdgeInsets.all(AppTheme.spacingMedium),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: AppTheme.dividerColor),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                      ),
-                      child: Center(
-                        child: _selectedIcon != null
-                            ? Text(
-                                _selectedIcon!,
-                                style: TextStyle(fontSize: 36),
-                              )
-                            : Icon(
-                                Icons.add_photo_alternate,
-                                size: 32,
-                                color: AppTheme.textHintColor,
-                              ),
-                      ),
-                    ),
-                    SizedBox(width: AppTheme.spacingMedium),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _selectedIcon != null ? '点击更换图标' : '点击选择图标',
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeMedium,
-                              color: AppTheme.textPrimaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 图标预览
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    border: Border.all(color: AppTheme.dividerColor),
+                  ),
+                  child: Center(
+                    child: _iconController.text.trim().isNotEmpty
+                        ? Text(
+                            _iconController.text.trim(),
+                            style: TextStyle(fontSize: 36),
+                          )
+                        : Icon(
+                            Icons.emoji_emotions_outlined,
+                            size: 32,
+                            color: AppTheme.textHintColor,
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            '选择一个emoji作为任务图标',
-                            style: TextStyle(
-                              fontSize: AppTheme.fontSizeSmall,
-                              color: AppTheme.textSecondaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.chevron_right, color: AppTheme.textHintColor),
-                  ],
+                  ),
                 ),
-              ),
+                SizedBox(width: AppTheme.spacingMedium),
+                // 输入框
+                Expanded(
+                  child: TextFormField(
+                    controller: _iconController,
+                    decoration: InputDecoration(
+                      hintText: '输入emoji图标，如：📚、✏️、🎯',
+                      helperText: '留空将使用默认图标',
+                      prefixIcon: Icon(Icons.emoji_emotions),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    maxLength: 2,
+                    onChanged: (value) {
+                      setState(() {}); // 更新预览
+                    },
+                  ),
+                ),
+              ],
             ),
 
             SizedBox(height: AppTheme.spacingLarge),
@@ -350,7 +330,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
             TextFormField(
               controller: _pointsController,
               decoration: InputDecoration(
-                hintText: '建议范围：20-100',
+                hintText: '输入积分奖励',
                 prefixIcon: Icon(Icons.monetization_on),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -369,9 +349,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 final points = int.tryParse(value);
                 if (points == null || points <= 0) {
                   return '积分必须大于0';
-                }
-                if (points > 1000) {
-                  return '单次任务积分不建议超过1000';
                 }
                 return null;
               },
