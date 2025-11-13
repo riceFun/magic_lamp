@@ -10,6 +10,15 @@ void main() async {
   // 确保 Flutter 绑定已初始化
   WidgetsFlutterBinding.ensureInitialized();
 
+  // // ⚠️ 开发阶段：清理旧数据库（确保使用最新的schema）
+  // // 生产环境请删除此代码
+  // try {
+  //   await DatabaseHelper.instance.clearDatabase();
+  //   debugPrint('✅ 已清理旧数据库');
+  // } catch (e) {
+  //   debugPrint('清理数据库失败: $e');
+  // }
+
   // 初始化数据库
   final db = await DatabaseHelper.instance.database;
 

@@ -5,8 +5,8 @@ import '../data/repositories/task_template_repository.dart';
 
 /// 导入结果统计
 class TaskImportResult {
-  final int successCount; // 成功导入数量
-  final int skippedCount; // 跳过数量（已存在）
+  final int successCount; // 成功导入数量（新增）
+  final int skippedCount; // 更新数量（已存在的任务）
   final int failedCount; // 失败数量
   final List<String> errors; // 错误信息列表
 
@@ -21,7 +21,7 @@ class TaskImportResult {
 
   @override
   String toString() {
-    return 'TaskImportResult{总计: $totalProcessed, 成功: $successCount, 跳过: $skippedCount, 失败: $failedCount}';
+    return 'TaskImportResult{总计: $totalProcessed, 新增: $successCount, 更新: $skippedCount, 失败: $failedCount}';
   }
 }
 
@@ -38,13 +38,17 @@ class TaskImportService {
     List<String> errors = [];
 
     try {
+      print('开始导入任务模板...');
+
       // 1. 读取 JSON 文件
       final String jsonString =
           await rootBundle.loadString('assets/tasks.json');
+      print('成功读取 tasks.json 文件');
 
       // 2. 解析 JSON 数据
       final Map<String, dynamic> jsonData = json.decode(jsonString);
       final List<dynamic> tasksJson = jsonData['tasks'];
+      print('解析到 ${tasksJson.length} 个任务模板');
 
       // 3. 遍历每个任务
       for (var taskJson in tasksJson) {
@@ -53,13 +57,11 @@ class TaskImportService {
           final String title = taskMap['title'] as String;
 
           // 4. 检查任务模板是否已存在（通过标题）
-          if (await _isTaskTemplateExists(title)) {
-            skippedCount++;
-            continue;
-          }
+          final existingTemplate = await _getTaskTemplateByTitle(title);
 
           // 5. 创建 TaskTemplate 对象
           final TaskTemplate template = TaskTemplate(
+            id: existingTemplate?.id, // 如果存在则使用现有ID
             title: title,
             description: taskMap['description'] as String?,
             points: taskMap['points'] as int,
@@ -69,30 +71,51 @@ class TaskImportService {
             icon: taskMap['icon'] as String?,
           );
 
-          // 6. 添加到数据库
-          await _taskTemplateRepository.createTemplate(template);
-          successCount++;
+          // 6. 添加或更新到数据库
+          if (existingTemplate != null) {
+            // 更新现有模板
+            await _taskTemplateRepository.updateTemplate(template);
+            skippedCount++;
+            print('更新任务模板: $title');
+          } else {
+            // 创建新模板
+            await _taskTemplateRepository.createTemplate(template);
+            successCount++;
+            print('创建任务模板: $title');
+          }
         } catch (e) {
           failedCount++;
-          errors.add('导入任务失败: ${taskJson['title'] ?? 'Unknown'} - $e');
+          final errorMsg = '导入任务失败: ${taskJson['title'] ?? 'Unknown'} - $e';
+          errors.add(errorMsg);
+          print(errorMsg);
         }
       }
-    } catch (e) {
-      errors.add('读取或解析 JSON 文件失败: $e');
+    } catch (e, stackTrace) {
+      final errorMsg = '读取或解析 JSON 文件失败: $e';
+      errors.add(errorMsg);
+      print(errorMsg);
+      print('堆栈跟踪: $stackTrace');
     }
 
-    return TaskImportResult(
+    final result = TaskImportResult(
       successCount: successCount,
       skippedCount: skippedCount,
       failedCount: failedCount,
       errors: errors,
     );
+
+    print('任务模板导入完成: $result');
+    return result;
   }
 
-  /// 检查任务模板是否已存在（通过标题）
-  Future<bool> _isTaskTemplateExists(String title) async {
+  /// 根据标题获取任务模板（如果存在）
+  Future<TaskTemplate?> _getTaskTemplateByTitle(String title) async {
     final templates = await _taskTemplateRepository.getAllTemplates();
-    return templates.any((template) => template.title == title);
+    try {
+      return templates.firstWhere((template) => template.title == title);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// 清空所有任务模板（危险操作，仅用于测试）

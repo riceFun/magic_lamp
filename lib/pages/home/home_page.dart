@@ -804,7 +804,7 @@ class _TaskCard extends StatelessWidget {
                         ],
                       ),
                       child: Center(
-                        child: task.icon != null
+                        child: task.icon != null && task.icon!.isNotEmpty
                             ? Text(task.icon!, style: TextStyle(fontSize: 36))
                             : Icon(
                                 _getTypeIcon(task.type),

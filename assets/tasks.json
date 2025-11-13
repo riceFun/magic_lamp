@@ -1,350 +1,161 @@
 {
   "tasks": [
     {
-      "title": "完成作业",
-      "description": "认真完成当天的学校作业",
-      "points": 50,
+      "title": "好好吃饭",
+      "description": "每顿25min内吃完",
+      "points": 30,
       "type": "daily",
-      "priority": "high",
-      "category": "study",
-      "icon": "📝"
+      "priority": "medium",
+      "category": "reading",
+      "icon": "🍚"
     },
     {
-      "title": "阅读30分钟",
-      "description": "每天阅读课外书籍30分钟",
-      "points": 30,
+      "title": "阅读15分钟",
+      "description": "每天阅读绘本或故事书15分钟",
+      "points": 15,
       "type": "daily",
       "priority": "medium",
       "category": "reading",
       "icon": "📚"
     },
     {
-      "title": "背诵单词",
-      "description": "背诵10个新单词",
-      "points": 40,
+      "title": "认识5个新字",
+      "description": "学习认识5个新的汉字",
+      "points": 10,
       "type": "daily",
       "priority": "medium",
       "category": "study",
       "icon": "📖"
     },
     {
-      "title": "听写生字词",
-      "description": "完成今日的生字词听写练习",
-      "points": 35,
+      "title": "练习写字",
+      "description": "认真练习写自己的名字或简单汉字",
+      "points": 10,
       "type": "daily",
       "priority": "medium",
       "category": "study",
       "icon": "✍️"
     },
     {
-      "title": "练习书法20分钟",
-      "description": "认真练习书法或写字",
-      "points": 30,
-      "type": "daily",
-      "priority": "low",
-      "category": "study",
-      "icon": "🖌️"
-    },
-    {
-      "title": "完成数学练习题",
-      "description": "完成数学练习题10道",
-      "points": 40,
+      "title": "数数练习",
+      "description": "数数1-100或完成5道简单算术题",
+      "points": 5,
       "type": "daily",
       "priority": "medium",
       "category": "study",
       "icon": "🔢"
     },
     {
-      "title": "复习今日课程",
-      "description": "复习今天学校学习的内容",
-      "points": 35,
+      "title": "整理玩具",
+      "description": "自己整理书包，准备第二天上学用品",
+      "points": 5,
       "type": "daily",
       "priority": "medium",
       "category": "study",
-      "icon": "📋"
-    },
-    {
-      "title": "预习明天课程",
-      "description": "预习明天要学习的课程内容",
-      "points": 35,
-      "type": "daily",
-      "priority": "low",
-      "category": "study",
-      "icon": "📖"
-    },
-    {
-      "title": "完成周测试",
-      "description": "完成本周的复习测试",
-      "points": 100,
-      "type": "weekly",
-      "priority": "high",
-      "category": "study",
-      "icon": "📊"
+      "icon": "🎒"
     },
     {
       "title": "跳绳500次",
-      "description": "完成跳绳500次，锻炼身体",
-      "points": 40,
+      "description": "高质量的跳绳500次",
+      "points": 50,
       "type": "daily",
       "priority": "medium",
       "category": "exercise",
       "icon": "🪢"
     },
     {
-      "title": "仰卧起坐30个",
-      "description": "完成仰卧起坐30个",
-      "points": 30,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "💪"
-    },
-    {
-      "title": "俯卧撑20个",
-      "description": "完成俯卧撑20个",
-      "points": 35,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "💪"
-    },
-    {
-      "title": "跑步30分钟",
-      "description": "户外跑步或跑步机运动30分钟",
-      "points": 40,
+      "title": "跳绳1000次",
+      "description": "高质量地跳绳1000次",
+      "points": 120,
       "type": "daily",
       "priority": "medium",
       "category": "exercise",
-      "icon": "🏃"
+      "icon": "🪢"
     },
     {
-      "title": "做眼保健操",
-      "description": "保护视力，完成眼保健操",
-      "points": 20,
+      "title": "自己洗澡",
+      "description": "自己洗澡",
+      "points": 10,
       "type": "daily",
       "priority": "medium",
       "category": "exercise",
-      "icon": "👀"
+      "icon": "🛀"
     },
     {
-      "title": "打篮球30分钟",
-      "description": "打篮球锻炼身体30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "🏀"
-    },
-    {
-      "title": "踢足球30分钟",
-      "description": "踢足球锻炼身体30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "⚽"
-    },
-    {
-      "title": "游泳30分钟",
-      "description": "游泳锻炼身体30分钟",
-      "points": 50,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "🏊"
-    },
-    {
-      "title": "骑自行车30分钟",
-      "description": "骑自行车锻炼身体30分钟",
-      "points": 35,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "🚴"
-    },
-    {
-      "title": "跳舞练习30分钟",
-      "description": "练习舞蹈动作30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "exercise",
-      "icon": "💃"
-    },
-    {
-      "title": "户外活动1小时",
-      "description": "每周进行户外活动至少1小时",
-      "points": 60,
-      "type": "weekly",
-      "priority": "medium",
-      "category": "exercise",
-      "icon": "🌳"
-    },
-    {
-      "title": "尤克里里练习30分钟",
-      "description": "练习尤克里里弹奏30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "art",
-      "icon": "🎸"
-    },
-    {
-      "title": "钢琴练习30分钟",
-      "description": "练习钢琴弹奏30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "art",
-      "icon": "🎹"
-    },
-    {
-      "title": "吉他练习30分钟",
-      "description": "练习吉他弹奏30分钟",
-      "points": 40,
-      "type": "daily",
-      "priority": "low",
-      "category": "art",
-      "icon": "🎸"
-    },
-    {
-      "title": "画画30分钟",
-      "description": "完成绘画创作30分钟",
-      "points": 35,
+      "title": "画画",
+      "description": "自由创作一幅画",
+      "points": 2100,
       "type": "daily",
       "priority": "low",
       "category": "art",
       "icon": "🎨"
     },
     {
-      "title": "书法练习30分钟",
-      "description": "练习毛笔或硬笔书法30分钟",
-      "points": 35,
-      "type": "daily",
-      "priority": "low",
-      "category": "art",
-      "icon": "🖌️"
-    },
-    {
-      "title": "唱歌练习30分钟",
-      "description": "练习唱歌发声30分钟",
+      "title": "尤克里里20min",
+      "description": "自由创作一幅画",
       "points": 30,
       "type": "daily",
       "priority": "low",
       "category": "art",
-      "icon": "🎤"
-    },
-    {
-      "title": "做手工",
-      "description": "完成一个手工作品",
-      "points": 50,
-      "type": "once",
-      "priority": "low",
-      "category": "art",
-      "icon": "✂️"
-    },
-    {
-      "title": "整理房间",
-      "description": "打扫整理自己的房间",
-      "points": 30,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🛏️"
-    },
-    {
-      "title": "洗碗",
-      "description": "帮助家人清洗餐具",
-      "points": 25,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🍽️"
-    },
-    {
-      "title": "扫地",
-      "description": "打扫地板卫生",
-      "points": 25,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🧹"
-    },
-    {
-      "title": "拖地",
-      "description": "拖地保持地面清洁",
-      "points": 30,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🧽"
-    },
-    {
-      "title": "整理书桌",
-      "description": "整理自己的书桌和学习用品",
-      "points": 20,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "📚"
-    },
-    {
-      "title": "叠衣服",
-      "description": "帮忙叠衣服整理衣柜",
-      "points": 25,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "👔"
-    },
-    {
-      "title": "浇花",
-      "description": "给家里的植物浇水",
-      "points": 15,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🌻"
-    },
-    {
-      "title": "倒垃圾",
-      "description": "将家里的垃圾倒掉",
-      "points": 15,
-      "type": "daily",
-      "priority": "low",
-      "category": "housework",
-      "icon": "🗑️"
+      "icon": "🎸"
     },
     {
       "title": "整理玩具",
-      "description": "将玩具整理归位",
-      "points": 20,
+      "description": "玩完玩具后自己收拾整齐",
+      "points": 10,
       "type": "daily",
-      "priority": "low",
+      "priority": "medium",
       "category": "housework",
       "icon": "🧸"
     },
     {
-      "title": "整理书包",
-      "description": "整理书包，准备第二天上学用品",
-      "points": 20,
+      "title": "学校里得星星",
+      "description": "保持自己的小书桌整洁",
+      "points": 10,
       "type": "daily",
       "priority": "medium",
       "category": "housework",
-      "icon": "🎒"
+      "icon": "⭐️"
     },
     {
-      "title": "打扫卫生",
-      "description": "帮助打扫家里的公共区域",
-      "points": 40,
-      "type": "weekly",
-      "priority": "low",
+      "title": "帮忙倒垃圾",
+      "description": "帮忙倒垃圾",
+      "points": 10,
+      "type": "daily",
+      "priority": "medium",
       "category": "housework",
-      "icon": "🏠"
+      "icon": "🍽️"
+    },
+    {
+      "title": "自己穿衣服",
+      "description": "早上自己独立穿好衣服",
+      "points": 10,
+      "type": "daily",
+      "priority": "high",
+      "category": "life",
+      "icon": "👕"
+    },
+    {
+      "title": "9点前完成刷牙洗脸",
+      "description": "早晚自己认真刷牙",
+      "points": 5,
+      "type": "daily",
+      "priority": "high",
+      "category": "health",
+      "icon": "🪥"
+    },
+    {
+      "title": "饭前洗手",
+      "description": "吃饭前用肥皂洗手",
+      "points": 1,
+      "type": "daily",
+      "priority": "high",
+      "category": "health",
+      "icon": "🧼"
     },
     {
       "title": "早睡早起",
-      "description": "晚上9点前睡觉，早上7点前起床",
+      "description": "晚上9点半前睡觉，早上7点起床",
       "points": 30,
       "type": "daily",
       "priority": "high",
@@ -352,166 +163,49 @@
       "icon": "😴"
     },
     {
-      "title": "喝水8杯",
-      "description": "每天喝足8杯水",
-      "points": 20,
-      "type": "daily",
-      "priority": "medium",
-      "category": "health",
-      "icon": "💧"
-    },
-    {
-      "title": "早晚刷牙",
-      "description": "早上和晚上各刷牙一次",
-      "points": 20,
-      "type": "daily",
-      "priority": "high",
-      "category": "health",
-      "icon": "🪥"
-    },
-    {
-      "title": "早晚洗脸",
-      "description": "早上和晚上各洗脸一次",
-      "points": 15,
-      "type": "daily",
-      "priority": "medium",
-      "category": "health",
-      "icon": "💦"
-    },
-    {
-      "title": "剪指甲",
-      "description": "定期修剪指甲保持清洁",
-      "points": 15,
-      "type": "weekly",
-      "priority": "low",
-      "category": "health",
-      "icon": "💅"
-    },
-    {
-      "title": "洗澡",
-      "description": "洗澡保持身体清洁",
-      "points": 20,
-      "type": "daily",
-      "priority": "medium",
-      "category": "health",
-      "icon": "🚿"
-    },
-    {
-      "title": "饭前洗手",
-      "description": "吃饭前用洗手液洗手",
+      "title": "多吃蔬菜",
+      "description": "吃饭时不挑食，多吃蔬菜",
       "points": 10,
-      "type": "daily",
-      "priority": "high",
-      "category": "health",
-      "icon": "🧼"
-    },
-    {
-      "title": "按时吃早餐",
-      "description": "每天按时吃营养早餐",
-      "points": 20,
-      "type": "daily",
-      "priority": "high",
-      "category": "health",
-      "icon": "🍳"
-    },
-    {
-      "title": "不挑食",
-      "description": "吃饭不挑食，营养均衡",
-      "points": 25,
       "type": "daily",
       "priority": "medium",
       "category": "health",
       "icon": "🥗"
     },
     {
-      "title": "限制屏幕时间",
-      "description": "看电视/iPad时间控制在30分钟以内",
-      "points": 30,
-      "type": "daily",
-      "priority": "medium",
-      "category": "health",
-      "icon": "📱"
-    },
-    {
-      "title": "自己穿衣服",
-      "description": "早上自己独立穿衣服",
-      "points": 15,
-      "type": "daily",
-      "priority": "low",
-      "category": "life",
-      "icon": "👕"
-    },
-    {
-      "title": "照顾宠物",
-      "description": "喂食和照顾家里的宠物",
-      "points": 25,
-      "type": "daily",
-      "priority": "medium",
-      "category": "life",
-      "icon": "🐕"
-    },
-    {
-      "title": "有礼貌打招呼",
-      "description": "见到长辈主动有礼貌地打招呼",
-      "points": 15,
+      "title": "大大方方show",
+      "description": "礼貌",
+      "points": 10,
       "type": "daily",
       "priority": "medium",
       "category": "life",
       "icon": "👋"
     },
     {
-      "title": "帮助他人",
-      "description": "主动帮助需要帮助的人",
-      "points": 50,
+      "title": "分享玩具",
+      "description": "和小朋友一起玩时分享玩具",
+      "points": 5,
       "type": "once",
       "priority": "medium",
-      "category": "other",
-      "icon": "🤝"
-    },
-    {
-      "title": "学习新技能",
-      "description": "学习一项新的技能或爱好",
-      "points": 80,
-      "type": "weekly",
-      "priority": "low",
-      "category": "other",
-      "icon": "⭐"
-    },
-    {
-      "title": "观看教育节目",
-      "description": "观看有益的教育类节目30分钟",
-      "points": 25,
-      "type": "daily",
-      "priority": "low",
-      "category": "other",
-      "icon": "📺"
-    },
-    {
-      "title": "帮助弟弟妹妹",
-      "description": "照顾和帮助弟弟妹妹",
-      "points": 30,
-      "type": "daily",
-      "priority": "low",
-      "category": "other",
-      "icon": "👶"
-    },
-    {
-      "title": "分享玩具",
-      "description": "和朋友分享自己的玩具",
-      "points": 20,
-      "type": "once",
-      "priority": "low",
-      "category": "other",
+      "category": "life",
       "icon": "🎁"
     },
     {
-      "title": "参加志愿活动",
-      "description": "参加学校或社区的志愿活动",
-      "points": 100,
-      "type": "once",
+      "title": "帮助家人",
+      "description": "主动帮助爸爸妈妈做小事",
+      "points": 10,
+      "type": "daily",
+      "priority": "medium",
+      "category": "life",
+      "icon": "🤝"
+    },
+    {
+      "title": "照顾小植物",
+      "description": "给家里的小花小草浇水",
+      "points": 10,
+      "type": "daily",
       "priority": "low",
-      "category": "other",
-      "icon": "🌟"
+      "category": "housework",
+      "icon": "🌻"
     }
   ]
 }

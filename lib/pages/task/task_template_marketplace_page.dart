@@ -104,6 +104,7 @@ class _TaskTemplateMarketplacePageState
           type: template.type,
           priority: template.priority,
           status: 'active',
+          icon: template.icon,
         );
 
         final success = await taskProvider.createTask(task);
@@ -532,6 +533,7 @@ class _TaskTemplateMarketplacePageState
                 type: template.type,
                 priority: template.priority,
                 status: 'active',
+                icon: template.icon,
               );
 
               // 创建任务

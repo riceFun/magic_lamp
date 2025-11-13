@@ -207,6 +207,7 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         priority TEXT DEFAULT 'medium',
         category TEXT,
+        icon TEXT,
         created_at TEXT NOT NULL
       )
     ''');
