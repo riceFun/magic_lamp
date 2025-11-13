@@ -99,6 +99,7 @@ flutter:
   assets:
     - assets/story.json
     - assets/products.json
+    - assets/tasks.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

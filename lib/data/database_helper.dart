@@ -280,7 +280,20 @@ class DatabaseHelper {
       )
     ''');
 
-    // 16. 老虎机游戏记录表
+    // 16. 故事学习记录表
+    await db.execute('''
+      CREATE TABLE story_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        story_id INTEGER NOT NULL,
+        learned_at TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id),
+        UNIQUE(user_id, story_id, learned_at)
+      )
+    ''');
+
+    // 17. 老虎机游戏记录表
     await db.execute('''
       CREATE TABLE slot_game_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -295,7 +308,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 17. 惩罚项目表
+    // 18. 惩罚项目表
     await db.execute('''
       CREATE TABLE penalties (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -313,7 +326,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 18. 惩罚记录表
+    // 19. 惩罚记录表
     await db.execute('''
       CREATE TABLE penalty_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -372,6 +385,10 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_statistics_user_id ON statistics(user_id)');
     await db.execute('CREATE INDEX idx_statistics_date ON statistics(date)');
 
+    // 故事学习记录表索引
+    await db.execute('CREATE INDEX idx_story_records_user_id ON story_records(user_id)');
+    await db.execute('CREATE INDEX idx_story_records_learned_at ON story_records(learned_at)');
+
     // 老虎机游戏记录表索引
     await db.execute('CREATE INDEX idx_slot_game_records_user_id ON slot_game_records(user_id)');
     await db.execute('CREATE INDEX idx_slot_game_records_created_at ON slot_game_records(created_at)');
@@ -390,58 +407,55 @@ class DatabaseHelper {
   Future<void> _insertInitialData(Database db) async {
     final now = DateTime.now().toIso8601String();
 
-    // 插入默认管理员用户
-    await db.insert('users', {
-      'name': '爸爸',
-      'avatar': 'person',
-      'role': 'admin',
-      'total_points': 0,
-      'created_at': now,
-      'updated_at': now,
-    });
-
-    // 插入两个示例子用户
-    await db.insert('users', {
-      'name': '小明',
-      'avatar': 'face',
-      'role': 'child',
-      'total_points': 350,
-      'created_at': now,
-      'updated_at': now,
-    });
-
-    await db.insert('users', {
-      'name': '小红',
-      'avatar': 'face_2',
-      'role': 'child',
-      'total_points': 420,
-      'created_at': now,
-      'updated_at': now,
-    });
-
-    // 插入默认项目
-    await db.insert('projects', {
-      'name': '学习',
-      'description': '学习相关任务',
-      'color': '#42A5F5',
-      'icon': 'school',
-      'status': 'active',
-      'created_at': now,
-      'updated_at': now,
-    });
-
-    await db.insert('projects', {
-      'name': '家务',
-      'description': '家务相关任务',
-      'color': '#66BB6A',
-      'icon': 'home',
-      'status': 'active',
-      'created_at': now,
-      'updated_at': now,
-    });
-
-    // 插入任务模板
-    await TaskTemplateRepository.insertInitialTemplates(db);
+    // // 插入默认管理员用户
+    // await db.insert('users', {
+    //   'name': '爸爸',
+    //   'avatar': 'person',
+    //   'role': 'admin',
+    //   'total_points': 0,
+    //   'created_at': now,
+    //   'updated_at': now,
+    // });
+    //
+    // // 插入两个示例子用户
+    // await db.insert('users', {
+    //   'name': '小明',
+    //   'avatar': 'face',
+    //   'role': 'child',
+    //   'total_points': 350,
+    //   'created_at': now,
+    //   'updated_at': now,
+    // });
+    //
+    // await db.insert('users', {
+    //   'name': '小红',
+    //   'avatar': 'face_2',
+    //   'role': 'child',
+    //   'total_points': 420,
+    //   'created_at': now,
+    //   'updated_at': now,
+    // });
+    //
+    // // 插入默认项目
+    // await db.insert('projects', {
+    //   'name': '学习',
+    //   'description': '学习相关任务',
+    //   'color': '#42A5F5',
+    //   'icon': 'school',
+    //   'status': 'active',
+    //   'created_at': now,
+    //   'updated_at': now,
+    // });
+    //
+    // await db.insert('projects', {
+    //   'name': '家务',
+    //   'description': '家务相关任务',
+    //   'color': '#66BB6A',
+    //   'icon': 'home',
+    //   'status': 'active',
+    //   'created_at': now,
+    //   'updated_at': now,
+    // });
 
     // 插入示例惩罚项目（使用第一个用户的ID）
     await db.insert('penalties', {
@@ -527,8 +541,8 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_task_templates_type ON task_templates(type)');
       await db.execute('CREATE INDEX idx_task_templates_category ON task_templates(category)');
 
-      // 插入初始模板数据
-      await TaskTemplateRepository.insertInitialTemplates(db);
+      // // 插入初始模板数据
+      // await TaskTemplateRepository.insertInitialTemplates(db);
     }
 
     // 从版本2升级到版本3：添加任务替换关系字段
@@ -763,6 +777,18 @@ class DatabaseHelper {
       await _checkAndAddMissingTasksColumns(db);
       print('Database upgraded to version 13: checked and added missing columns to tasks table');
     }
+
+    // 从版本13升级到版本14：确保story_records表存在
+    if (oldVersion < 14) {
+      await _checkAndCreateMissingTables(db);
+      print('Database upgraded to version 14: ensured story_records table exists');
+    }
+
+    // 从版本14升级到版本15：为task_templates表添加icon字段
+    if (oldVersion < 15) {
+      await _addIconColumnToTaskTemplates(db);
+      print('Database upgraded to version 15: added icon column to task_templates table');
+    }
   }
 
   /// 检查并创建缺失的表
@@ -834,6 +860,26 @@ class DatabaseHelper {
       print('Adding missing icon column to tasks table...');
       await db.execute('ALTER TABLE tasks ADD COLUMN icon TEXT');
       print('icon column added');
+    }
+  }
+
+  /// 为task_templates表添加icon列
+  Future<void> _addIconColumnToTaskTemplates(Database db) async {
+    try {
+      // 获取task_templates表的列信息
+      final columns = await db.rawQuery('PRAGMA table_info(task_templates)');
+      final columnNames = columns.map((col) => col['name'] as String).toList();
+
+      // 检查icon列是否已存在
+      if (!columnNames.contains('icon')) {
+        print('Adding icon column to task_templates table...');
+        await db.execute('ALTER TABLE task_templates ADD COLUMN icon TEXT');
+        print('icon column added to task_templates table');
+      } else {
+        print('icon column already exists in task_templates table');
+      }
+    } catch (e) {
+      print('Error adding icon column to task_templates table: $e');
     }
   }
 

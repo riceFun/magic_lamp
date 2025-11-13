@@ -329,6 +329,30 @@ class _TaskTemplateMarketplacePageState
                       },
                     ),
                     _CategoryChip(
+                      label: '才艺',
+                      value: 'art',
+                      icon: Icons.palette,
+                      isSelected: _selectedCategory == 'art',
+                      onTap: () {
+                        setState(() {
+                          _selectedCategory = 'art';
+                        });
+                        provider.setSelectedCategory('art');
+                      },
+                    ),
+                    _CategoryChip(
+                      label: '生活',
+                      value: 'life',
+                      icon: Icons.self_improvement,
+                      isSelected: _selectedCategory == 'life',
+                      onTap: () {
+                        setState(() {
+                          _selectedCategory = 'life';
+                        });
+                        provider.setSelectedCategory('life');
+                      },
+                    ),
+                    _CategoryChip(
                       label: '其他',
                       value: 'other',
                       icon: Icons.more_horiz,
@@ -392,7 +416,13 @@ class _TaskTemplateMarketplacePageState
       builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
-            _getCategoryIcon(template.category),
+            // 显示模板自己的图标，如果没有则使用分类图标
+            template.icon != null && template.icon!.isNotEmpty
+                ? Text(
+                    template.icon!,
+                    style: TextStyle(fontSize: 24),
+                  )
+                : _getCategoryIcon(template.category),
             SizedBox(width: AppTheme.spacingSmall),
             Expanded(
               child: Text(
@@ -561,6 +591,14 @@ class _TaskTemplateMarketplacePageState
         icon = Icons.home;
         color = AppTheme.primaryColor;
         break;
+      case 'art':
+        icon = Icons.palette;
+        color = Colors.purple;
+        break;
+      case 'life':
+        icon = Icons.self_improvement;
+        color = Colors.teal;
+        break;
       default:
         icon = Icons.task;
         color = AppTheme.textSecondaryColor;
@@ -612,6 +650,10 @@ class _TaskTemplateMarketplacePageState
         return '运动';
       case 'housework':
         return '家务';
+      case 'art':
+        return '才艺';
+      case 'life':
+        return '生活';
       case 'other':
         return '其他';
       default:
@@ -717,10 +759,17 @@ class _TemplateCard extends StatelessWidget {
                       color: _getTypeColor(template.type).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     ),
-                    child: Icon(
-                      _getTypeIcon(template.type),
-                      color: _getTypeColor(template.type),
-                      size: 28,
+                    child: Center(
+                      child: template.icon != null && template.icon!.isNotEmpty
+                          ? Text(
+                              template.icon!,
+                              style: TextStyle(fontSize: 28),
+                            )
+                          : Icon(
+                              _getTypeIcon(template.type),
+                              color: _getTypeColor(template.type),
+                              size: 28,
+                            ),
                     ),
                   ),
                   SizedBox(width: AppTheme.spacingMedium),

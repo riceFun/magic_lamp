@@ -7,6 +7,7 @@ class TaskTemplate {
   final String type; // 'once', 'daily', 'weekly', 'monthly'
   final String priority; // 'low', 'medium', 'high'
   final String? category; // 任务分类：'study', 'health', 'housework', 'exercise', 'reading', 'other'
+  final String? icon; // 任务图标（emoji）
   final DateTime createdAt;
 
   TaskTemplate({
@@ -17,6 +18,7 @@ class TaskTemplate {
     required this.type,
     this.priority = 'medium',
     this.category,
+    this.icon,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -30,6 +32,7 @@ class TaskTemplate {
       type: map['type'] as String,
       priority: map['priority'] as String? ?? 'medium',
       category: map['category'] as String?,
+      icon: map['icon'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
@@ -44,6 +47,7 @@ class TaskTemplate {
       'type': type,
       'priority': priority,
       'category': category,
+      'icon': icon,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -57,6 +61,7 @@ class TaskTemplate {
     String? type,
     String? priority,
     String? category,
+    String? icon,
     DateTime? createdAt,
   }) {
     return TaskTemplate(
@@ -67,6 +72,7 @@ class TaskTemplate {
       type: type ?? this.type,
       priority: priority ?? this.priority,
       category: category ?? this.category,
+      icon: icon ?? this.icon,
       createdAt: createdAt ?? this.createdAt,
     );
   }

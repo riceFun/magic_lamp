@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'app.dart';
 import 'data/database_helper.dart';
 import 'services/product_import_service.dart';
+import 'services/task_import_service.dart';
 
 /// 神灯积分管理 - 应用入口
 void main() async {
@@ -25,6 +26,15 @@ void main() async {
     }
   } catch (e) {
     debugPrint('商品导入失败: $e');
+  }
+
+  // 导入任务模板数据
+  try {
+    final taskImportService = TaskImportService();
+    final result = await taskImportService.importTasks();
+    debugPrint('任务模板导入完成: $result');
+  } catch (e) {
+    debugPrint('任务模板导入失败: $e');
   }
 
   // 设置状态栏样式
