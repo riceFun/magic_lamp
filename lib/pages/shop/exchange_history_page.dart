@@ -23,7 +23,10 @@ class _ExchangeHistoryPageState extends State<ExchangeHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _loadExchanges();
+    // 使用addPostFrameCallback延迟执行，避免在build期间调用setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadExchanges();
+    });
   }
 
   Future<void> _loadExchanges() async {

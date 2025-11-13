@@ -260,23 +260,18 @@ class _StatisticsPageState extends State<StatisticsPage> {
                                 isLight: true,
                               ),
                             ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            Expanded(
+                              child: _StatisticItemWithSubtitle(
+                                label: '当前余额',
+                                value: '${user.totalPoints}',
+                                subtitle: '≈${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)}元',
+                                icon: Icons.monetization_on,
+                                iconColor: AppTheme.accentYellow,
+                                isLight: true,
+                              ),
+                            ),
                           ],
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        _StatisticItem(
-                          label: '当前余额',
-                          value: '${user.totalPoints}',
-                          icon: Icons.monetization_on,
-                          iconColor: AppTheme.accentYellow,
-                          isLight: true,
-                        ),
-                        SizedBox(height: AppTheme.spacingSmall),
-                        Text(
-                          '约等于 ${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)} 元',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSizeSmall,
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
                         ),
                       ],
                     ),
@@ -340,15 +335,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
                                 isLight: false,
                               ),
                             ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            Expanded(
+                              child: _StatisticItem(
+                                label: '记录数',
+                                value: '$_todayCount',
+                                icon: Icons.receipt,
+                                iconColor: AppTheme.primaryColor,
+                                isLight: false,
+                              ),
+                            ),
                           ],
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        _StatisticItem(
-                          label: '记录数',
-                          value: '$_todayCount',
-                          icon: Icons.receipt,
-                          iconColor: AppTheme.primaryColor,
-                          isLight: false,
                         ),
                       ],
                     ),
@@ -401,15 +398,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
                                 isLight: false,
                               ),
                             ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            Expanded(
+                              child: _StatisticItem(
+                                label: '记录数',
+                                value: '$_weekCount',
+                                icon: Icons.receipt,
+                                iconColor: AppTheme.accentOrange,
+                                isLight: false,
+                              ),
+                            ),
                           ],
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        _StatisticItem(
-                          label: '记录数',
-                          value: '$_weekCount',
-                          icon: Icons.receipt,
-                          iconColor: AppTheme.accentOrange,
-                          isLight: false,
                         ),
                       ],
                     ),
@@ -462,15 +461,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
                                 isLight: false,
                               ),
                             ),
+                            SizedBox(width: AppTheme.spacingMedium),
+                            Expanded(
+                              child: _StatisticItem(
+                                label: '记录数',
+                                value: '$_monthCount',
+                                icon: Icons.receipt,
+                                iconColor: AppTheme.accentGreen,
+                                isLight: false,
+                              ),
+                            ),
                           ],
-                        ),
-                        SizedBox(height: AppTheme.spacingMedium),
-                        _StatisticItem(
-                          label: '记录数',
-                          value: '$_monthCount',
-                          icon: Icons.receipt,
-                          iconColor: AppTheme.accentGreen,
-                          isLight: false,
                         ),
                       ],
                     ),
@@ -793,6 +794,77 @@ class _StatisticItem extends StatelessWidget {
             style: TextStyle(
               fontSize: AppTheme.fontSizeSmall,
               color: secondaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 带副标题的统计项组件
+class _StatisticItemWithSubtitle extends StatelessWidget {
+  final String label;
+  final String value;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final bool isLight; // 是否是浅色背景（白色文字）
+
+  const _StatisticItemWithSubtitle({
+    required this.label,
+    required this.value,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.isLight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isLight ? Colors.white : AppTheme.textPrimaryColor;
+    final secondaryColor = isLight
+        ? Colors.white.withValues(alpha: 0.8)
+        : AppTheme.textSecondaryColor;
+
+    return Container(
+      padding: EdgeInsets.all(AppTheme.spacingMedium),
+      decoration: BoxDecoration(
+        color: isLight
+            ? Colors.white.withValues(alpha: 0.2)
+            : iconColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: isLight ? Colors.white : iconColor,
+            size: 28,
+          ),
+          SizedBox(height: AppTheme.spacingSmall),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: AppTheme.fontSizeXLarge,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: AppTheme.fontSizeSmall,
+              color: secondaryColor,
+            ),
+          ),
+          SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: AppTheme.fontSizeXSmall,
+              color: secondaryColor.withValues(alpha: 0.7),
             ),
           ),
         ],
