@@ -92,7 +92,6 @@ class _HomePageState extends State<HomePage> {
                     },
                     tooltip: '添加任务',
                   ),
-
                 ],
               ),
 
@@ -120,7 +119,9 @@ class _HomePageState extends State<HomePage> {
                             AppTheme.accentOrange.withValues(alpha: 0.08),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                       ),
                       padding: EdgeInsets.all(AppTheme.spacingMedium),
                       child: Column(
@@ -141,10 +142,14 @@ class _HomePageState extends State<HomePage> {
                                       AppTheme.accentOrange,
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusSmall,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppTheme.accentYellow.withValues(alpha: 0.3),
+                                      color: AppTheme.accentYellow.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       blurRadius: 8,
                                       offset: Offset(0, 4),
                                     ),
@@ -182,13 +187,18 @@ class _HomePageState extends State<HomePage> {
                                             gradient: LinearGradient(
                                               colors: [
                                                 AppTheme.accentGreen,
-                                                AppTheme.accentGreen.withValues(alpha: 0.8),
+                                                AppTheme.accentGreen.withValues(
+                                                  alpha: 0.8,
+                                                ),
                                               ],
                                             ),
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: AppTheme.accentGreen.withValues(alpha: 0.3),
+                                                color: AppTheme.accentGreen
+                                                    .withValues(alpha: 0.3),
                                                 blurRadius: 4,
                                                 offset: Offset(0, 2),
                                               ),
@@ -231,9 +241,13 @@ class _HomePageState extends State<HomePage> {
                             padding: EdgeInsets.all(AppTheme.spacingSmall),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusSmall,
+                              ),
                               border: Border.all(
-                                color: AppTheme.accentYellow.withValues(alpha: 0.3),
+                                color: AppTheme.accentYellow.withValues(
+                                  alpha: 0.3,
+                                ),
                                 width: 1,
                               ),
                             ),
@@ -316,7 +330,9 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             ElevatedButton.icon(
                               onPressed: () {
-                                context.push(AppConstants.routeTaskTemplateMarketplace);
+                                context.push(
+                                  AppConstants.routeTaskTemplateMarketplace,
+                                );
                               },
                               icon: Icon(Icons.store),
                               label: Text('从任务超市选择'),
@@ -369,7 +385,10 @@ class _HomePageState extends State<HomePage> {
     final taskProvider = context.read<TaskProvider>();
 
     // 检查今天是否已完成
-    final isCompleted = await taskProvider.isTaskCompletedToday(task.id!, userId);
+    final isCompleted = await taskProvider.isTaskCompletedToday(
+      task.id!,
+      userId,
+    );
     final streakCount = await taskProvider.getTaskStreakCount(task.id!, userId);
 
     if (!context.mounted) return;
@@ -460,14 +479,18 @@ class _HomePageState extends State<HomePage> {
                     Icon(
                       isCompleted ? Icons.check_circle : Icons.pending,
                       size: 20,
-                      color: isCompleted ? AppTheme.accentGreen : AppTheme.primaryColor,
+                      color: isCompleted
+                          ? AppTheme.accentGreen
+                          : AppTheme.primaryColor,
                     ),
                     SizedBox(width: AppTheme.spacingSmall),
                     Text(
                       isCompleted ? '今日已完成' : '待完成',
                       style: TextStyle(
                         fontSize: AppTheme.fontSizeSmall,
-                        color: isCompleted ? AppTheme.accentGreen : AppTheme.primaryColor,
+                        color: isCompleted
+                            ? AppTheme.accentGreen
+                            : AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -505,12 +528,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// 完成任务
-  Future<void> _completeTask(BuildContext context, Task task, int userId) async {
+  Future<void> _completeTask(
+    BuildContext context,
+    Task task,
+    int userId,
+  ) async {
     // 此方法已被移除，使用密码验证后调用 _actualCompleteTask
   }
 
   /// 实际执行完成任务操作
-  Future<void> _actualCompleteTask(BuildContext context, Task task, int userId) async {
+  Future<void> _actualCompleteTask(
+    BuildContext context,
+    Task task,
+    int userId,
+  ) async {
     final taskProvider = context.read<TaskProvider>();
     final userProvider = context.read<UserProvider>();
 
@@ -623,36 +654,35 @@ class _SortedTaskList extends StatelessWidget {
         return SliverPadding(
           padding: EdgeInsets.all(AppTheme.spacingLarge),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final taskData = sortedTasks[index];
-                final task = taskData['task'] as Task;
-                final isCompleted = taskData['isCompleted'] as bool;
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final taskData = sortedTasks[index];
+              final task = taskData['task'] as Task;
+              final isCompleted = taskData['isCompleted'] as bool;
 
-                return _TaskCard(
-                  task: task,
-                  userId: userId,
-                  isCompleted: isCompleted,
-                  onTap: () => onTaskTap(task),
-                );
-              },
-              childCount: sortedTasks.length,
-            ),
+              return _TaskCard(
+                task: task,
+                userId: userId,
+                isCompleted: isCompleted,
+                onTap: () => onTaskTap(task),
+              );
+            }, childCount: sortedTasks.length),
           ),
         );
       },
     );
   }
 
-  Future<List<Map<String, dynamic>>> _getSortedTasks(TaskProvider taskProvider) async {
+  Future<List<Map<String, dynamic>>> _getSortedTasks(
+    TaskProvider taskProvider,
+  ) async {
     final tasksWithStatus = <Map<String, dynamic>>[];
 
     for (final task in tasks) {
-      final isCompleted = await taskProvider.isTaskCompletedToday(task.id!, userId);
-      tasksWithStatus.add({
-        'task': task,
-        'isCompleted': isCompleted,
-      });
+      final isCompleted = await taskProvider.isTaskCompletedToday(
+        task.id!,
+        userId,
+      );
+      tasksWithStatus.add({'task': task, 'isCompleted': isCompleted});
     }
 
     // 排序：未完成的在前，已完成的在后
@@ -760,10 +790,14 @@ class _TaskCard extends StatelessWidget {
                             _getTypeColor(task.type),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: _getTypeColor(task.type).withValues(alpha: 0.3),
+                            color: _getTypeColor(
+                              task.type,
+                            ).withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: Offset(0, 4),
                           ),
@@ -771,10 +805,7 @@ class _TaskCard extends StatelessWidget {
                       ),
                       child: Center(
                         child: task.icon != null
-                            ? Text(
-                                task.icon!,
-                                style: TextStyle(fontSize: 36),
-                              )
+                            ? Text(task.icon!, style: TextStyle(fontSize: 36))
                             : Icon(
                                 _getTypeIcon(task.type),
                                 color: Colors.white,
@@ -809,7 +840,9 @@ class _TaskCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: _getTypeColor(task.type).withValues(alpha: 0.15),
+                              color: _getTypeColor(
+                                task.type,
+                              ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -850,7 +883,9 @@ class _TaskCard extends StatelessWidget {
                           final userProvider = context.read<UserProvider>();
                           final user = userProvider.currentUser;
                           if (user != null) {
-                            context.read<TaskProvider>().loadUserTasks(user.id!);
+                            context.read<TaskProvider>().loadUserTasks(
+                              user.id!,
+                            );
                           }
                         }
                       },
@@ -947,17 +982,25 @@ class _TaskCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                            isCompleted
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
                             size: 18,
-                            color: isCompleted ? Colors.white : AppTheme.textSecondaryColor,
+                            color: isCompleted
+                                ? Colors.white
+                                : AppTheme.textSecondaryColor,
                           ),
                           SizedBox(width: 6),
                           Text(
                             isCompleted ? '已完成' : '待完成',
                             style: TextStyle(
                               fontSize: AppTheme.fontSizeSmall,
-                              fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                              color: isCompleted ? Colors.white : AppTheme.textSecondaryColor,
+                              fontWeight: isCompleted
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isCompleted
+                                  ? Colors.white
+                                  : AppTheme.textSecondaryColor,
                             ),
                           ),
                         ],
