@@ -123,7 +123,7 @@ class UserProvider extends ChangeNotifier {
     required String name,
     String? avatar,
     String role = 'child',
-    String? password,
+    required String password,
   }) async {
     _isLoading = true;
     notifyListeners();

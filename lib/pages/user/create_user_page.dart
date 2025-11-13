@@ -14,13 +14,13 @@ class CreateUserPage extends StatefulWidget {
 }
 
 class _CreateUserPageState extends State<CreateUserPage> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   String _selectedAvatar = 'face';
-  String _selectedRole = 'child';
   bool _obscurePassword = true;
+  String? _nameError;
+  String? _passwordError;
 
   // 可选的头像列表
   final List<Map<String, dynamic>> _avatarOptions = [
@@ -41,19 +41,52 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
   /// 创建用户
   Future<void> _createUser() async {
-    if (!_formKey.currentState!.validate()) {
+    // 手动验证
+    setState(() {
+      _nameError = null;
+      _passwordError = null;
+    });
+
+    final name = _nameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    bool hasError = false;
+
+    if (name.isEmpty) {
+      setState(() {
+        _nameError = '请输入用户名';
+      });
+      hasError = true;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _passwordError = '请输入操作密码';
+      });
+      hasError = true;
+    } else if (password.length != 4) {
+      setState(() {
+        _passwordError = '密码必须是4位数字';
+      });
+      hasError = true;
+    } else if (!RegExp(r'^\d{4}$').hasMatch(password)) {
+      setState(() {
+        _passwordError = '密码只能包含数字';
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
     final userProvider = context.read<UserProvider>();
 
     final userId = await userProvider.createUser(
-      name: _nameController.text.trim(),
+      name: name,
       avatar: _selectedAvatar,
-      role: _selectedRole,
-      password: _passwordController.text.trim().isEmpty
-          ? null
-          : _passwordController.text.trim(),
+      role: 'child',
+      password: password,
     );
 
     if (userId != null && mounted) {
@@ -87,27 +120,33 @@ class _CreateUserPageState extends State<CreateUserPage> {
         builder: (context, userProvider, child) {
           return SingleChildScrollView(
             padding: EdgeInsets.all(AppTheme.spacingLarge),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 用户名输入
-                  Text(
-                    '用户名',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 用户名输入
+                Text(
+                  '用户名',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSizeMedium,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimaryColor,
                   ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  CustomTextField(
-                    controller: _nameController,
-                    hintText: '请输入用户名',
-                    prefixIcon: Icons.person_outline,
-                  ),
-                  SizedBox(height: AppTheme.spacingLarge),
+                ),
+                SizedBox(height: AppTheme.spacingSmall),
+                CustomTextField(
+                  controller: _nameController,
+                  hintText: '请输入用户名',
+                  prefixIcon: Icons.person_outline,
+                  errorText: _nameError,
+                  onChanged: (value) {
+                    if (_nameError != null) {
+                      setState(() {
+                        _nameError = null;
+                      });
+                    }
+                  },
+                ),
+                SizedBox(height: AppTheme.spacingLarge),
 
                   // 选择头像
                   Text(
@@ -176,157 +215,61 @@ class _CreateUserPageState extends State<CreateUserPage> {
                   ),
                   SizedBox(height: AppTheme.spacingLarge),
 
-                  // 选择角色
-                  Text(
-                    '用户角色',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
+                // 密码输入（必填）
+                Text(
+                  '操作密码（必填）',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSizeMedium,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimaryColor,
                   ),
-                  SizedBox(height: AppTheme.spacingMedium),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _RoleCard(
-                          icon: Icons.child_care,
-                          title: '儿童',
-                          description: '获得积分、兑换奖励',
-                          color: AppTheme.primaryColor,
-                          isSelected: _selectedRole == 'child',
-                          onTap: () {
-                            setState(() {
-                              _selectedRole = 'child';
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(width: AppTheme.spacingMedium),
-                      Expanded(
-                        child: _RoleCard(
-                          icon: Icons.admin_panel_settings,
-                          title: '管理员',
-                          description: '管理数据、设置规则',
-                          color: AppTheme.accentOrange,
-                          isSelected: _selectedRole == 'admin',
-                          onTap: () {
-                            setState(() {
-                              _selectedRole = 'admin';
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                ),
+                SizedBox(height: AppTheme.spacingSmall),
+                Text(
+                  '用于完成任务、兑换奖励等操作时的验证',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSizeSmall,
+                    color: AppTheme.textSecondaryColor,
                   ),
-                  SizedBox(height: AppTheme.spacingLarge),
-
-                  // 密码输入（可选）
-                  Text(
-                    '密码（可选）',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSizeMedium,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: AppTheme.spacingSmall),
-                  CustomTextField(
-                    controller: _passwordController,
-                    hintText: '留空表示不设置密码',
-                    prefixIcon: Icons.lock_outline,
-                    suffixIcon: _obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    onSuffixIconTap: () {
+                ),
+                SizedBox(height: AppTheme.spacingSmall),
+                CustomTextField(
+                  controller: _passwordController,
+                  hintText: '请输入4位数字密码',
+                  prefixIcon: Icons.lock_outline,
+                  suffixIcon: _obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  onSuffixIconTap: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                  obscureText: _obscurePassword,
+                  keyboardType: TextInputType.number,
+                  errorText: _passwordError,
+                  onChanged: (value) {
+                    if (_passwordError != null) {
                       setState(() {
-                        _obscurePassword = !_obscurePassword;
+                        _passwordError = null;
                       });
-                    },
-                    obscureText: _obscurePassword,
-                  ),
-                  SizedBox(height: AppTheme.spacingXLarge),
+                    }
+                  },
+                ),
+                SizedBox(height: AppTheme.spacingXLarge),
 
-                  // 创建按钮
-                  CustomButton.primary(
-                    text: '创建用户',
-                    icon: Icons.person_add,
-                    width: double.infinity,
-                    isLoading: userProvider.isLoading,
-                    onPressed: userProvider.isLoading ? null : _createUser,
-                  ),
-                ],
-              ),
+                // 创建按钮
+                CustomButton.primary(
+                  text: '创建用户',
+                  icon: Icons.person_add,
+                  width: double.infinity,
+                  isLoading: userProvider.isLoading,
+                  onPressed: userProvider.isLoading ? null : _createUser,
+                ),
+              ],
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-/// 角色选择卡片
-class _RoleCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RoleCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-      child: Container(
-        padding: EdgeInsets.all(AppTheme.spacingMedium),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.1)
-              : AppTheme.cardColor,
-          border: Border.all(
-            color: isSelected ? color : AppTheme.dividerColor,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: isSelected ? color : AppTheme.textSecondaryColor,
-            ),
-            SizedBox(height: AppTheme.spacingSmall),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: AppTheme.fontSizeMedium,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? color : AppTheme.textPrimaryColor,
-              ),
-            ),
-            SizedBox(height: AppTheme.spacingXSmall),
-            Text(
-              description,
-              style: TextStyle(
-                fontSize: AppTheme.fontSizeSmall,
-                color: AppTheme.textSecondaryColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

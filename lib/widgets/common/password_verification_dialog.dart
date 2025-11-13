@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
-import '../../services/password_storage_service.dart';
+import '../../providers/user_provider.dart';
 
 /// 密码验证模式
 enum PasswordMode {
@@ -76,18 +77,20 @@ class _PasswordVerificationDialogState
           return;
         }
       } else {
-        // 验证用户操作密码（从本地存储读取）
-        final hasPassword = await PasswordStorageService.hasOperationPassword();
+        // 验证用户操作密码（从当前用户的password字段读取）
+        final userProvider = context.read<UserProvider>();
+        final currentUser = userProvider.currentUser;
 
-        if (!hasPassword) {
+        if (currentUser == null) {
           setState(() {
-            _errorMessage = '您还未设置操作密码，请先在设置中修改密码';
+            _errorMessage = '未登录，请先登录';
             _isVerifying = false;
           });
           return;
         }
 
-        isValid = await PasswordStorageService.verifyOperationPassword(password);
+        // 从用户对象的password字段验证
+        isValid = password == currentUser.password;
         if (!isValid) {
           setState(() {
             _errorMessage = '操作密码错误';

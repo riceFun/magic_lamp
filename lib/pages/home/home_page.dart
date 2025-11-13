@@ -781,35 +781,13 @@ class _TaskCard extends StatelessWidget {
                     Container(
                       width: 64,
                       height: 64,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            _getTypeColor(task.type).withValues(alpha: 0.8),
-                            _getTypeColor(task.type),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusMedium,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _getTypeColor(
-                              task.type,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
                       child: Center(
                         child: task.icon != null && task.icon!.isNotEmpty
-                            ? Text(task.icon!, style: TextStyle(fontSize: 36))
+                            ? Text(task.icon!, style: TextStyle(fontSize: 48))
                             : Icon(
                                 _getTypeIcon(task.type),
                                 color: Colors.white,
-                                size: 36,
+                                size: 48,
                               ),
                       ),
                     ),

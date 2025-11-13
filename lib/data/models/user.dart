@@ -5,7 +5,7 @@ class User {
   final String? avatar;
   final String role; // 'admin' 或 'child'
   final int totalPoints;
-  final String? password;
+  final String password; // 操作密码（必填）
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -15,7 +15,7 @@ class User {
     this.avatar,
     this.role = 'child',
     this.totalPoints = 0,
-    this.password,
+    required this.password,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -35,7 +35,7 @@ class User {
       avatar: map['avatar'] as String?,
       role: map['role'] as String? ?? 'child',
       totalPoints: map['total_points'] as int? ?? 0,
-      password: map['password'] as String?,
+      password: map['password'] as String? ?? '0000', // 兼容旧数据，默认密码0000
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
