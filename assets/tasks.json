@@ -84,7 +84,7 @@
     {
       "title": "画画",
       "description": "自由创作一幅画",
-      "points": 2100,
+      "points": 10,
       "type": "daily",
       "priority": "low",
       "category": "art",
