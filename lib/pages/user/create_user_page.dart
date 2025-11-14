@@ -4,6 +4,8 @@ import '../../config/theme.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../providers/user_provider.dart';
+import '../../services/product_import_service.dart';
+import '../../services/task_import_service.dart';
 
 /// 创建用户页面
 class CreateUserPage extends StatefulWidget {
@@ -90,14 +92,31 @@ class _CreateUserPageState extends State<CreateUserPage> {
     );
 
     if (userId != null && mounted) {
-      // 创建成功，返回登录页
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('用户创建成功！'),
-          backgroundColor: AppTheme.accentGreen,
-        ),
-      );
-      Navigator.of(context).pop();
+      // 创建成功后导入商品数据和任务模板
+      try {
+        // 导入商品数据
+        final productImportService = ProductImportService();
+        final productResult = await productImportService.importProducts(userId);
+        debugPrint('用户创建后商品导入完成: $productResult');
+
+        // 导入任务模板
+        final taskImportService = TaskImportService();
+        final taskResult = await taskImportService.importTasks();
+        debugPrint('用户创建后任务模板导入完成: $taskResult');
+      } catch (e) {
+        debugPrint('用户创建后数据导入失败: $e');
+      }
+
+      // 显示成功提示并返回
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('用户创建成功！'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
     } else if (mounted) {
       // 创建失败
       ScaffoldMessenger.of(context).showSnackBar(
