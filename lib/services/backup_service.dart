@@ -139,10 +139,9 @@ class BackupService {
   /// 返回导入的文件路径，如果用户取消选择则返回null
   static Future<String?> importBackup() async {
     try {
-      // 打开文件选择器，只允许选择 .db 文件
+      // 打开文件选择器，允许选择所有文件类型（因为.db文件可能不被Android识别为标准类型）
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['db'],
+        type: FileType.any,
         allowMultiple: false,
       );
 

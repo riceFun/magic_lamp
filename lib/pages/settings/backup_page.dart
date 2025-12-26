@@ -124,6 +124,7 @@ class _BackupPageState extends State<BackupPage> {
             backgroundColor: AppTheme.accentRed,
           ),
         );
+        print(e);
       }
     } finally {
       if (mounted) {
