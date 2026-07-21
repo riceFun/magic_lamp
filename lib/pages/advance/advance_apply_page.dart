@@ -22,7 +22,28 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
   final _amountController = TextEditingController();
 
   int _selectedDays = 7;
+  double _selectedInterestRatePercent = 1.0;
   bool _isLoading = false;
+
+  static const List<double> _interestRateOptions = [
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1,
+    2,
+    3,
+    5,
+    8,
+    10,
+    15,
+    20,
+    30,
+    50,
+    75,
+    100,
+  ];
 
   @override
   void dispose() {
@@ -41,10 +62,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('未登录'),
-          backgroundColor: AppTheme.accentRed,
-        ),
+        SnackBar(content: Text('未登录'), backgroundColor: AppTheme.accentRed),
       );
       return;
     }
@@ -80,6 +98,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
         userId: user.id!,
         amount: amount,
         days: _selectedDays,
+        interestRate: _selectedInterestRatePercent / 100,
       );
 
       if (advanceId != null) {
@@ -120,8 +139,17 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
 
   /// 显示成功对话框
   void _showSuccessDialog(int amount) {
-    final interest = AdvanceProvider.calculateInterest(amount, _selectedDays);
-    final total = AdvanceProvider.calculateTotalAmount(amount, _selectedDays);
+    final interestRate = _selectedInterestRatePercent / 100;
+    final interest = AdvanceProvider.calculateInterest(
+      amount,
+      interestRate,
+      _selectedDays,
+    );
+    final total = AdvanceProvider.calculateTotalAmount(
+      amount,
+      interestRate,
+      _selectedDays,
+    );
     final dueDate = DateTime.now().add(Duration(days: _selectedDays));
 
     showDialog(
@@ -130,11 +158,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: AppTheme.accentGreen,
-              size: 28,
-            ),
+            Icon(Icons.check_circle, color: AppTheme.accentGreen, size: 28),
             SizedBox(width: AppTheme.spacingSmall),
             Text('申请成功！'),
           ],
@@ -163,6 +187,19 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                     label: '预支金额',
                     value: '$amount 积分',
                     valueColor: AppTheme.primaryColor,
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  _InfoRow(
+                    label: '日利率',
+                    value:
+                        '${_selectedInterestRatePercent.toStringAsFixed(2)}%',
+                    valueColor: AppTheme.accentOrange,
+                  ),
+                  SizedBox(height: AppTheme.spacingSmall),
+                  _InfoRow(
+                    label: '还款周期',
+                    value: '$_selectedDays 天',
+                    valueColor: AppTheme.textSecondaryColor,
                   ),
                   SizedBox(height: AppTheme.spacingSmall),
                   _InfoRow(
@@ -229,6 +266,21 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
     );
   }
 
+  String _formatRate(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toStringAsFixed(0);
+    }
+    if (value >= 1) {
+      return value.toStringAsFixed(2);
+    }
+    return value.toStringAsFixed(2);
+  }
+
+  String _dailyInterestForDisplay(double ratePercent) {
+    final dailyInterest = 100 * ratePercent / 100;
+    return dailyInterest.toStringAsFixed(dailyInterest < 1 ? 2 : 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().currentUser;
@@ -239,12 +291,18 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
       appBar: AppBar(
         title: Text('预支积分'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.history),
-            tooltip: '查看预支记录',
+          TextButton(
             onPressed: () {
               context.push(AppConstants.routeAdvanceList);
             },
+            child: Text(
+              '预支记录',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+              ),
+            ),
           ),
         ],
       ),
@@ -260,10 +318,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor,
-                    AppTheme.primaryDarkColor,
-                  ],
+                  colors: [AppTheme.primaryColor, AppTheme.primaryDarkColor],
                 ),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 boxShadow: AppTheme.cardShadow,
@@ -333,9 +388,10 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                   ),
                   SizedBox(height: AppTheme.spacingSmall),
                   Text(
-                    '• 月利率：10%（按天计算）\n'
-                    '• 预支金额不超过当前积分的2倍\n'
-                    '• 到期需归还本金+利息\n'
+                    '• 日利率可选 0.01% - 100%\n'
+                    '• 预支金额上限为 10000 积分\n'
+                    '• 利息按天单利计算\n'
+                    '• 还款周期可选 7 / 10 / 30 天\n'
                     '• 同时只能有一笔预支\n'
                     '• 逾期会影响信用记录',
                     style: TextStyle(
@@ -373,9 +429,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                 fillColor: Colors.white,
               ),
               keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return '请输入预支金额';
@@ -384,8 +438,8 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                 if (amount == null || amount <= 0) {
                   return '金额必须大于0';
                 }
-                if (amount > currentPoints * 2) {
-                  return '预支金额不能超过当前积分的2倍';
+                if (amount > AppConstants.advanceMaxAmount) {
+                  return '预支金额不能超过${AppConstants.advanceMaxAmount}积分';
                 }
                 return null;
               },
@@ -419,10 +473,10 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                 SizedBox(width: AppTheme.spacingSmall),
                 Expanded(
                   child: _DurationChip(
-                    label: '14天',
-                    days: 14,
-                    isSelected: _selectedDays == 14,
-                    onTap: () => setState(() => _selectedDays = 14),
+                    label: '10天',
+                    days: 10,
+                    isSelected: _selectedDays == 10,
+                    onTap: () => setState(() => _selectedDays = 10),
                   ),
                 ),
                 SizedBox(width: AppTheme.spacingSmall),
@@ -439,9 +493,63 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
 
             SizedBox(height: AppTheme.spacingLarge),
 
+            // 日利率
+            Text(
+              '日利率',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeMedium,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingSmall),
+            DropdownButtonFormField<double>(
+              initialValue: _selectedInterestRatePercent,
+              decoration: InputDecoration(
+                hintText: '请选择日利率',
+                prefixIcon: Icon(Icons.percent),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              items: _interestRateOptions
+                  .map(
+                    (rate) => DropdownMenuItem<double>(
+                      value: rate,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('${_formatRate(rate)}%'),
+                          Text(
+                            '借100每天利息${_dailyInterestForDisplay(rate)}',
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: AppTheme.fontSizeSmall,
+                              color: AppTheme.textSecondaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  _selectedInterestRatePercent = value;
+                });
+              },
+            ),
+
+            SizedBox(height: AppTheme.spacingLarge),
+
             // 预计还款
             if (_amountController.text.isNotEmpty &&
-                int.tryParse(_amountController.text) != null) ...{
+                int.tryParse(_amountController.text) != null) ...[
               Container(
                 padding: EdgeInsets.all(AppTheme.spacingMedium),
                 decoration: BoxDecoration(
@@ -468,16 +576,23 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                     ),
                     SizedBox(height: AppTheme.spacingSmall),
                     _InfoRow(
-                      label: '利息（${_selectedDays}天）',
+                      label: '日利率',
                       value:
-                          '${AdvanceProvider.calculateInterest(int.parse(_amountController.text), _selectedDays)} 积分',
+                          '${_selectedInterestRatePercent.toStringAsFixed(2)}%',
+                      valueColor: AppTheme.accentOrange,
+                    ),
+                    SizedBox(height: AppTheme.spacingSmall),
+                    _InfoRow(
+                      label: '利息（$_selectedDays天）',
+                      value:
+                          '${AdvanceProvider.calculateInterest(int.parse(_amountController.text), _selectedInterestRatePercent / 100, _selectedDays)} 积分',
                       valueColor: AppTheme.accentOrange,
                     ),
                     Divider(height: AppTheme.spacingMedium),
                     _InfoRow(
                       label: '到期还款总额',
                       value:
-                          '${AdvanceProvider.calculateTotalAmount(int.parse(_amountController.text), _selectedDays)} 积分',
+                          '${AdvanceProvider.calculateTotalAmount(int.parse(_amountController.text), _selectedInterestRatePercent / 100, _selectedDays)} 积分',
                       valueColor: AppTheme.accentRed,
                       isBold: true,
                     ),
@@ -485,7 +600,7 @@ class _AdvanceApplyPageState extends State<AdvanceApplyPage> {
                 ),
               ),
               SizedBox(height: AppTheme.spacingLarge),
-            },
+            ],
 
             // 申请按钮
             CustomButton.primary(
@@ -544,7 +659,7 @@ class _DurationChip extends StatelessWidget {
             ),
             SizedBox(height: 4),
             Text(
-              '利率${(AppConstants.advanceInterestRate * days / 30 * 100).toStringAsFixed(1)}%',
+              '$days 天',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeSmall,
                 color: isSelected

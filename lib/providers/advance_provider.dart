@@ -29,12 +29,14 @@ class AdvanceProvider with ChangeNotifier {
 
   /// 申请预支积分
   /// amount: 预支金额
-  /// days: 预支天数（7、14、30天）
+  /// days: 预支天数（7、10、30天）
+  /// interestRate: 日利率（小数，例如 0.01 表示 1%）
   /// 返回预支ID，失败返回null
   Future<int?> applyAdvance({
     required int userId,
     required int amount,
     required int days,
+    required double interestRate,
   }) async {
     try {
       // 检查是否有未还清的预支
@@ -53,16 +55,34 @@ class AdvanceProvider with ChangeNotifier {
         return null;
       }
 
-      // 检查预支金额是否合理（不超过当前积分的2倍）
-      if (amount > user.totalPoints * 2) {
-        _errorMessage = '预支金额不能超过当前积分的2倍';
+      // 检查预支金额是否合理（不超过10000积分）
+      if (amount > AppConstants.advanceMaxAmount) {
+        _errorMessage = '预支金额不能超过${AppConstants.advanceMaxAmount}积分';
         notifyListeners();
         return null;
       }
 
-      // 计算利息（月利率10%，按天计算）
-      final interestRate = AppConstants.advanceInterestRate; // 0.1
-      final interestAmount = (amount * interestRate * days / 30).round();
+      // 检查还款周期
+      if (!AppConstants.advanceRepaymentDays.contains(days)) {
+        _errorMessage = '还款周期仅支持7天、10天和30天';
+        notifyListeners();
+        return null;
+      }
+
+      // 检查利率范围（0.01% - 100%）
+      final interestRatePercent = interestRate * 100;
+      if (interestRatePercent <
+              AppConstants.advanceMinDailyInterestRatePercent ||
+          interestRatePercent >
+              AppConstants.advanceMaxDailyInterestRatePercent) {
+        _errorMessage =
+            '日利率需在${AppConstants.advanceMinDailyInterestRatePercent}%到${AppConstants.advanceMaxDailyInterestRatePercent}%之间';
+        notifyListeners();
+        return null;
+      }
+
+      // 计算利息（按日单利）
+      final interestAmount = (amount * interestRate * days).round();
       final totalAmount = amount + interestAmount;
 
       // 计算到期日期
@@ -96,7 +116,8 @@ class AdvanceProvider with ChangeNotifier {
           balance: updatedUser.totalPoints,
           sourceType: 'advance',
           sourceId: advanceId,
-          description: '预支积分（${days}天，利息$interestAmount）',
+          description:
+              '预支积分（$days天，日利率${interestRatePercent.toStringAsFixed(2)}%，利息$interestAmount）',
         );
         await _pointRecordRepository.createPointRecord(pointRecord);
       }
@@ -229,14 +250,13 @@ class AdvanceProvider with ChangeNotifier {
   }
 
   /// 计算预支金额的利息
-  static int calculateInterest(int amount, int days) {
-    final interestRate = AppConstants.advanceInterestRate;
-    return (amount * interestRate * days / 30).round();
+  static int calculateInterest(int amount, double interestRate, int days) {
+    return (amount * interestRate * days).round();
   }
 
   /// 计算总还款金额
-  static int calculateTotalAmount(int amount, int days) {
-    return amount + calculateInterest(amount, days);
+  static int calculateTotalAmount(int amount, double interestRate, int days) {
+    return amount + calculateInterest(amount, interestRate, days);
   }
 
   /// 清除错误信息

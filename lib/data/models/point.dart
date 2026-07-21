@@ -5,7 +5,8 @@ class PointRecord {
   final String type; // 'earn' 或 'spend'
   final int points; // 积分变动数量（正数表示增加，负数表示减少）
   final int balance; // 变动后的积分余额
-  final String sourceType; // 'task', 'exchange', 'advance', 'adjustment', 'bonus'
+  final String
+  sourceType; // 'task', 'exchange', 'advance', 'adjustment', 'bonus'
   final int? sourceId; // 来源记录ID
   final String? description;
   final DateTime createdAt;
@@ -92,8 +93,8 @@ class Advance {
     this.repaidAt,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   /// 是否激活中
   bool get isActive => status == 'active';
@@ -102,7 +103,8 @@ class Advance {
   bool get isRepaid => status == 'repaid';
 
   /// 是否已逾期
-  bool get isOverdue => status == 'overdue' || (isActive && DateTime.now().isAfter(dueDate));
+  bool get isOverdue =>
+      status == 'overdue' || (isActive && DateTime.now().isAfter(dueDate));
 
   /// 剩余天数
   int get daysRemaining {
@@ -118,7 +120,7 @@ class Advance {
       id: map['id'] as int?,
       userId: map['user_id'] as int,
       amount: map['amount'] as int,
-      interestRate: map['interest_rate'] as double,
+      interestRate: (map['interest_rate'] as num).toDouble(),
       interestAmount: map['interest_amount'] as int,
       totalAmount: map['total_amount'] as int,
       status: map['status'] as String? ?? 'active',

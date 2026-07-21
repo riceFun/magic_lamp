@@ -47,11 +47,7 @@ class _AdvanceListPageState extends State<AdvanceListPage> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.payment,
-              color: AppTheme.primaryColor,
-              size: 28,
-            ),
+            Icon(Icons.payment, color: AppTheme.primaryColor, size: 28),
             SizedBox(width: AppTheme.spacingSmall),
             Text('确认还款'),
           ],
@@ -170,6 +166,21 @@ class _AdvanceListPageState extends State<AdvanceListPage> {
     final user = context.watch<UserProvider>().currentUser;
     final advanceProvider = context.watch<AdvanceProvider>();
     final advances = advanceProvider.advances;
+    final outstandingAdvances = advances
+        .where((advance) => !advance.isRepaid)
+        .toList();
+    final outstandingPrincipal = outstandingAdvances.fold<int>(
+      0,
+      (sum, advance) => sum + advance.amount,
+    );
+    final outstandingInterest = outstandingAdvances.fold<int>(
+      0,
+      (sum, advance) => sum + advance.interestAmount,
+    );
+    final outstandingTotal = outstandingAdvances.fold<int>(
+      0,
+      (sum, advance) => sum + advance.totalAmount,
+    );
     final isLoading = advanceProvider.isLoading;
 
     return Scaffold(
@@ -177,181 +188,209 @@ class _AdvanceListPageState extends State<AdvanceListPage> {
       appBar: AppBar(
         title: Text('我的预支'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadAdvances,
-          ),
+          IconButton(icon: Icon(Icons.refresh), onPressed: _loadAdvances),
         ],
       ),
       body: !_isInitialized
           ? LoadingWidget(message: '加载中...')
           : isLoading
-              ? LoadingWidget(message: '加载中...')
-              : Column(
-                  children: [
-                    // 统计卡片
-                    FutureBuilder<Map<String, dynamic>>(
-                      future: advanceProvider.getAdvanceStats(user?.id ?? 0),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return SizedBox.shrink();
-                        }
-
-                        final stats = snapshot.data!;
-                        return Container(
-                          margin: EdgeInsets.all(AppTheme.spacingLarge),
-                          padding: EdgeInsets.all(AppTheme.spacingLarge),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                AppTheme.accentOrange,
-                                AppTheme.accentOrange.withValues(alpha: 0.7),
-                              ],
+          ? LoadingWidget(message: '加载中...')
+          : Column(
+              children: [
+                // 当前预支汇总
+                Container(
+                  margin: EdgeInsets.all(AppTheme.spacingLarge),
+                  padding: EdgeInsets.all(AppTheme.spacingLarge),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: outstandingAdvances.isEmpty
+                          ? [
+                              AppTheme.accentGreen,
+                              AppTheme.accentGreen.withValues(alpha: 0.75),
+                            ]
+                          : [
+                              AppTheme.accentOrange,
+                              AppTheme.accentOrange.withValues(alpha: 0.75),
+                            ],
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    boxShadow: AppTheme.cardShadow,
+                  ),
+                  child: outstandingAdvances.isEmpty
+                      ? Row(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusSmall,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.celebration,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.radiusMedium),
-                            boxShadow: AppTheme.cardShadow,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
+                            SizedBox(width: AppTheme.spacingMedium),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: _StatItem(
-                                      label: '预支次数',
-                                      value: '${stats['totalCount']}',
+                                  Text(
+                                    '很棒哦，你当前没有预支积分',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeLarge,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                  Container(
-                                    width: 1,
-                                    height: 40,
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                  ),
-                                  Expanded(
-                                    child: _StatItem(
-                                      label: '总预支额',
-                                      value: '${stats['totalAmount']}',
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 1,
-                                    height: 40,
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                  ),
-                                  Expanded(
-                                    child: _StatItem(
-                                      label: '已付利息',
-                                      value: '${stats['totalInterest']}',
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '如果需要周转，可以从这里快速申请一笔预支。',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              if (stats['activeCount'] > 0 ||
-                                  stats['overdueCount'] > 0) ...[
-                                SizedBox(height: AppTheme.spacingMedium),
-                                Divider(
-                                    color: Colors.white.withValues(alpha: 0.3)),
-                                SizedBox(height: AppTheme.spacingMedium),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (stats['activeCount'] > 0) ...[
-                                      Icon(
-                                        Icons.pending_actions,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '进行中 ${stats['activeCount']}',
-                                        style: TextStyle(
-                                          fontSize: AppTheme.fontSizeSmall,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                    if (stats['activeCount'] > 0 &&
-                                        stats['overdueCount'] > 0)
-                                      SizedBox(width: AppTheme.spacingMedium),
-                                    if (stats['overdueCount'] > 0) ...[
-                                      Icon(
-                                        Icons.warning,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '逾期 ${stats['overdueCount']}',
-                                        style: TextStyle(
-                                          fontSize: AppTheme.fontSizeSmall,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _StatItem(
+                                    label: '已预支',
+                                    value: '$outstandingPrincipal',
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                ),
+                                Expanded(
+                                  child: _StatItem(
+                                    label: '利息',
+                                    value: '$outstandingInterest',
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                ),
+                                Expanded(
+                                  child: _StatItem(
+                                    label: '待还总额',
+                                    value: '$outstandingTotal',
+                                  ),
                                 ),
                               ],
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-
-                    // 过滤选项
-                    Container(
-                      height: 50,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: AppTheme.spacingLarge),
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          _FilterChip(
-                            label: '进行中',
-                            isSelected: _selectedFilter == 'active',
-                            onTap: () => setState(() => _selectedFilter = 'active'),
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          _FilterChip(
-                            label: '已还清',
-                            isSelected: _selectedFilter == 'repaid',
-                            onTap: () => setState(() => _selectedFilter = 'repaid'),
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          _FilterChip(
-                            label: '已逾期',
-                            isSelected: _selectedFilter == 'overdue',
-                            onTap: () => setState(() => _selectedFilter = 'overdue'),
-                          ),
-                          SizedBox(width: AppTheme.spacingSmall),
-                          _FilterChip(
-                            label: '全部',
-                            isSelected: _selectedFilter == 'all',
-                            onTap: () => setState(() => _selectedFilter = 'all'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: AppTheme.spacingMedium),
-
-                    // 预支列表
-                    Expanded(
-                      child: _buildAdvanceList(
-                          _getFilteredAdvances(advances), user),
-                    ),
-                  ],
+                            ),
+                            SizedBox(height: AppTheme.spacingMedium),
+                            Divider(color: Colors.white.withValues(alpha: 0.3)),
+                            SizedBox(height: AppTheme.spacingMedium),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.pending_actions,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '未还清 ${outstandingAdvances.length} 笔',
+                                  style: TextStyle(
+                                    fontSize: AppTheme.fontSizeSmall,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                 ),
+
+                // 过滤选项
+                Container(
+                  height: 50,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingLarge,
+                  ),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _FilterChip(
+                        label: '进行中',
+                        isSelected: _selectedFilter == 'active',
+                        onTap: () => setState(() => _selectedFilter = 'active'),
+                      ),
+                      SizedBox(width: AppTheme.spacingSmall),
+                      _FilterChip(
+                        label: '已还清',
+                        isSelected: _selectedFilter == 'repaid',
+                        onTap: () => setState(() => _selectedFilter = 'repaid'),
+                      ),
+                      SizedBox(width: AppTheme.spacingSmall),
+                      _FilterChip(
+                        label: '已逾期',
+                        isSelected: _selectedFilter == 'overdue',
+                        onTap: () =>
+                            setState(() => _selectedFilter = 'overdue'),
+                      ),
+                      SizedBox(width: AppTheme.spacingSmall),
+                      _FilterChip(
+                        label: '全部',
+                        isSelected: _selectedFilter == 'all',
+                        onTap: () => setState(() => _selectedFilter = 'all'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: AppTheme.spacingMedium),
+
+                // 预支列表
+                Expanded(
+                  child: _buildAdvanceList(
+                    _getFilteredAdvances(advances),
+                    user,
+                    outstandingAdvances.isNotEmpty,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
-  Widget _buildAdvanceList(List<Advance> advances, user) {
+  Widget _buildAdvanceList(List<Advance> advances, user, bool hasOutstanding) {
     if (advances.isEmpty) {
+      if (_selectedFilter == 'active') {
+        return EmptyWidget(
+          icon: Icons.account_balance_wallet,
+          message: hasOutstanding ? '当前没有进行中的预支' : '很棒哦，你当前没有预支积分',
+          subtitle: hasOutstanding
+              ? '你可以切换到“已逾期”或“全部”查看其他预支记录'
+              : '去申请一笔预支，就能快速获得积分周转',
+        );
+      }
+
       return EmptyWidget(
         icon: Icons.account_balance_wallet,
         message: '暂无预支记录',
-        subtitle: _selectedFilter == 'active' ? '当前没有进行中的预支' : null,
+        subtitle: null,
       );
     }
 
@@ -377,10 +416,7 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const _StatItem({
-    required this.label,
-    required this.value,
-  });
+  const _StatItem({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -451,10 +487,7 @@ class _AdvanceCard extends StatelessWidget {
   final Advance advance;
   final VoidCallback onRepay;
 
-  const _AdvanceCard({
-    required this.advance,
-    required this.onRepay,
-  });
+  const _AdvanceCard({required this.advance, required this.onRepay});
 
   /// 获取状态颜色
   Color _getStatusColor() {
@@ -672,9 +705,7 @@ class _AdvanceCard extends StatelessWidget {
                         if (!advance.isOverdue) ...[
                           SizedBox(height: 2),
                           Text(
-                            daysRemaining > 0
-                                ? '剩余 $daysRemaining 天'
-                                : '今天到期',
+                            daysRemaining > 0 ? '剩余 $daysRemaining 天' : '今天到期',
                             style: TextStyle(
                               fontSize: AppTheme.fontSizeXSmall,
                               color: isUrgent
@@ -737,11 +768,7 @@ class _AdvanceCard extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.error,
-                        size: 14,
-                        color: AppTheme.accentRed,
-                      ),
+                      Icon(Icons.error, size: 14, color: AppTheme.accentRed),
                       SizedBox(width: AppTheme.spacingSmall),
                       Text(
                         '已逾期 ${-daysRemaining} 天，请尽快还款',

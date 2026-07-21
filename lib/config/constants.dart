@@ -25,8 +25,17 @@ class AppConstants {
   /// 积分与人民币换算比例（10积分 = 1元）
   static const double pointsToRmb = 0.1;
 
-  /// 预支积分月利率（10%）
-  static const double advanceInterestRate = 0.1;
+  /// 预支最大金额
+  static const int advanceMaxAmount = 10000;
+
+  /// 预支可选最小日利率（0.01%）
+  static const double advanceMinDailyInterestRatePercent = 0.01;
+
+  /// 预支可选最大日利率（100%）
+  static const double advanceMaxDailyInterestRatePercent = 100.0;
+
+  /// 预支可选还款周期
+  static const List<int> advanceRepaymentDays = [7, 10, 30];
 
   // ==================== 任务奖励积分建议 ====================
   /// 复杂任务积分范围（30-60分钟）
@@ -113,7 +122,8 @@ class AppConstants {
   static const String routeTaskCreate = '/task/create';
 
   /// 任务模板超市
-  static const String routeTaskTemplateMarketplace = '/task/template-marketplace';
+  static const String routeTaskTemplateMarketplace =
+      '/task/template-marketplace';
 
   /// 积分详情
   static const String routePointsDetail = '/points/detail';
