@@ -94,6 +94,23 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
+  /// 创建任务并返回新任务ID
+  Future<int?> createTaskAndGetId(Task task) async {
+    try {
+      final id = await _taskRepository.createTask(task);
+      if (id > 0) {
+        await loadUserTasks(task.userId);
+        return id;
+      }
+      return null;
+    } catch (e) {
+      _errorMessage = '创建任务失败：$e';
+      notifyListeners();
+      debugPrint('TaskProvider createTaskAndGetId error: $e');
+      return null;
+    }
+  }
+
   /// 更新任务（实际是归档旧任务并创建新任务）
   /// 这样可以保留历史记录和已完成的积分记录
   Future<bool> updateTask(Task task) async {
@@ -144,7 +161,9 @@ class TaskProvider with ChangeNotifier {
         // 4. 重新加载任务列表（会自动过滤掉status='replaced'的任务）
         await loadUserTasks(task.userId);
 
-        debugPrint('Task updated: archived task ${task.id}, created new task $newTaskId');
+        debugPrint(
+          'Task updated: archived task ${task.id}, created new task $newTaskId',
+        );
         return true;
       }
 
@@ -180,7 +199,10 @@ class TaskProvider with ChangeNotifier {
   Future<int?> completeTask(int taskId, int userId, {String? note}) async {
     try {
       // 检查今天是否已完成
-      final isCompleted = await _taskRepository.isTaskCompletedToday(taskId, userId);
+      final isCompleted = await _taskRepository.isTaskCompletedToday(
+        taskId,
+        userId,
+      );
       if (isCompleted) {
         _errorMessage = '今天已完成该任务';
         notifyListeners();
@@ -196,7 +218,8 @@ class TaskProvider with ChangeNotifier {
       }
 
       // 计算连续完成天数
-      final streakCount = await _taskRepository.getTaskStreakCount(taskId, userId) + 1;
+      final streakCount =
+          await _taskRepository.getTaskStreakCount(taskId, userId) + 1;
 
       // 计算奖励积分（连续完成奖励）
       int bonusPoints = 0;
@@ -234,7 +257,8 @@ class TaskProvider with ChangeNotifier {
           balance: user.totalPoints,
           sourceType: 'task',
           sourceId: taskId,
-          description: '完成任务：${task.title}${bonusPoints > 0 ? '（连续$streakCount天奖励+$bonusPoints）' : ''}',
+          description:
+              '完成任务：${task.title}${bonusPoints > 0 ? '（连续$streakCount天奖励+$bonusPoints）' : ''}',
         );
         await _pointRecordRepository.createPointRecord(pointRecord);
       }

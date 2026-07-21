@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
@@ -6,9 +7,7 @@ import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/story_provider.dart';
-import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
-import '../../widgets/common/empty_widget.dart';
 import '../../widgets/points/points_badge.dart';
 import '../../data/models/task.dart';
 import 'package:magic_lamp/pages/task/edit_task_page.dart';
@@ -23,6 +22,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _isTaskPointsAscending = true;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +45,13 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showTemporaryTaskDialog(context),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+        icon: Icon(Icons.bolt),
+        label: Text('临时任务'),
+      ),
       body: Consumer3<UserProvider, TaskProvider, StoryProvider>(
         builder: (context, userProvider, taskProvider, storyProvider, child) {
           final user = userProvider.currentUser;
@@ -72,11 +80,20 @@ class _HomePageState extends State<HomePage> {
                     Icon(Icons.home, size: 24),
                     SizedBox(width: AppTheme.spacingSmall),
                     Text(user.name),
+                    SizedBox(width: 5),
+                    PointsBadge(points: user.totalPoints),
                   ],
                 ),
                 actions: [
-                  PointsBadge(points: user.totalPoints),
-                  SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(Icons.sort),
+                    onPressed: () {
+                      setState(() {
+                        _isTaskPointsAscending = !_isTaskPointsAscending;
+                      });
+                    },
+                    tooltip: _isTaskPointsAscending ? '按积分从小到大排序' : '按积分从大到小排序',
+                  ),
                   IconButton(
                     padding: EdgeInsets.all(0),
                     icon: Icon(Icons.store),
@@ -371,11 +388,87 @@ class _HomePageState extends State<HomePage> {
                 _SortedTaskList(
                   tasks: taskProvider.activeTasks,
                   userId: user.id!,
+                  sortAscending: _isTaskPointsAscending,
                   onTaskTap: (task) => _showTaskDetail(context, task, user.id!),
                 ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  /// 显示快速临时任务弹框
+  Future<void> _showTemporaryTaskDialog(BuildContext context) async {
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+
+    if (user == null || user.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('未登录，无法创建临时任务'),
+          backgroundColor: AppTheme.accentRed,
+        ),
+      );
+      return;
+    }
+
+    final input = await showDialog<_TemporaryTaskInput>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => const _TemporaryTaskDialog(),
+    );
+
+    if (input == null || !context.mounted) {
+      return;
+    }
+
+    final taskProvider = context.read<TaskProvider>();
+
+    final task = Task(
+      userId: user.id!,
+      title: input.title,
+      description: '首页快速创建的临时任务',
+      points: input.points,
+      type: 'once',
+      priority: 'normal',
+      status: 'active',
+      icon: '⚡',
+    );
+
+    final taskId = await taskProvider.createTaskAndGetId(task);
+    if (taskId == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('临时任务创建失败'),
+          backgroundColor: AppTheme.accentRed,
+        ),
+      );
+      return;
+    }
+
+    final earnedPoints = await taskProvider.completeTask(taskId, user.id!);
+    if (earnedPoints == null) {
+      await taskProvider.deleteTask(taskId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('临时任务完成失败'),
+          backgroundColor: AppTheme.accentRed,
+        ),
+      );
+      return;
+    }
+
+    await userProvider.refreshCurrentUser();
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('临时任务已完成，获得 $earnedPoints 积分'),
+        backgroundColor: AppTheme.accentGreen,
       ),
     );
   }
@@ -624,15 +717,176 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class _TemporaryTaskInput {
+  final String title;
+  final int points;
+
+  const _TemporaryTaskInput({required this.title, required this.points});
+}
+
+class _TemporaryTaskDialog extends StatefulWidget {
+  const _TemporaryTaskDialog();
+
+  @override
+  State<_TemporaryTaskDialog> createState() => _TemporaryTaskDialogState();
+}
+
+class _TemporaryTaskDialogState extends State<_TemporaryTaskDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _pointsController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _pointsController.text = '10';
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _pointsController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _TemporaryTaskInput(
+        title: _titleController.text.trim(),
+        points: int.parse(_pointsController.text.trim()),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      titlePadding: EdgeInsets.fromLTRB(
+        AppTheme.spacingLarge,
+        AppTheme.spacingLarge,
+        AppTheme.spacingLarge,
+        AppTheme.spacingSmall,
+      ),
+      contentPadding: EdgeInsets.fromLTRB(
+        AppTheme.spacingLarge,
+        0,
+        AppTheme.spacingLarge,
+        AppTheme.spacingMedium,
+      ),
+      actionsPadding: EdgeInsets.fromLTRB(
+        AppTheme.spacingMedium,
+        0,
+        AppTheme.spacingMedium,
+        AppTheme.spacingMedium,
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            ),
+            child: Icon(Icons.bolt, color: AppTheme.primaryColor),
+          ),
+          SizedBox(width: AppTheme.spacingSmall),
+          Expanded(child: Text('临时任务')),
+        ],
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '输入一个临时任务名称和积分，完成后会直接入账。',
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeSmall,
+                color: AppTheme.textSecondaryColor,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: AppTheme.spacingMedium),
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: '任务名称',
+                hintText: '例如：整理书桌',
+                prefixIcon: Icon(Icons.title),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              textInputAction: TextInputAction.next,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入任务名称';
+                }
+                if (value.trim().length < 2) {
+                  return '名称至少2个字符';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: AppTheme.spacingMedium),
+            TextFormField(
+              controller: _pointsController,
+              decoration: InputDecoration(
+                labelText: '积分数量',
+                hintText: '请输入积分',
+                prefixIcon: Icon(Icons.monetization_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入积分数量';
+                }
+                final points = int.tryParse(value.trim());
+                if (points == null || points <= 0) {
+                  return '积分必须大于0';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消'),
+        ),
+        ElevatedButton(onPressed: _submit, child: Text('完成并获得积分')),
+      ],
+    );
+  }
+}
+
 /// 排序后的任务列表
 class _SortedTaskList extends StatelessWidget {
   final List<Task> tasks;
   final int userId;
+  final bool sortAscending;
   final Function(Task) onTaskTap;
 
   const _SortedTaskList({
     required this.tasks,
     required this.userId,
+    required this.sortAscending,
     required this.onTaskTap,
   });
 
@@ -685,8 +939,15 @@ class _SortedTaskList extends StatelessWidget {
       tasksWithStatus.add({'task': task, 'isCompleted': isCompleted});
     }
 
-    // 排序：未完成的在前，已完成的在后
+    // 排序：按积分大小升序或降序
     tasksWithStatus.sort((a, b) {
+      final aTask = a['task'] as Task;
+      final bTask = b['task'] as Task;
+      final pointsCompare = sortAscending
+          ? aTask.points.compareTo(bTask.points)
+          : bTask.points.compareTo(aTask.points);
+      if (pointsCompare != 0) return pointsCompare;
+
       final aCompleted = a['isCompleted'] as bool;
       final bCompleted = b['isCompleted'] as bool;
       if (aCompleted == bCompleted) return 0;
