@@ -7,7 +7,6 @@ import '../../providers/task_provider.dart';
 import '../../providers/exchange_provider.dart';
 import '../../providers/advance_provider.dart';
 import '../../data/repositories/point_record_repository.dart';
-import '../../data/repositories/exchange_repository.dart';
 import '../../widgets/common/custom_card.dart';
 import '../../widgets/common/loading_widget.dart';
 
@@ -137,9 +136,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载统计数据失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('加载统计数据失败：$e')));
       }
     }
   }
@@ -214,7 +213,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           AppTheme.primaryDarkColor,
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.radiusMedium,
+                      ),
                       boxShadow: AppTheme.cardShadow,
                     ),
                     padding: EdgeInsets.all(AppTheme.spacingLarge),
@@ -239,37 +240,32 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           ],
                         ),
                         SizedBox(height: AppTheme.spacingLarge),
-                        Row(
+                        Column(
                           children: [
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '总收入',
-                                value: '$_totalEarned',
-                                icon: Icons.arrow_upward,
-                                iconColor: AppTheme.accentGreen,
-                                isLight: true,
-                              ),
+                            _StatisticItem(
+                              label: '总收入',
+                              value: '$_totalEarned',
+                              icon: Icons.arrow_upward,
+                              iconColor: AppTheme.accentGreen,
+                              isLight: true,
                             ),
-                            SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '总支出',
-                                value: '$_totalSpent',
-                                icon: Icons.arrow_downward,
-                                iconColor: AppTheme.accentRed,
-                                isLight: true,
-                              ),
+                            SizedBox(height: AppTheme.spacingMedium),
+                            _StatisticItem(
+                              label: '总支出',
+                              value: '$_totalSpent',
+                              icon: Icons.arrow_downward,
+                              iconColor: AppTheme.accentRed,
+                              isLight: true,
                             ),
-                            SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItemWithSubtitle(
-                                label: '当前余额',
-                                value: '${user.totalPoints}',
-                                subtitle: '≈${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)}元',
-                                icon: Icons.monetization_on,
-                                iconColor: AppTheme.accentYellow,
-                                isLight: true,
-                              ),
+                            SizedBox(height: AppTheme.spacingMedium),
+                            _StatisticItemWithSubtitle(
+                              label: '',
+                              value: '${user.totalPoints}',
+                              subtitle:
+                                  '≈${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)}元',
+                              icon: Icons.monetization_on,
+                              iconColor: AppTheme.accentYellow,
+                              isLight: true,
                             ),
                           ],
                         ),
@@ -314,36 +310,30 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           ],
                         ),
                         SizedBox(height: AppTheme.spacingMedium),
-                        Row(
+                        Column(
                           children: [
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '收入',
-                                value: '$_todayEarned',
-                                icon: Icons.add_circle,
-                                iconColor: AppTheme.accentGreen,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '收入',
+                              value: '$_todayEarned',
+                              icon: Icons.add_circle,
+                              iconColor: AppTheme.accentGreen,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '支出',
-                                value: '$_todaySpent',
-                                icon: Icons.remove_circle,
-                                iconColor: AppTheme.accentRed,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '支出',
+                              value: '$_todaySpent',
+                              icon: Icons.remove_circle,
+                              iconColor: AppTheme.accentRed,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '记录数',
-                                value: '$_todayCount',
-                                icon: Icons.receipt,
-                                iconColor: AppTheme.primaryColor,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '记录数',
+                              value: '$_todayCount',
+                              icon: Icons.receipt,
+                              iconColor: AppTheme.primaryColor,
+                              isLight: false,
                             ),
                           ],
                         ),
@@ -377,36 +367,30 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           ],
                         ),
                         SizedBox(height: AppTheme.spacingMedium),
-                        Row(
+                        Column(
                           children: [
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '收入',
-                                value: '$_weekEarned',
-                                icon: Icons.add_circle,
-                                iconColor: AppTheme.accentGreen,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '收入',
+                              value: '$_weekEarned',
+                              icon: Icons.add_circle,
+                              iconColor: AppTheme.accentGreen,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '支出',
-                                value: '$_weekSpent',
-                                icon: Icons.remove_circle,
-                                iconColor: AppTheme.accentRed,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '支出',
+                              value: '$_weekSpent',
+                              icon: Icons.remove_circle,
+                              iconColor: AppTheme.accentRed,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '记录数',
-                                value: '$_weekCount',
-                                icon: Icons.receipt,
-                                iconColor: AppTheme.accentOrange,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '记录数',
+                              value: '$_weekCount',
+                              icon: Icons.receipt,
+                              iconColor: AppTheme.accentOrange,
+                              isLight: false,
                             ),
                           ],
                         ),
@@ -440,36 +424,30 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           ],
                         ),
                         SizedBox(height: AppTheme.spacingMedium),
-                        Row(
+                        Column(
                           children: [
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '收入',
-                                value: '$_monthEarned',
-                                icon: Icons.add_circle,
-                                iconColor: AppTheme.accentGreen,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '收入',
+                              value: '$_monthEarned',
+                              icon: Icons.add_circle,
+                              iconColor: AppTheme.accentGreen,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '支出',
-                                value: '$_monthSpent',
-                                icon: Icons.remove_circle,
-                                iconColor: AppTheme.accentRed,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '支出',
+                              value: '$_monthSpent',
+                              icon: Icons.remove_circle,
+                              iconColor: AppTheme.accentRed,
+                              isLight: false,
                             ),
                             SizedBox(width: AppTheme.spacingMedium),
-                            Expanded(
-                              child: _StatisticItem(
-                                label: '记录数',
-                                value: '$_monthCount',
-                                icon: Icons.receipt,
-                                iconColor: AppTheme.accentGreen,
-                                isLight: false,
-                              ),
+                            _StatisticItem(
+                              label: '记录数',
+                              value: '$_monthCount',
+                              icon: Icons.receipt,
+                              iconColor: AppTheme.accentGreen,
+                              isLight: false,
                             ),
                           ],
                         ),
@@ -556,9 +534,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                                 color: AppTheme.primaryColor,
                               ),
                             ),
-                            Expanded(
-                              child: Container(),
-                            ),
+                            Expanded(child: Container()),
                           ],
                         ),
                       ],
@@ -671,13 +647,18 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             ),
                           ],
                         ),
-                        if (_advanceStats['activeCount'] != null && _advanceStats['activeCount'] > 0) ...[
+                        if (_advanceStats['activeCount'] != null &&
+                            _advanceStats['activeCount'] > 0) ...[
                           SizedBox(height: AppTheme.spacingSmall),
                           Container(
                             padding: EdgeInsets.all(AppTheme.spacingSmall),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentOrange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                              color: AppTheme.accentOrange.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusSmall,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -760,40 +741,34 @@ class _StatisticItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isLight ? Colors.white : AppTheme.textPrimaryColor;
-    final secondaryColor = isLight
-        ? Colors.white.withValues(alpha: 0.8)
-        : AppTheme.textSecondaryColor;
-
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMedium),
+      padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: isLight
             ? Colors.white.withValues(alpha: 0.2)
             : iconColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: isLight ? Colors.white : iconColor,
-            size: 28,
+          Icon(icon, color: isLight ? Colors.white : iconColor, size: 28),
+          SizedBox(width: AppTheme.spacingSmall),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: AppTheme.fontSizeXLarge,
+              // fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
-          SizedBox(height: AppTheme.spacingSmall),
+          Spacer(),
           Text(
             value,
             style: TextStyle(
               fontSize: AppTheme.fontSizeXLarge,
               fontWeight: FontWeight.bold,
               color: textColor,
-            ),
-          ),
-          SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: AppTheme.fontSizeSmall,
-              color: secondaryColor,
             ),
           ),
         ],
@@ -828,45 +803,45 @@ class _StatisticItemWithSubtitle extends StatelessWidget {
         : AppTheme.textSecondaryColor;
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingMedium),
+      padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: isLight
             ? Colors.white.withValues(alpha: 0.2)
             : iconColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: isLight ? Colors.white : iconColor,
-            size: 28,
-          ),
-          SizedBox(height: AppTheme.spacingSmall),
+          Icon(icon, color: isLight ? Colors.white : iconColor, size: 28),
+          SizedBox(width: AppTheme.spacingSmall),
           Text(
-            value,
+            '总余额',
             style: TextStyle(
               fontSize: AppTheme.fontSizeXLarge,
               fontWeight: FontWeight.bold,
               color: textColor,
             ),
           ),
-          SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: AppTheme.fontSizeSmall,
-              color: secondaryColor,
+          Spacer(),
+          Column(children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeXLarge,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
-          ),
-          SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: AppTheme.fontSizeXSmall,
-              color: secondaryColor.withValues(alpha: 0.7),
+            SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: AppTheme.fontSizeXSmall,
+                color: secondaryColor.withValues(alpha: 0.7),
+              ),
             ),
-          ),
+          ],)
         ],
       ),
     );
