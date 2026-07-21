@@ -74,96 +74,94 @@ class SettingsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 用户信息卡片 - ListView Cell 形式
-                CustomCard(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        context.push(AppConstants.routeProfile);
-                      },
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                      child: Padding(
-                        padding: EdgeInsets.all(AppTheme.spacingMedium),
-                        child: Row(
-                          children: [
-                            // 头像
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppTheme.primaryColor,
-                                    AppTheme.primaryDarkColor,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                              ),
-                              child: Icon(
-                                _getAvatarIcon(user.avatar),
-                                size: 30,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(width: AppTheme.spacingMedium),
+                // CustomCard(
+                //   child: ,
+                // ),
 
-                            // 用户信息
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                InkWell(
+                  onTap: () {
+                    context.push(AppConstants.routeProfile);
+                  },
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  child: Container(
+                    child: Row(
+                      children: [
+                        // 头像
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppTheme.primaryColor,
+                                AppTheme.primaryDarkColor,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          ),
+                          child: Icon(
+                            _getAvatarIcon(user.avatar),
+                            size: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 5),
+
+                        // 用户信息
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 用户名
+                              Text(
+                                user.name,
+                                style: TextStyle(
+                                  fontSize: AppTheme.fontSizeLarge,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              // 积分信息
+                              Row(
                                 children: [
-                                  // 用户名
+                                  Icon(
+                                    Icons.monetization_on,
+                                    size: 16,
+                                    color: AppTheme.accentYellow,
+                                  ),
+                                  SizedBox(width: 4),
                                   Text(
-                                    user.name,
+                                    '${user.totalPoints} 积分',
                                     style: TextStyle(
-                                      fontSize: AppTheme.fontSizeLarge,
+                                      fontSize: AppTheme.fontSizeMedium,
                                       fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimaryColor,
+                                      color: AppTheme.primaryColor,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
-                                  // 积分信息
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.monetization_on,
-                                        size: 16,
-                                        color: AppTheme.accentYellow,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '${user.totalPoints} 积分',
-                                        style: TextStyle(
-                                          fontSize: AppTheme.fontSizeMedium,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.primaryColor,
-                                        ),
-                                      ),
-                                      SizedBox(width: AppTheme.spacingSmall),
-                                      Text(
-                                        '≈ ${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)} 元',
-                                        style: TextStyle(
-                                          fontSize: AppTheme.fontSizeSmall,
-                                          color: AppTheme.textHintColor,
-                                        ),
-                                      ),
-                                    ],
+                                  SizedBox(width: AppTheme.spacingSmall),
+                                  Text(
+                                    '≈ ${(user.totalPoints * AppConstants.pointsToRmb).toStringAsFixed(2)} 元',
+                                    style: TextStyle(
+                                      fontSize: AppTheme.fontSizeSmall,
+                                      color: AppTheme.textHintColor,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-
-                            // 右箭头
-                            Icon(
-                              Icons.chevron_right,
-                              color: AppTheme.textHintColor,
-                              size: 24,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+
+                        // 右箭头
+                        Icon(
+                          Icons.chevron_right,
+                          color: AppTheme.textHintColor,
+                          size: 24,
+                        ),
+                      ],
                     ),
                   ),
                 ),
