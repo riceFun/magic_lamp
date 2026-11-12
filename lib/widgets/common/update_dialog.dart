@@ -346,7 +346,9 @@ class _UpdateDialogState extends State<UpdateDialog> {
     final info = _info;
     if (info == null) return const SizedBox.shrink();
 
-    final notes = info.releaseNotes.isEmpty ? '（该版本未填写更新说明）' : info.releaseNotes;
+    final notes = info.releaseNotes.isEmpty
+        ? '未能获取更新说明，可点击下方链接在浏览器中查看。'
+        : info.releaseNotes;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

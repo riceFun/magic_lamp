@@ -197,12 +197,7 @@ class UpdateService {
         'https://github.com/$owner/$repo/releases/tag/$tag',
         options: Options(responseType: ResponseType.plain),
       );
-      final bodyMatch = RegExp(
-        r'<div[^>]*class="[^"]*markdown-body[^"]*"[^>]*>([\s\S]*?)</div>\s*</div>',
-      ).firstMatch(page.data ?? '');
-      if (bodyMatch != null) {
-        notes = _stripHtml(bodyMatch.group(1) ?? '').trim();
-      }
+      notes = _extractReleaseNotes(page.data ?? '');
     } catch (_) {
       // 更新说明解析失败不影响主流程
     }
@@ -217,6 +212,34 @@ class UpdateService {
       apkSize: apkSize,
       htmlUrl: 'https://github.com/$owner/$repo/releases/tag/$tag',
     );
+  }
+
+  /// 从 Release 页面提取更新说明：定位 markdown-body 容器后按 div 配平截取
+  static String _extractReleaseNotes(String html) {
+    final marker = RegExp(
+      r'<div[^>]*class="[^"]*markdown-body[^"]*"[^>]*>',
+    ).firstMatch(html);
+    if (marker == null) return '';
+
+    var depth = 1;
+    var cursor = marker.end;
+    while (cursor < html.length) {
+      final openIdx = html.indexOf('<div', cursor);
+      final closeIdx = html.indexOf('</div>', cursor);
+      if (closeIdx == -1) break;
+
+      if (openIdx != -1 && openIdx < closeIdx) {
+        depth++;
+        cursor = openIdx + 4;
+      } else {
+        depth--;
+        if (depth == 0) {
+          return _stripHtml(html.substring(marker.end, closeIdx)).trim();
+        }
+        cursor = closeIdx + 5;
+      }
+    }
+    return '';
   }
 
   static String _stripHtml(String html) {
