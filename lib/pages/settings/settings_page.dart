@@ -265,7 +265,7 @@ class SettingsPage extends StatelessWidget {
             ),
             SizedBox(height: AppTheme.spacingSmall),
             Text(
-              '版本：1.0.0',
+              '版本：1.0.1',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeMedium,
                 color: AppTheme.textSecondaryColor,

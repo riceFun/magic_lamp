@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/common/custom_button.dart';
-import '../../services/password_storage_service.dart';
 
 /// 修改密码页面
 class ChangePasswordPage extends StatefulWidget {
@@ -34,12 +35,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   /// 修改密码
   Future<void> _changePassword() async {
+    if (_isLoading) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     // 验证超级密码
-    if (_superPasswordController.text != AppConstants.superPassword) {
+    if (_superPasswordController.text.trim() != AppConstants.superPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('超级密码错误'),
@@ -65,8 +68,20 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     });
 
     try {
-      // 保存密码到本地存储
-      await PasswordStorageService.setOperationPassword(_newPasswordController.text);
+      // 写入数据库（users.password），与密码校验逻辑保持同一数据源
+      final userProvider = context.read<UserProvider>();
+
+      if (userProvider.currentUser == null) {
+        throw StateError('未登录，无法修改密码');
+      }
+
+      final success = await userProvider.updateCurrentUser(
+        password: _newPasswordController.text.trim(),
+      );
+
+      if (!success) {
+        throw StateError(userProvider.errorMessage ?? '保存密码失败');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +90,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             backgroundColor: AppTheme.accentGreen,
           ),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
