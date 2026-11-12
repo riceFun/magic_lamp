@@ -11,8 +11,8 @@ class AppConstants {
   /// 应用英文名
   static const String appNameEn = 'Magic Lamp';
 
-  /// 应用版本
-  static const String appVersion = '1.0.0';
+  /// 应用版本（仅作展示兜底；真实版本号以 pubspec / 原生 versionName 为准）
+  static const String appVersion = '1.0.2';
 
   /// 超级密码（用于修改操作密码）
   static const String superPassword = '2333';

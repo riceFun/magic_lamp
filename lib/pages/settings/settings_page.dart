@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/user_provider.dart';
+import '../../services/update_service.dart';
 import '../../widgets/common/custom_card.dart';
+import '../../widgets/common/update_dialog.dart';
 
 /// 设置页面 - 个人信息、系统设置
 class SettingsPage extends StatelessWidget {
@@ -214,12 +216,22 @@ class SettingsPage extends StatelessWidget {
                       ),
                       Divider(height: 1),
                       _SettingItem(
+                        icon: Icons.system_update,
+                        iconColor: AppTheme.accentPurple,
+                        title: '检查更新',
+                        subtitle: '从 GitHub 获取最新版本并覆盖安装',
+                        onTap: () => showUpdateDialog(context),
+                      ),
+                      Divider(height: 1),
+                      _SettingItem(
                         icon: Icons.info,
                         iconColor: AppTheme.textSecondaryColor,
                         title: '关于应用',
                         subtitle: '版本信息和开发者',
-                        onTap: () {
-                          _showAboutDialog(context);
+                        onTap: () async {
+                          final version = await UpdateService.currentVersion();
+                          if (!context.mounted) return;
+                          _showAboutDialog(context, version);
                         },
                       ),
                     ],
@@ -236,7 +248,7 @@ class SettingsPage extends StatelessWidget {
   }
 
   /// 显示关于对话框
-  void _showAboutDialog(BuildContext context) {
+  void _showAboutDialog(BuildContext context, String version) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -265,7 +277,7 @@ class SettingsPage extends StatelessWidget {
             ),
             SizedBox(height: AppTheme.spacingSmall),
             Text(
-              '版本：1.0.1',
+              '版本：$version',
               style: TextStyle(
                 fontSize: AppTheme.fontSizeMedium,
                 color: AppTheme.textSecondaryColor,
