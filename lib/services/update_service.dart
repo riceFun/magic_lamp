@@ -41,13 +41,29 @@ class UpdateService {
   }
 
   /// 检查是否有新版本。无 Release 时返回 null；网络异常抛 [UpdateException]。
+  ///
+  /// 优先走 GitHub REST API（可拿到更新说明与资源元数据）；
+  /// API 被限流（403/429，移动网络共享出口 IP 很容易触发）时，
+  /// 退化为解析 Release 页面 HTML，保证仍然可用。
   static Future<UpdateInfo?> checkForUpdate() async {
     final current = await currentVersion();
 
+    try {
+      return await _checkViaApi(current);
+    } on UpdateException catch (apiError) {
+      if (!apiError.canFallback) rethrow;
+      final fallback = await _checkViaHtml(current);
+      if (fallback != null) return fallback;
+      rethrow;
+    }
+  }
+
+  static Future<UpdateInfo?> _checkViaApi(String current) async {
     final dio = Dio(
       BaseOptions(
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 20),
+        validateStatus: (s) => s != null && s < 500,
         headers: const {
           'Accept': 'application/vnd.github+json',
           'User-Agent': 'magic_lamp-updater',
@@ -59,21 +75,29 @@ class UpdateService {
     try {
       response = await dio.get<dynamic>(_apiLatest);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        // 仓库还没有任何正式 Release
-        return null;
-      }
-      throw UpdateException(_describeDioError(e));
+      throw UpdateException(_describeDioError(e), canFallback: true);
+    }
+
+    final status = response.statusCode ?? 0;
+    if (status == 404) {
+      // 仓库还没有任何正式 Release
+      return null;
+    }
+    if (status == 403 || status == 429) {
+      throw UpdateException('GitHub 接口访问受限（HTTP $status）', canFallback: true);
+    }
+    if (status >= 400) {
+      throw UpdateException('请求失败（HTTP $status）');
     }
 
     final data = response.data;
     if (data is! Map) {
-      throw UpdateException('Release 数据格式异常');
+      throw UpdateException('Release 数据格式异常', canFallback: true);
     }
 
     final tag = (data['tag_name'] as String?)?.trim();
     if (tag == null || tag.isEmpty) {
-      throw UpdateException('未获取到版本号');
+      throw UpdateException('未获取到版本号', canFallback: true);
     }
 
     final assets = (data['assets'] as List?) ?? const [];
@@ -96,6 +120,119 @@ class UpdateService {
       htmlUrl: (data['html_url'] as String?) ?? _releasesPage,
       publishedAt: data['published_at'] as String?,
     );
+  }
+
+  /// 备用通道：解析 GitHub Release 页面（不需要 API 配额）
+  static Future<UpdateInfo?> _checkViaHtml(String current) async {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 20),
+        validateStatus: (s) => s != null && s < 500,
+        headers: const {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 12) magic_lamp-updater',
+        },
+      ),
+    );
+
+    final String latestPage = 'https://github.com/$owner/$repo/releases/latest';
+
+    String tag = '';
+    try {
+      final resp = await dio.get<dynamic>(
+        latestPage,
+        options: Options(followRedirects: false),
+      );
+      final status = resp.statusCode ?? 0;
+      if (status == 404) return null;
+      final location = resp.headers.value('location') ?? '';
+      if (location.contains('/tag/')) {
+        tag = location.split('/tag/').last.split('?').first.trim();
+      }
+      // 有些场景直接返回 200 页面，从最终 URL 兜底解析
+      if (tag.isEmpty && (status == 200)) {
+        tag = resp.realUri.pathSegments.isNotEmpty &&
+                resp.realUri.pathSegments.last != 'latest'
+            ? resp.realUri.pathSegments.last
+            : '';
+      }
+    } on DioException catch (e) {
+      throw UpdateException(_describeDioError(e));
+    }
+
+    if (tag.isEmpty) {
+      throw UpdateException('GitHub 接口访问受限，且备用通道解析版本号失败，请稍后重试');
+    }
+
+    var apkUrl = '';
+    var apkSize = 0;
+    var notes = '';
+    try {
+      final assets = await dio.get<String>(
+        'https://github.com/$owner/$repo/releases/expanded_assets/$tag',
+        options: Options(responseType: ResponseType.plain),
+      );
+      final html = assets.data ?? '';
+      final apkMatch = RegExp(r'href="(/[^"]+\.apk)"').firstMatch(html);
+      if (apkMatch != null) {
+        apkUrl = 'https://github.com${apkMatch.group(1)}';
+      }
+      final sizeMatch = RegExp(r'([\d.]+)\s*(KB|MB|GB)').firstMatch(html);
+      if (sizeMatch != null) {
+        final value = double.tryParse(sizeMatch.group(1)!) ?? 0;
+        final unit = sizeMatch.group(2)!;
+        final factor = unit == 'GB'
+            ? 1024 * 1024 * 1024
+            : unit == 'MB'
+                ? 1024 * 1024
+                : 1024;
+        apkSize = (value * factor).round();
+      }
+    } catch (_) {
+      // 拿不到资源信息时仍返回版本信息，下载阶段再报错
+    }
+
+    try {
+      final page = await dio.get<String>(
+        'https://github.com/$owner/$repo/releases/tag/$tag',
+        options: Options(responseType: ResponseType.plain),
+      );
+      final bodyMatch = RegExp(
+        r'<div[^>]*class="[^"]*markdown-body[^"]*"[^>]*>([\s\S]*?)</div>\s*</div>',
+      ).firstMatch(page.data ?? '');
+      if (bodyMatch != null) {
+        notes = _stripHtml(bodyMatch.group(1) ?? '').trim();
+      }
+    } catch (_) {
+      // 更新说明解析失败不影响主流程
+    }
+
+    return UpdateInfo(
+      currentVersion: current,
+      latestVersion: _normalize(tag),
+      tagName: tag,
+      releaseName: tag,
+      releaseNotes: notes,
+      apkUrl: apkUrl.isEmpty ? null : apkUrl,
+      apkSize: apkSize,
+      htmlUrl: 'https://github.com/$owner/$repo/releases/tag/$tag',
+    );
+  }
+
+  static String _stripHtml(String html) {
+    var text = html
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</(p|div|li|h[1-6])>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'<li[^>]*>', caseSensitive: false), '• ')
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&nbsp;', ' ');
+    text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    return text;
   }
 
   /// 下载 APK，返回本地文件路径
@@ -285,7 +422,11 @@ class UpdateInfo {
 /// 更新流程异常
 class UpdateException implements Exception {
   final String message;
-  UpdateException(this.message);
+
+  /// 是否允许改用备用通道重试（如 API 限流、解析失败）
+  final bool canFallback;
+
+  UpdateException(this.message, {this.canFallback = false});
 
   @override
   String toString() => message;
